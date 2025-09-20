@@ -1,0 +1,7 @@
+{
+    "recommendations": [
+        "biomejs.biome",
+        "laravel.vscode-laravel",
+        "bmewburn.vscode-intelephense-client"
+    ]
+}
