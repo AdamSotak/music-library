@@ -1,0 +1,30 @@
+{
+	"$schema": "https://json.schemastore.org/package.json",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "vite build",
+		"dev": "vite",
+		"pint": "./vendor/bin/pint",
+		"lint": "npx @biomejs/biome lint ./ --write --unsafe",
+		"format": "npm run pint && npm run lint && npx @biomejs/biome format ./ --write"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.2.4",
+		"@tailwindcss/vite": "^4.0.0",
+		"@types/react": "^19.1.13",
+		"@types/react-dom": "^19.1.9",
+		"@vitejs/plugin-react": "^4.7.0",
+		"axios": "^1.11.0",
+		"concurrently": "^9.0.1",
+		"laravel-vite-plugin": "^2.0.0",
+		"tailwindcss": "^4.0.0",
+		"typescript": "^5.9.2",
+		"vite": "^7.0.4"
+	},
+	"dependencies": {
+		"@inertiajs/react": "^2.1.6",
+		"react": "^19.1.1",
+		"react-dom": "^19.1.1"
+	}
+}
