@@ -3,60 +3,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { mockHomepageData, formatDuration } from "@/lib/mock-data";
-import { Home, Search, Library, Heart, Clock, Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import { Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import Sidebar from "@/components/layout/Sidebar";
 
 export default function Index() {
   const { featured_albums, popular_tracks, recent_albums, trending_artists } = mockHomepageData;
+
+  // Mock playlists data - later this will come from API
+  const mockPlaylists = [
+    { id: 1, name: "My Favorites", href: "/playlist/1", trackCount: 42 },
+    { id: 2, name: "Chill Vibes", href: "/playlist/2", trackCount: 28 },
+    { id: 3, name: "Workout Mix", href: "/playlist/3", trackCount: 35 },
+    { id: 4, name: "Late Night", href: "/playlist/4", trackCount: 19 },
+  ];
 
   return (
     <div className="w-screen min-h-screen bg-background-base">
       {/* Main App Layout */}
       <div className="flex h-screen">
-        {/* Sidebar Navigation */}
-        <aside className="w-64 bg-black border-r border-zinc-800 flex-shrink-0">
-          <div className="p-6">
-            <h1 className="text-xl font-bold text-white flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" className="text-spotify-green">
-                <circle cx="12" cy="12" r="10" fill="currentColor"/>
-                <path d="M8 12l2 2 4-4" stroke="black" strokeWidth="2" fill="none"/>
-              </svg>
-              Music Library
-            </h1>
-          </div>
-          
-          {/* Navigation Menu */}
-          <nav className="px-4 space-y-2">
-            <a href="/" className="flex items-center px-3 py-2 text-white bg-zinc-800 rounded-md">
-              <Home className="mr-3 h-5 w-5" />
-              Home
-            </a>
-            <a href="/search" className="flex items-center px-3 py-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors">
-              <Search className="mr-3 h-5 w-5" />
-              Search
-            </a>
-            <a href="/library" className="flex items-center px-3 py-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors">
-              <Library className="mr-3 h-5 w-5" />
-              Your Library
-            </a>
-          </nav>
-
-          {/* Library Section */}
-          <div className="mt-8 px-4">
-            <h3 className="text-sm font-semibold text-zinc-400 mb-2 px-3">
-              PLAYLISTS
-            </h3>
-            <div className="space-y-1">
-              <a href="/liked" className="flex items-center px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors">
-                <Heart className="mr-3 h-4 w-4" />
-                Liked Songs
-              </a>
-              <a href="/recent" className="flex items-center px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors">
-                <Clock className="mr-3 h-4 w-4" />
-                Recently Played
-              </a>
-            </div>
-          </div>
-        </aside>
+        {/* Reusable Sidebar Component */}
+        <Sidebar activeRoute="/" playlists={mockPlaylists} />
 
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col min-w-0">
