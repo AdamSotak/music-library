@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
 	Form,
 	FormControl,
@@ -6,13 +6,13 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { loginFormSchema } from "@/lib/validation/auth-schemas";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
+import { loginFormSchema } from "@/lib/validation/auth-schemas"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import type { z } from "zod"
 
 export default function Login() {
 	const form = useForm<z.infer<typeof loginFormSchema>>({
@@ -21,11 +21,11 @@ export default function Login() {
 			email: "",
 			password: "",
 		},
-	});
+	})
 
 	const onSubmit = (data: z.infer<typeof loginFormSchema>) => {
-		console.log(data);
-	};
+		console.log(data)
+	}
 
 	return (
 		<div className="w-screen min-h-screen bg-gradient-to-b from-zinc-800/95 to-black flex justify-center px-4">
@@ -178,5 +178,5 @@ export default function Login() {
 				</span>
 			</div>
 		</div>
-	);
+	)
 }

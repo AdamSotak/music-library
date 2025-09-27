@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
 	Form,
 	FormControl,
@@ -6,13 +6,13 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { signupFormSchema } from "@/lib/validation/auth-schemas";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { router } from "@inertiajs/react";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { signupFormSchema } from "@/lib/validation/auth-schemas"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { router } from "@inertiajs/react"
+import { useForm } from "react-hook-form"
+import type { z } from "zod"
 
 export default function Signup() {
 	const form = useForm<z.infer<typeof signupFormSchema>>({
@@ -22,11 +22,11 @@ export default function Signup() {
 			email: "",
 			password: "",
 		},
-	});
+	})
 
 	const onSubmit = (data: z.infer<typeof signupFormSchema>) => {
-		console.log(data);
-	};
+		console.log(data)
+	}
 
 	return (
 		<div className="w-screen min-h-screen bg-background-base flex flex-col justify-center items-center px-4 pt-4 pb-20">
@@ -160,5 +160,5 @@ export default function Signup() {
 				</span>
 			</div>
 		</div>
-	);
+	)
 }
