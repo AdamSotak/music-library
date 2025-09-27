@@ -105,7 +105,7 @@ function DesktopPlayer({
 	setVolume: (value: number | ((prev: number) => number)) => void
 }) {
 	return (
-		<div className="flex justify-between items-center fixed bottom-0 left-0 right-0 w-full h-20 px-4">
+		<div className="flex justify-between items-center w-full h-20 px-4">
 			<div>
 				<div className="flex items-center gap-2">
 					<div>
@@ -521,7 +521,7 @@ function ExpandedPlayer({
 	const [volume, setVolume] = useState(32)
 
 	return (
-		<div className="flex flex-col h-full w-full text-white p-4 safe-area-inset">
+		<div className="flex flex-col h-full w-full text-white p-4 safe-area-inset overflow-y-auto">
 			{/* Header with close button */}
 			<div className="flex justify-between items-center mb-6 pt-2">
 				<Button
@@ -803,7 +803,7 @@ export default function AudioPlayer() {
 			)}
 
 			{/* Mobile layout (hidden on md and up) */}
-			<div className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-zinc-900/95 backdrop-blur-sm border-t border-white/10">
+			<div className="lg:hidden w-full mt-1 bg-zinc-900/95 backdrop-blur-sm border-t border-white/10">
 				<MobilePlayer
 					isPlaying={isPlaying}
 					setIsPlaying={setIsPlaying}

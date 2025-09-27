@@ -1,14 +1,27 @@
-import { Button } from "./ui/button"
+import { Button, buttonVariants } from "./ui/button"
 import { router } from "@inertiajs/react"
 import { cn } from "@/lib/utils"
 import { Separator } from "./ui/separator"
 import { useState, useEffect, useRef, useCallback } from "react"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 
-export default function Navbar() {
+interface NavbarProps {
+	onMobileMenuToggle?: () => void
+}
+
+export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 	const [isSearchOpen, setIsSearchOpen] = useState(false)
 	const [isAnimating, setIsAnimating] = useState(false)
 	const searchInputRef = useRef<HTMLInputElement>(null)
-	const isCategoriesOpen = window.location.pathname.includes("/categories")
+
+	const isHome = window.location.pathname === "/"
+	const isCategoriesOpen = window.location.pathname === "/categories"
 
 	// Handle popup opening animation
 	const openSearchPopup = () => {
@@ -60,6 +73,30 @@ export default function Navbar() {
 		<>
 			<div className="flex justify-between items-center pl-5 pr-4 h-16">
 				<div className="flex items-center">
+					{/* Mobile Menu Button */}
+					<Button
+						size="icon"
+						variant="spotifyTransparent"
+						className="lg:hidden mr-3 group"
+						onClick={onMobileMenuToggle}
+					>
+						<svg
+							data-encore-id="icon"
+							role="img"
+							aria-hidden="true"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="gray"
+							className="w-6 h-6 transition-colors duration-300 group-hover:stroke-white"
+						>
+							<path
+								d="M3 12h18M3 6h18M3 18h18"
+								strokeWidth="2"
+								strokeLinecap="round"
+							/>
+						</svg>
+					</Button>
+
 					<a href="/">
 						<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34">
 							<title>Spotify logo</title>
@@ -78,16 +115,29 @@ export default function Navbar() {
 							variant={"spotifyGray"}
 							onClick={() => router.visit("/")}
 						>
-							<svg
-								data-encore-id="icon"
-								role="img"
-								aria-hidden="true"
-								fill="white"
-								viewBox="0 0 24 24"
-								className="min-w-5 min-h-5"
-							>
-								<path d="M13.5 1.515a3 3 0 0 0-3 0L3 5.845a2 2 0 0 0-1 1.732V21a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-6h4v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V7.577a2 2 0 0 0-1-1.732z"></path>
-							</svg>
+							{isHome ? (
+								<svg
+									data-encore-id="icon"
+									role="img"
+									aria-hidden="true"
+									fill="white"
+									viewBox="0 0 24 24"
+									className="min-w-5 min-h-5"
+								>
+									<path d="M13.5 1.515a3 3 0 0 0-3 0L3 5.845a2 2 0 0 0-1 1.732V21a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-6h4v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V7.577a2 2 0 0 0-1-1.732z"></path>
+								</svg>
+							) : (
+								<svg
+									data-encore-id="icon"
+									role="img"
+									aria-hidden="true"
+									fill="white"
+									viewBox="0 0 24 24"
+									className="min-w-5 min-h-5"
+								>
+									<path d="M12.5 3.247a1 1 0 0 0-1 0L4 7.577V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.577zm-2-1.732a3 3 0 0 1 3 0l7.5 4.33a2 2 0 0 1 1 1.732V21a1 1 0 0 1-1 1h-6.5a1 1 0 0 1-1-1v-6h-3v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.577a2 2 0 0 1 1-1.732z"></path>
+								</svg>
+							)}
 						</Button>
 
 						{/* Desktop Search Bar - Hidden on mobile */}
@@ -220,17 +270,28 @@ export default function Navbar() {
 						</svg>
 					</Button>
 
-					<Button
-						size={"icon"}
-						variant={"spotifyTransparent"}
-						className="group rounded-full ml-1.5"
-					>
-						<div className="min-w-10 max-w-10 min-h-10 max-h-10 rounded-full bg-zinc-900 flex items-center justify-center">
-							<div className="min-w-7 max-w-7 min-h-7 max-h-7 rounded-full bg-blue-400 flex items-center justify-center">
-								<span className="text-black font-medium text-sm">A</span>
+					<DropdownMenu>
+						<DropdownMenuTrigger className="outline-none">
+							<div
+								className={`${buttonVariants({ variant: "spotifyTransparent", size: "icon" })} group rounded-full ml-1.5`}
+							>
+								<div className="min-w-10 max-w-10 min-h-10 max-h-10 rounded-full bg-zinc-900 flex items-center justify-center">
+									<div className="min-w-7 max-w-7 min-h-7 max-h-7 rounded-full bg-blue-400 flex items-center justify-center">
+										<span className="text-black font-medium text-sm">A</span>
+									</div>
+								</div>
 							</div>
-						</div>
-					</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent className="w-44 mr-4">
+							<DropdownMenuItem>
+								<span>Account</span>
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem>
+								<span>Logout</span>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</div>
 
@@ -300,7 +361,10 @@ export default function Navbar() {
 										size={"icon"}
 										variant={"spotifyTransparent"}
 										className="group"
-										onClick={() => router.visit("/categories")}
+										onClick={() => {
+											router.visit("/categories")
+											closeSearchPopup()
+										}}
 									>
 										{isCategoriesOpen ? (
 											<svg
