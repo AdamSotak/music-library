@@ -8,6 +8,7 @@ export default function Navbar() {
 	const [isSearchOpen, setIsSearchOpen] = useState(false)
 	const [isAnimating, setIsAnimating] = useState(false)
 	const searchInputRef = useRef<HTMLInputElement>(null)
+	const isCategoriesOpen = window.location.pathname.includes("/categories")
 
 	// Handle popup opening animation
 	const openSearchPopup = () => {
@@ -70,10 +71,10 @@ export default function Navbar() {
 						</svg>
 					</a>
 
-					<div className="md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center gap-1.5 ml-5">
+					<div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex items-center gap-1.5 ml-5">
 						<Button
 							size={"icon"}
-							className="rounded-full w-10 h-10 md:w-12 md:h-12"
+							className="rounded-full w-10 h-10 lg:w-12 lg:h-12"
 							variant={"spotifyGray"}
 							onClick={() => router.visit("/")}
 						>
@@ -132,18 +133,32 @@ export default function Navbar() {
 									size={"icon"}
 									variant={"spotifyTransparent"}
 									className="group"
+									onClick={() => router.visit("/categories")}
 								>
-									<svg
-										data-encore-id="icon"
-										role="img"
-										aria-hidden="true"
-										viewBox="0 0 24 24"
-										fill="gray"
-										className="min-w-6 min-h-6 transition-colors duration-300 group-hover:fill-white"
-									>
-										<path d="M15 15.5c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2"></path>
-										<path d="M1.513 9.37A1 1 0 0 1 2.291 9h19.418a1 1 0 0 1 .979 1.208l-2.339 11a1 1 0 0 1-.978.792H4.63a1 1 0 0 1-.978-.792l-2.339-11a1 1 0 0 1 .201-.837zM3.525 11l1.913 9h13.123l1.913-9zM4 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v4h-2V3H6v3H4z"></path>
-									</svg>
+									{isCategoriesOpen ? (
+										<svg
+											data-encore-id="icon"
+											role="img"
+											aria-hidden="true"
+											viewBox="0 0 24 24"
+											fill="white"
+											className="min-w-6 min-h-6 transition-colors duration-300 group-hover:fill-white"
+										>
+											<path d="M4 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v4H4zM1.513 9.37A1 1 0 0 1 2.291 9H21.71a1 1 0 0 1 .978 1.208l-2.17 10.208A2 2 0 0 1 18.562 22H5.438a2 2 0 0 1-1.956-1.584l-2.17-10.208a1 1 0 0 1 .201-.837zM12 17.834c1.933 0 3.5-1.044 3.5-2.333s-1.567-2.333-3.5-2.333S8.5 14.21 8.5 15.5s1.567 2.333 3.5 2.333z"></path>
+										</svg>
+									) : (
+										<svg
+											data-encore-id="icon"
+											role="img"
+											aria-hidden="true"
+											viewBox="0 0 24 24"
+											fill="gray"
+											className="min-w-6 min-h-6 transition-colors duration-300 group-hover:fill-white"
+										>
+											<path d="M15 15.5c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2"></path>
+											<path d="M1.513 9.37A1 1 0 0 1 2.291 9h19.418a1 1 0 0 1 .979 1.208l-2.339 11a1 1 0 0 1-.978.792H4.63a1 1 0 0 1-.978-.792l-2.339-11a1 1 0 0 1 .201-.837zM3.525 11l1.913 9h13.123l1.913-9zM4 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v4h-2V3H6v3H4z"></path>
+										</svg>
+									)}
 								</Button>
 							</div>
 						</div>
@@ -285,18 +300,32 @@ export default function Navbar() {
 										size={"icon"}
 										variant={"spotifyTransparent"}
 										className="group"
+										onClick={() => router.visit("/categories")}
 									>
-										<svg
-											data-encore-id="icon"
-											role="img"
-											aria-hidden="true"
-											viewBox="0 0 24 24"
-											fill="gray"
-											className="min-w-5 min-h-5 transition-colors duration-300 group-hover:fill-white"
-										>
-											<path d="M15 15.5c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2"></path>
-											<path d="M1.513 9.37A1 1 0 0 1 2.291 9h19.418a1 1 0 0 1 .979 1.208l-2.339 11a1 1 0 0 1-.978.792H4.63a1 1 0 0 1-.978-.792l-2.339-11a1 1 0 0 1 .201-.837zM3.525 11l1.913 9h13.123l1.913-9zM4 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v4h-2V3H6v3H4z"></path>
-										</svg>
+										{isCategoriesOpen ? (
+											<svg
+												data-encore-id="icon"
+												role="img"
+												aria-hidden="true"
+												viewBox="0 0 24 24"
+												fill="white"
+												className="min-w-6 min-h-6 transition-colors duration-300 group-hover:fill-white"
+											>
+												<path d="M4 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v4H4zM1.513 9.37A1 1 0 0 1 2.291 9H21.71a1 1 0 0 1 .978 1.208l-2.17 10.208A2 2 0 0 1 18.562 22H5.438a2 2 0 0 1-1.956-1.584l-2.17-10.208a1 1 0 0 1 .201-.837zM12 17.834c1.933 0 3.5-1.044 3.5-2.333s-1.567-2.333-3.5-2.333S8.5 14.21 8.5 15.5s1.567 2.333 3.5 2.333z"></path>
+											</svg>
+										) : (
+											<svg
+												data-encore-id="icon"
+												role="img"
+												aria-hidden="true"
+												viewBox="0 0 24 24"
+												fill="gray"
+												className="min-w-6 min-h-6 transition-colors duration-300 group-hover:fill-white"
+											>
+												<path d="M15 15.5c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2"></path>
+												<path d="M1.513 9.37A1 1 0 0 1 2.291 9h19.418a1 1 0 0 1 .979 1.208l-2.339 11a1 1 0 0 1-.978.792H4.63a1 1 0 0 1-.978-.792l-2.339-11a1 1 0 0 1 .201-.837zM3.525 11l1.913 9h13.123l1.913-9zM4 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v4h-2V3H6v3H4z"></path>
+											</svg>
+										)}
 									</Button>
 								</div>
 							</div>

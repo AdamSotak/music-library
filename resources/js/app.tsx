@@ -13,6 +13,12 @@ createInertiaApp({
 		if (!page) {
 			throw new Error(`Page not found: ${name}`)
 		}
+
+		const layoutIgnore = ["Login", "Signup"]
+		if (layoutIgnore.includes(page.default.name)) {
+			return page.default
+		}
+
 		page.default.layout =
 			page.default.layout ||
 			((page: React.ReactNode) => <Layout>{page}</Layout>)

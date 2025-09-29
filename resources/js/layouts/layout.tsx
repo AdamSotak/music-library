@@ -1,3 +1,4 @@
+import AudioPlayer from "@/components/audio-player"
 import Navbar from "@/components/navbar"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -5,6 +6,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 		<div className="min-w-screen min-h-screen bg-black">
 			<Navbar />
 			{children}
+			<AudioPlayer />
 		</div>
 	)
 }
