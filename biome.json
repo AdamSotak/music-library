@@ -37,7 +37,8 @@
 	"javascript": {
 		"formatter": {
 			"enabled": true,
-			"quoteStyle": "double"
+			"quoteStyle": "double",
+			"semicolons": "asNeeded"
 		}
 	},
 	"assist": {

@@ -1,3 +1,7 @@
 export default function Index() {
-	return <div>Hello, World!</div>;
+	return (
+		<div className="w-screen min-h-screen bg-background-base">
+			Hello, World!
+		</div>
+	);
 }
