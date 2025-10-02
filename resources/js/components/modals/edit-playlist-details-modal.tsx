@@ -14,6 +14,7 @@ import { Music } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { editPlaylistDetailsSchema } from "@/lib/validation/data-schemas"
+import { router } from "@inertiajs/react"
 import type { z } from "zod"
 
 type FormData = z.infer<typeof editPlaylistDetailsSchema>
@@ -30,16 +31,30 @@ export const EditPlaylistDetailsModal = () => {
 	})
 
 	const onSubmit = (data: FormData) => {
-		console.log("Form submitted:", data)
-		// TODO: Implement actual save logic here
-		setOpen(false)
+		if (playlist?.id) {
+			// Edit existing playlist
+			router.put(`/playlist/${playlist.id}`, data, {
+				onSuccess: () => {
+					setOpen(false)
+					form.reset()
+				},
+			})
+		} else {
+			// Create new playlist
+			router.post("/playlist", data, {
+				onSuccess: () => {
+					setOpen(false)
+					form.reset()
+				},
+			})
+		}
 	}
 
 	return (
 		<Dialog open={open} onOpenChange={(open) => setOpen(open, playlist)}>
 			<DialogContent className="bg-zinc-800 border-none">
 				<DialogHeader>
-					<DialogTitle>Edit details</DialogTitle>
+					<DialogTitle>{playlist?.id ? "Edit details" : "Create playlist"}</DialogTitle>
 				</DialogHeader>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

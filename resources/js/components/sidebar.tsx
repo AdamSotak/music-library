@@ -1,5 +1,7 @@
 import { SidebarItem } from "./library/sidebar-item"
 import { Button } from "./ui/button"
+import { usePage } from '@inertiajs/react'
+import { Modals } from "@/hooks/useModals"
 
 interface SidebarProps {
 	isExpanded: boolean
@@ -8,12 +10,22 @@ interface SidebarProps {
 	onClose?: () => void
 }
 
+interface Playlist {
+	id: number
+	name: string
+	image: string
+	description: string
+}
+
 export default function Sidebar({
 	isExpanded,
 	setIsExpanded,
 	isMobile = false,
 	onClose,
 }: SidebarProps) {
+	const { playlists } = usePage().props as { playlists: Playlist[] }
+	const { setOpen: setEditPlaylistDetailsModalOpen } = Modals.useEditPlaylistDetailsModal()
+
 	// On mobile, always show expanded version
 	const shouldShowExpanded = isMobile || isExpanded
 
@@ -57,7 +69,16 @@ export default function Sidebar({
 				</Button>
 
 				<div className="mt-2">
-					<SidebarItem title="Playlist #2" isCollapsed />
+					{playlists.slice(0, 5).map((playlist) => (
+						<SidebarItem
+							key={playlist.id}
+							id={String(playlist.id)}
+							title={playlist.name}
+							image={playlist.image}
+							href={`/playlist/${playlist.id}`}
+							isCollapsed
+						/>
+					))}
 					<SidebarItem title="Liked Songs" isLikedSongs isCollapsed />
 				</div>
 			</div>
@@ -116,6 +137,7 @@ export default function Sidebar({
 					variant="spotifyTransparent"
 					size="icon"
 					className="group bg-zinc-800 w-8 h-8"
+					onClick={() => setEditPlaylistDetailsModalOpen(true, null)}
 				>
 					<svg
 						data-encore-id="icon"
@@ -131,11 +153,17 @@ export default function Sidebar({
 			</div>
 
 			<div className="flex flex-col gap-0 px-2 flex-1 overflow-y-auto">
-				<SidebarItem
-					title="Playlist #2"
-					onClose={isMobile ? onClose : undefined}
-					isMobile={isMobile}
-				/>
+				{playlists.map((playlist) => (
+					<SidebarItem
+						key={playlist.id}
+						id={String(playlist.id)}
+						title={playlist.name}
+						image={playlist.image}
+						href={`/playlist/${playlist.id}`}
+						onClose={isMobile ? onClose : undefined}
+						isMobile={isMobile}
+					/>
+				))}
 				<SidebarItem
 					title="Liked Songs"
 					isLikedSongs
