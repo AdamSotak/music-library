@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 class JamendoClient
 {
     private string $baseUrl = 'https://api.jamendo.com/v3.0';
+
     private string $clientId;
 
     public function __construct()
@@ -53,6 +54,7 @@ class JamendoClient
         ]);
 
         $results = $response->json()['results'] ?? [];
+
         return $results[0] ?? null;
     }
 
@@ -80,6 +82,7 @@ class JamendoClient
         ]);
 
         $results = $response->json()['results'] ?? [];
+
         return $results[0] ?? null;
     }
 

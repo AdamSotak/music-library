@@ -41,7 +41,7 @@ class PlaylistController extends Controller
                     'duration' => $track->duration,
                     'audio' => $track->audio_url,
                 ]),
-            ]
+            ],
         ]);
     }
 
@@ -101,9 +101,9 @@ class PlaylistController extends Controller
         // Attach tracks with incremented positions
         foreach ($validated['track_ids'] as $index => $trackId) {
             // Check if track is already in the playlist
-            if (!$playlist->tracks()->where('track_id', $trackId)->exists()) {
+            if (! $playlist->tracks()->where('track_id', $trackId)->exists()) {
                 $playlist->tracks()->attach($trackId, [
-                    'position' => $maxPosition + $index + 1
+                    'position' => $maxPosition + $index + 1,
                 ]);
             }
         }

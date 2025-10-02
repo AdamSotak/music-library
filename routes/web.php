@@ -6,7 +6,6 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TrackController;
-
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -21,7 +20,6 @@ Route::controller(CategoryController::class)->group(function () {
     Route::get('/categories', 'show');
     Route::get('/categories/{id}', 'showById');
 });
-
 
 // Canonical Spotify routing structure
 Route::prefix('collection')->group(function () {
@@ -43,8 +41,6 @@ Route::delete('/playlist/{playlistId}/tracks/{trackId}', [PlaylistController::cl
 
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 
-
-
 // Debug API endpoint
 Route::get('/api/debug/data', function () {
     return response()->json([
@@ -54,4 +50,3 @@ Route::get('/api/debug/data', function () {
         'playlists' => \App\Models\Playlist::with('tracks')->get(),
     ]);
 });
-

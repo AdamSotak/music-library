@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Album;
@@ -40,7 +41,7 @@ class AlbumController extends Controller
                     'duration' => $track->duration,
                     'audio' => $track->audio_url,
                 ]),
-            ]
+            ],
         ]);
     }
 }

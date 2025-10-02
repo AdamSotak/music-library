@@ -19,7 +19,7 @@ class TrackController extends Controller
                 'album' => $track->album->name,
                 'duration' => $track->duration,
                 'audio' => $track->audio_url,
-            ]
+            ],
         ]);
     }
 }
