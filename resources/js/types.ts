@@ -10,3 +10,10 @@ export type Playlist = {
 	name: string
 	description: string
 }
+
+export type ShelfItem = {
+	title: string
+	subtitle?: string
+	img?: string
+	circle?: boolean
+}
