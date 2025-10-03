@@ -39,7 +39,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 	// Empty state - no search performed yet
 	if (!results) {
 		return (
-			<div className="min-h-screen bg-black text-white px-6 py-8">
+			<div className="min-h-screen text-white px-6 py-8">
 				<div className="max-w-[1955px] mx-auto">
 					<div className="text-center py-32">
 						<h1 className="text-[2rem] font-bold mb-4 text-white">
@@ -57,7 +57,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 	// No results found
 	if (results.total === 0) {
 		return (
-			<div className="min-h-screen bg-black text-white px-6 py-8">
+			<div className="min-h-screen text-white px-6 py-8">
 				<div className="max-w-[1955px] mx-auto">
 					<div className="py-8">
 						<h1 className="text-2xl font-bold mb-4">
@@ -75,7 +75,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 
 	// Has results
 	return (
-		<div className="min-h-screen bg-black text-white px-6 py-8">
+		<div className="min-h-screen text-white px-6 py-8">
 			<div className="max-w-[1955px] mx-auto">
 				{/* Top Result and Songs Section */}
 				<div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 mb-12">
