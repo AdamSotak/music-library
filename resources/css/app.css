@@ -250,3 +250,19 @@ label {
 		@apply bg-background text-foreground;
 	}
 }
+
+@layer utilities {
+	@keyframes waveform {
+		0%,
+		100% {
+			height: 0.5rem;
+		}
+		50% {
+			height: 1rem;
+		}
+	}
+
+	.animate-waveform {
+		animation: waveform 0.8s ease-in-out infinite;
+	}
+}

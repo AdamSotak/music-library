@@ -39,10 +39,10 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 				router.visit(`/search?q=${encodeURIComponent(value.trim())}`, {
 					preserveState: true,
 					preserveScroll: true,
-					only: ['query', 'results']
+					only: ["query", "results"],
 				})
 			} else if (value.trim().length === 0) {
-				router.visit('/search', {
+				router.visit("/search", {
 					preserveState: true,
 					preserveScroll: true,
 				})
@@ -186,7 +186,6 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 								<path d="M10.533 1.27893C5.35215 1.27893 1.12598 5.41887 1.12598 10.5579C1.12598 15.697 5.35215 19.8369 10.533 19.8369C12.767 19.8369 14.8235 19.0671 16.4402 17.7794L20.7929 22.132C21.1834 22.5226 21.8166 22.5226 22.2071 22.132C22.5976 21.7415 22.5976 21.1083 22.2071 20.7178L17.8634 16.3741C19.1616 14.7849 19.94 12.7634 19.94 10.5579C19.94 5.41887 15.7138 1.27893 10.533 1.27893ZM3.12598 10.5579C3.12598 6.55226 6.42768 3.27893 10.533 3.27893C14.6383 3.27893 17.94 6.55226 17.94 10.5579C17.94 14.5636 14.6383 17.8369 10.533 17.8369C6.42768 17.8369 3.12598 14.5636 3.12598 10.5579Z"></path>
 							</svg>
 							<input
-								type="search"
 								value={searchQuery}
 								onChange={(e) => handleSearchChange(e.target.value)}
 								className="w-[22rem] p-2 bg-zinc-900 placeholder:text-zinc-400 outline-none"
@@ -207,6 +206,29 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 								}
 							/>
 							<div className="h-6 flex items-center gap-1 pr-1">
+								<Button
+									size={"icon"}
+									variant={"spotifyTransparent"}
+									className={cn(
+										"group",
+										searchQuery.length === 0 && "opacity-0",
+									)}
+									onClick={() => {
+										setSearchQuery("")
+										router.visit("/search")
+									}}
+								>
+									<svg
+										data-encore-id="icon"
+										role="img"
+										aria-hidden="true"
+										viewBox="0 0 24 24"
+										fill="gray"
+										className="min-w-6 min-h-6 transition-colors duration-300 group-hover:fill-white"
+									>
+										<path d="M3.293 3.293a1 1 0 0 1 1.414 0L12 10.586l7.293-7.293a1 1 0 1 1 1.414 1.414L13.414 12l7.293 7.293a1 1 0 0 1-1.414 1.414L12 13.414l-7.293 7.293a1 1 0 0 1-1.414-1.414L10.586 12 3.293 4.707a1 1 0 0 1 0-1.414"></path>
+									</svg>
+								</Button>
 								<Separator orientation="vertical" className="h-6 bg-zinc-500" />
 								<Button
 									size={"icon"}
@@ -377,13 +399,35 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 								</svg>
 								<input
 									ref={searchInputRef}
-									type="search"
 									value={searchQuery}
 									onChange={(e) => handleSearchChange(e.target.value)}
 									className="w-full p-3 bg-zinc-800 placeholder:text-zinc-400 outline-none transition-all duration-200"
 									placeholder="What do you want to play?"
 								/>
 								<div className="h-5 flex items-center">
+									<Button
+										size={"icon"}
+										variant={"spotifyTransparent"}
+										className={cn(
+											"group",
+											searchQuery.length === 0 && "opacity-0",
+										)}
+										onClick={() => {
+											setSearchQuery("")
+											router.visit("/search")
+										}}
+									>
+										<svg
+											data-encore-id="icon"
+											role="img"
+											aria-hidden="true"
+											viewBox="0 0 24 24"
+											fill="gray"
+											className="min-w-6 min-h-6 transition-colors duration-300 group-hover:fill-white"
+										>
+											<path d="M3.293 3.293a1 1 0 0 1 1.414 0L12 10.586l7.293-7.293a1 1 0 1 1 1.414 1.414L13.414 12l7.293 7.293a1 1 0 0 1-1.414 1.414L12 13.414l-7.293 7.293a1 1 0 0 1-1.414-1.414L10.586 12 3.293 4.707a1 1 0 0 1 0-1.414"></path>
+										</svg>
+									</Button>
 									<Separator
 										orientation="vertical"
 										className="h-5 bg-zinc-500"

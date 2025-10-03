@@ -1,33 +1,39 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "./ui/button"
 import { Slider } from "./ui/slider"
 import { ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react"
+import { usePlayer, type Track } from "@/hooks/usePlayer"
 
 // Mobile compact player component
 function MobilePlayer({
 	isPlaying,
-	setIsPlaying,
+	togglePlay,
 	setIsExpanded,
+	currentTrack,
 }: {
 	isPlaying: boolean
-	setIsPlaying: (value: boolean | ((prev: boolean) => boolean)) => void
+	togglePlay: () => void
 	setIsExpanded: (value: boolean) => void
+	currentTrack: Track | null
 }) {
 	return (
 		<div className="flex items-center justify-between w-full px-4 py-2 bg-zinc-900/95 backdrop-blur-sm border-t border-white/10">
 			{/* Album art and song info */}
 			<div className="flex items-center gap-3 flex-1 min-w-0">
 				<img
-					src="https://f4.bcbits.com/img/a3321951232_10.jpg"
+					src={
+						currentTrack?.album_cover ||
+						`https://placehold.co/40x40/333/white?text=T`
+					}
 					alt="Album cover"
 					className="w-10 h-10 rounded-sm flex-shrink-0"
 				/>
 				<div className="flex flex-col min-w-0 flex-1">
 					<span className="text-sm font-medium text-white leading-none truncate">
-						Song name
+						{currentTrack?.name || "No track"}
 					</span>
 					<span className="text-xs text-white/70 leading-none truncate">
-						Artist name
+						{currentTrack?.artist || "Unknown artist"}
 					</span>
 				</div>
 			</div>
@@ -38,7 +44,7 @@ function MobilePlayer({
 					size="icon"
 					variant="spotifyTransparent"
 					className="w-8 h-8"
-					onClick={() => setIsPlaying((prev) => !prev)}
+					onClick={togglePlay}
 				>
 					{isPlaying ? (
 						<svg
@@ -77,20 +83,26 @@ function MobilePlayer({
 // Desktop player component (original layout)
 function DesktopPlayer({
 	isPlaying,
-	setIsPlaying,
-	seekProgress,
-	setSeekProgress,
+	togglePlay,
+	currentTime,
+	duration,
+	handleSeek,
 	isShuffle,
 	setIsShuffle,
 	repeatMode,
 	setRepeatMode,
 	volume,
 	setVolume,
+	currentTrack,
+	playNext,
+	playPrevious,
+	formatTime,
 }: {
 	isPlaying: boolean
-	setIsPlaying: (value: boolean | ((prev: boolean) => boolean)) => void
-	seekProgress: number
-	setSeekProgress: (value: number) => void
+	togglePlay: () => void
+	currentTime: number
+	duration: number
+	handleSeek: (value: number[]) => void
 	isShuffle: boolean
 	setIsShuffle: (value: boolean | ((prev: boolean) => boolean)) => void
 	repeatMode: "off" | "playlist" | "track"
@@ -103,6 +115,10 @@ function DesktopPlayer({
 	) => void
 	volume: number
 	setVolume: (value: number | ((prev: number) => number)) => void
+	currentTrack: Track | null
+	playNext: () => void
+	playPrevious: () => void
+	formatTime: (seconds: number) => string
 }) {
 	return (
 		<div className="flex justify-between items-center w-full h-20 px-4">
@@ -110,7 +126,10 @@ function DesktopPlayer({
 				<div className="flex items-center gap-2">
 					<div>
 						<img
-							src="https://f4.bcbits.com/img/a3321951232_10.jpg"
+							src={
+								currentTrack?.album_cover ||
+								`https://placehold.co/48x48/333/white?text=T`
+							}
 							alt="Album cover"
 							className="w-12 h-12 rounded-sm"
 						/>
@@ -119,10 +138,10 @@ function DesktopPlayer({
 					<div className="flex justify-between items-center gap-2 min-w-50 max-w-56">
 						<div className="flex flex-col gap-0.5 ml-1">
 							<span className="text-sm font-medium text-white leading-none">
-								Song name
+								{currentTrack?.name || "No track"}
 							</span>
 							<span className="text-xs text-white/70 leading-none">
-								Artist name
+								{currentTrack?.artist || "Unknown artist"}
 							</span>
 						</div>
 
@@ -190,6 +209,7 @@ function DesktopPlayer({
 						size={"icon"}
 						variant={"spotifyTransparent"}
 						className="group"
+						onClick={playPrevious}
 					>
 						<svg
 							data-encore-id="icon"
@@ -207,7 +227,7 @@ function DesktopPlayer({
 						size={"icon"}
 						variant={"spotifyGray"}
 						className="group bg-white w-8 h-8"
-						onClick={() => setIsPlaying((prev) => !prev)}
+						onClick={togglePlay}
 					>
 						{isPlaying ? (
 							<svg
@@ -238,6 +258,7 @@ function DesktopPlayer({
 						size={"icon"}
 						variant={"spotifyTransparent"}
 						className="group"
+						onClick={playNext}
 					>
 						<svg
 							data-encore-id="icon"
@@ -309,15 +330,15 @@ function DesktopPlayer({
 				</div>
 
 				<div className="flex items-center gap-2">
-					<span className="text-xs">0:00</span>
+					<span className="text-xs">{formatTime(currentTime)}</span>
 					<Slider
 						className="w-[23rem]"
-						max={100}
+						max={duration || 100}
 						hideThumb
-						value={[seekProgress]}
-						onValueChange={(value) => setSeekProgress(value[0])}
+						value={[currentTime]}
+						onValueChange={handleSeek}
 					/>
-					<span className="text-xs">3:21</span>
+					<span className="text-xs">{formatTime(duration)}</span>
 				</div>
 			</div>
 
@@ -506,20 +527,45 @@ function DesktopPlayer({
 // Expanded mobile player modal
 function ExpandedPlayer({
 	isPlaying,
-	setIsPlaying,
+	togglePlay,
 	setIsExpanded,
+	currentTime,
+	duration,
+	handleSeek,
+	isShuffle,
+	setIsShuffle,
+	repeatMode,
+	setRepeatMode,
+	volume,
+	setVolume,
+	currentTrack,
+	playNext,
+	playPrevious,
+	formatTime,
 }: {
 	isPlaying: boolean
-	setIsPlaying: (value: boolean | ((prev: boolean) => boolean)) => void
+	togglePlay: () => void
 	setIsExpanded: () => void
+	currentTime: number
+	duration: number
+	handleSeek: (value: number[]) => void
+	isShuffle: boolean
+	setIsShuffle: (value: boolean | ((prev: boolean) => boolean)) => void
+	repeatMode: "off" | "playlist" | "track"
+	setRepeatMode: (
+		value:
+			| "off"
+			| "playlist"
+			| "track"
+			| ((prev: "off" | "playlist" | "track") => "off" | "playlist" | "track"),
+	) => void
+	volume: number
+	setVolume: (value: number | ((prev: number) => number)) => void
+	currentTrack: Track | null
+	playNext: () => void
+	playPrevious: () => void
+	formatTime: (seconds: number) => string
 }) {
-	const [seekProgress, setSeekProgress] = useState(32)
-	const [isShuffle, setIsShuffle] = useState(false)
-	const [repeatMode, setRepeatMode] = useState<"off" | "playlist" | "track">(
-		"off",
-	)
-	const [volume, setVolume] = useState(32)
-
 	return (
 		<div className="flex flex-col h-full w-full text-white p-4 safe-area-inset overflow-y-auto">
 			{/* Header with close button */}
@@ -541,7 +587,10 @@ function ExpandedPlayer({
 			{/* Large album art */}
 			<div className="flex-1 flex items-center justify-center mb-6 px-4">
 				<img
-					src="https://f4.bcbits.com/img/a3321951232_10.jpg"
+					src={
+						currentTrack?.album_cover ||
+						`https://placehold.co/400x400/333/white?text=T`
+					}
 					alt="Album cover"
 					className="w-full max-w-sm aspect-square rounded-lg shadow-2xl"
 				/>
@@ -549,21 +598,25 @@ function ExpandedPlayer({
 
 			{/* Song info */}
 			<div className="text-center mb-6 px-4">
-				<h1 className="text-2xl font-bold mb-2 truncate">Song name</h1>
-				<p className="text-lg text-white/70 truncate">Artist name</p>
+				<h1 className="text-2xl font-bold mb-2 truncate">
+					{currentTrack?.name || "No track"}
+				</h1>
+				<p className="text-lg text-white/70 truncate">
+					{currentTrack?.artist || "Unknown artist"}
+				</p>
 			</div>
 
 			{/* Progress bar */}
 			<div className="mb-8 px-4">
 				<Slider
 					className="w-full mb-3"
-					max={100}
-					value={[seekProgress]}
-					onValueChange={(value) => setSeekProgress(value[0])}
+					max={duration || 100}
+					value={[currentTime]}
+					onValueChange={handleSeek}
 				/>
 				<div className="flex justify-between text-sm text-white/70">
-					<span>0:00</span>
-					<span>3:21</span>
+					<span>{formatTime(currentTime)}</span>
+					<span>{formatTime(duration)}</span>
 				</div>
 			</div>
 
@@ -589,7 +642,12 @@ function ExpandedPlayer({
 					)}
 				</Button>
 
-				<Button size="icon" variant="spotifyTransparent" className="w-12 h-12">
+				<Button
+					size="icon"
+					variant="spotifyTransparent"
+					className="w-12 h-12"
+					onClick={playPrevious}
+				>
 					<svg
 						aria-hidden="true"
 						viewBox="0 0 16 16"
@@ -604,7 +662,7 @@ function ExpandedPlayer({
 					size="icon"
 					variant="spotifyGray"
 					className="w-12 h-12 bg-white"
-					onClick={() => setIsPlaying((prev) => !prev)}
+					onClick={togglePlay}
 				>
 					{isPlaying ? (
 						<svg
@@ -627,7 +685,12 @@ function ExpandedPlayer({
 					)}
 				</Button>
 
-				<Button size="icon" variant="spotifyTransparent" className="w-12 h-12">
+				<Button
+					size="icon"
+					variant="spotifyTransparent"
+					className="w-12 h-12"
+					onClick={playNext}
+				>
 					<svg
 						aria-hidden="true"
 						viewBox="0 0 16 16"
@@ -731,15 +794,98 @@ function ExpandedPlayer({
 }
 
 export default function AudioPlayer() {
-	const [isPlaying, setIsPlaying] = useState(false)
-	const [seekProgress, setSeekProgress] = useState(32)
+	const audioRef = useRef<HTMLAudioElement>(null)
+	const { currentTrack, isPlaying, setIsPlaying, playNext, playPrevious } =
+		usePlayer()
+	const [currentTime, setCurrentTime] = useState(0)
+	const [duration, setDuration] = useState(0)
+	const [volume, setVolume] = useState(50)
 	const [isShuffle, setIsShuffle] = useState(false)
 	const [repeatMode, setRepeatMode] = useState<"off" | "playlist" | "track">(
 		"off",
 	)
-	const [volume, setVolume] = useState(32)
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [isClosing, setIsClosing] = useState(false)
+
+	// Load and play track when currentTrack changes
+	useEffect(() => {
+		if (!audioRef.current || !currentTrack?.audio) return
+
+		// Use proxy to bypass CORS
+		const proxyUrl = `/api/audio/stream?url=${encodeURIComponent(currentTrack.audio)}`
+		console.log("Loading track:", currentTrack.name, "via proxy")
+
+		audioRef.current.src = proxyUrl
+		audioRef.current.load()
+
+		if (isPlaying) {
+			audioRef.current.play().catch((err) => {
+				console.error("Playback failed:", err)
+				setIsPlaying(false)
+			})
+		}
+	}, [currentTrack, isPlaying, setIsPlaying])
+
+	// Handle play/pause state changes
+	useEffect(() => {
+		if (!audioRef.current || !currentTrack) return
+
+		if (isPlaying) {
+			audioRef.current.play().catch((err) => {
+				console.error("Playback failed:", err)
+				setIsPlaying(false)
+			})
+		} else {
+			audioRef.current.pause()
+		}
+	}, [isPlaying, currentTrack, setIsPlaying])
+
+	// Update volume
+	useEffect(() => {
+		if (audioRef.current) {
+			audioRef.current.volume = volume / 100
+		}
+	}, [volume])
+
+	const handleTimeUpdate = () => {
+		if (audioRef.current) {
+			setCurrentTime(audioRef.current.currentTime)
+		}
+	}
+
+	const handleLoadedMetadata = () => {
+		if (audioRef.current) {
+			setDuration(audioRef.current.duration)
+			console.log("Audio loaded, duration:", audioRef.current.duration)
+		}
+	}
+
+	const handleEnded = () => {
+		if (repeatMode === "track") {
+			audioRef.current?.play()
+		} else if (repeatMode === "playlist" || repeatMode === "off") {
+			playNext()
+		}
+	}
+
+	const handleSeek = (value: number[]) => {
+		const time = value[0]
+		if (audioRef.current) {
+			audioRef.current.currentTime = time
+			setCurrentTime(time)
+		}
+	}
+
+	const togglePlay = () => {
+		setIsPlaying(!isPlaying)
+	}
+
+	const formatTime = (seconds: number) => {
+		if (!Number.isFinite(seconds)) return "0:00"
+		const mins = Math.floor(seconds / 60)
+		const secs = Math.floor(seconds % 60)
+		return `${mins}:${secs.toString().padStart(2, "0")}`
+	}
 
 	const handleClose = useCallback(() => {
 		setIsClosing(true)
@@ -771,6 +917,16 @@ export default function AudioPlayer() {
 
 	return (
 		<>
+			<audio
+				ref={audioRef}
+				onTimeUpdate={handleTimeUpdate}
+				onLoadedMetadata={handleLoadedMetadata}
+				onEnded={handleEnded}
+				aria-label="Audio player"
+			>
+				<track kind="captions" />
+			</audio>
+
 			{/* Full-screen mobile player modal */}
 			{isExpanded && (
 				<div
@@ -796,8 +952,21 @@ export default function AudioPlayer() {
 				>
 					<ExpandedPlayer
 						isPlaying={isPlaying}
-						setIsPlaying={setIsPlaying}
+						togglePlay={togglePlay}
 						setIsExpanded={handleClose}
+						currentTime={currentTime}
+						duration={duration}
+						handleSeek={handleSeek}
+						isShuffle={isShuffle}
+						setIsShuffle={setIsShuffle}
+						repeatMode={repeatMode}
+						setRepeatMode={setRepeatMode}
+						volume={volume}
+						setVolume={setVolume}
+						currentTrack={currentTrack}
+						playNext={playNext}
+						playPrevious={playPrevious}
+						formatTime={formatTime}
 					/>
 				</div>
 			)}
@@ -806,8 +975,9 @@ export default function AudioPlayer() {
 			<div className="lg:hidden w-full mt-1 bg-zinc-900/95 backdrop-blur-sm border-t border-white/10">
 				<MobilePlayer
 					isPlaying={isPlaying}
-					setIsPlaying={setIsPlaying}
+					togglePlay={togglePlay}
 					setIsExpanded={setIsExpanded}
+					currentTrack={currentTrack}
 				/>
 			</div>
 
@@ -815,15 +985,20 @@ export default function AudioPlayer() {
 			<div className="hidden lg:block">
 				<DesktopPlayer
 					isPlaying={isPlaying}
-					setIsPlaying={setIsPlaying}
-					seekProgress={seekProgress}
-					setSeekProgress={setSeekProgress}
+					togglePlay={togglePlay}
+					currentTime={currentTime}
+					duration={duration}
+					handleSeek={handleSeek}
 					isShuffle={isShuffle}
 					setIsShuffle={setIsShuffle}
 					repeatMode={repeatMode}
 					setRepeatMode={setRepeatMode}
 					volume={volume}
 					setVolume={setVolume}
+					currentTrack={currentTrack}
+					playNext={playNext}
+					playPrevious={playPrevious}
+					formatTime={formatTime}
 				/>
 			</div>
 		</>

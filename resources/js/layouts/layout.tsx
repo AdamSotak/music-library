@@ -1,10 +1,10 @@
-import SimpleAudioPlayer from "@/components/simple-audio-player"
 import Navbar from "@/components/navbar"
 import Sidebar from "@/components/sidebar"
 import { cn } from "@/lib/utils"
 import ModalsProvider from "@/providers/modals-provider"
 import { useEffect, useState } from "react"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
+import AudioPlayer from "@/components/audio-player"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
 	const [isSidebarExpanded, setIsSidebarExpanded] = useState(
@@ -48,7 +48,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 						</div>
 					</div>
 				</main>
-				<SimpleAudioPlayer />
+
+				<AudioPlayer />
 			</div>
 
 			{/* Mobile Sidebar Sheet */}
