@@ -3,6 +3,9 @@ export type Category = {
 	name: string
 	image: string
 	color: string
+	tracks?: Track[]
+	albums?: Omit<Album, 'tracks'>[]
+	playlists?: Omit<Playlist, 'tracks'>[]
 }
 
 export type Track = {

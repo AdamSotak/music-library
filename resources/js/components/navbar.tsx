@@ -18,10 +18,37 @@ interface NavbarProps {
 export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 	const [isSearchOpen, setIsSearchOpen] = useState(false)
 	const [isAnimating, setIsAnimating] = useState(false)
+	const [searchQuery, setSearchQuery] = useState("")
 	const searchInputRef = useRef<HTMLInputElement>(null)
+	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
 	const isHome = window.location.pathname === "/"
 	const isCategoriesOpen = window.location.pathname === "/categories"
+
+	const handleSearchChange = (value: string) => {
+		setSearchQuery(value)
+
+		// Clear previous timeout
+		if (searchTimeoutRef.current) {
+			clearTimeout(searchTimeoutRef.current)
+		}
+
+		// Debounce search for 300ms
+		searchTimeoutRef.current = setTimeout(() => {
+			if (value.trim().length >= 2) {
+				router.visit(`/search?q=${encodeURIComponent(value.trim())}`, {
+					preserveState: true,
+					preserveScroll: true,
+					only: ['query', 'results']
+				})
+			} else if (value.trim().length === 0) {
+				router.visit('/search', {
+					preserveState: true,
+					preserveScroll: true,
+				})
+			}
+		}, 300)
+	}
 
 	// Handle popup opening animation
 	const openSearchPopup = () => {
@@ -160,6 +187,8 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 							</svg>
 							<input
 								type="search"
+								value={searchQuery}
+								onChange={(e) => handleSearchChange(e.target.value)}
 								className="w-[22rem] p-2 bg-zinc-900 placeholder:text-zinc-400 outline-none"
 								placeholder="What do you want to play?"
 								onFocus={(e) =>
@@ -349,6 +378,8 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 								<input
 									ref={searchInputRef}
 									type="search"
+									value={searchQuery}
+									onChange={(e) => handleSearchChange(e.target.value)}
 									className="w-full p-3 bg-zinc-800 placeholder:text-zinc-400 outline-none transition-all duration-200"
 									placeholder="What do you want to play?"
 								/>

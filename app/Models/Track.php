@@ -34,4 +34,10 @@ class Track extends Model
             ->withPivot('position')
             ->withTimestamps();
     }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'category_track')
+            ->withTimestamps();
+    }
 }

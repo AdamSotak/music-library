@@ -1,4 +1,4 @@
-import AudioPlayer from "@/components/audio-player"
+import SimpleAudioPlayer from "@/components/simple-audio-player"
 import Navbar from "@/components/navbar"
 import Sidebar from "@/components/sidebar"
 import { cn } from "@/lib/utils"
@@ -48,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 						</div>
 					</div>
 				</main>
-				<AudioPlayer />
+				<SimpleAudioPlayer />
 			</div>
 
 			{/* Mobile Sidebar Sheet */}

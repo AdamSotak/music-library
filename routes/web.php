@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\AudioProxyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PlaylistController;
@@ -40,6 +41,10 @@ Route::post('/playlist/{id}/tracks', [PlaylistController::class, 'addTracks'])->
 Route::delete('/playlist/{playlistId}/tracks/{trackId}', [PlaylistController::class, 'removeTrack'])->name('playlists.removeTrack');
 
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+Route::get('/api/search/tracks', [SearchController::class, 'searchTracks'])->name('api.search.tracks');
+
+// Audio proxy to bypass CORS
+Route::get('/api/audio/stream', [AudioProxyController::class, 'stream'])->name('api.audio.stream');
 
 // Debug API endpoint
 Route::get('/api/debug/data', function () {

@@ -96,12 +96,12 @@ class PlaylistController extends Controller
         $playlist = Playlist::findOrFail($id);
 
         // Get the max position in the playlist
-        $maxPosition = $playlist->tracks()->max('position') ?? 0;
+        $maxPosition = $playlist->tracks()->max('playlist_track.position') ?? 0;
 
         // Attach tracks with incremented positions
         foreach ($validated['track_ids'] as $index => $trackId) {
             // Check if track is already in the playlist
-            if (! $playlist->tracks()->where('track_id', $trackId)->exists()) {
+            if (! $playlist->tracks()->where('playlist_track.track_id', $trackId)->exists()) {
                 $playlist->tracks()->attach($trackId, [
                     'position' => $maxPosition + $index + 1,
                 ]);
