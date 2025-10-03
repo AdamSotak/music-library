@@ -29,7 +29,7 @@ export default function SimpleAudioPlayer() {
 				setIsPlaying(false)
 			})
 		}
-	}, [currentTrack])
+	}, [currentTrack, isPlaying, setIsPlaying])
 
 	// Handle play/pause state changes
 	useEffect(() => {
@@ -43,7 +43,7 @@ export default function SimpleAudioPlayer() {
 		} else {
 			audioRef.current.pause()
 		}
-	}, [isPlaying])
+	}, [isPlaying, currentTrack, setIsPlaying])
 
 	// Update volume
 	useEffect(() => {
@@ -86,7 +86,7 @@ export default function SimpleAudioPlayer() {
 	}
 
 	const formatTime = (seconds: number) => {
-		if (!isFinite(seconds)) return "0:00"
+		if (!Number.isFinite(seconds)) return "0:00"
 		const mins = Math.floor(seconds / 60)
 		const secs = Math.floor(seconds % 60)
 		return `${mins}:${secs.toString().padStart(2, "0")}`

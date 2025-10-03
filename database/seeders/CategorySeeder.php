@@ -21,6 +21,6 @@ class CategorySeeder extends Seeder
             ]);
         }
 
-        $this->command->info('✅ ' . count(Constants::CATEGORIES) . ' categories seeded!');
+        $this->command->info('✅ '.count(Constants::CATEGORIES).' categories seeded!');
     }
 }

@@ -171,7 +171,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 						<div className="min-w-0">
 							<h2 className="text-2xl font-bold mb-4">Songs</h2>
 							<div className="space-y-2">
-								{results.tracks.slice(0, 4).map((track, index) => (
+								{results.tracks.slice(0, 4).map((track, _index) => (
 									<div
 										key={track.id}
 										onClick={() => router.visit(`/track/${track.id}`)}

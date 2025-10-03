@@ -282,7 +282,6 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search for songs or episodes"
                                 className="w-full bg-zinc-800 text-white px-4 py-3 pr-10 rounded focus:outline-none focus:ring-2 focus:ring-white/20"
-                                autoFocus
                             />
                             {searchQuery && (
                                 <button

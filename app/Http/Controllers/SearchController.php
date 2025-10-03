@@ -15,7 +15,7 @@ class SearchController extends Controller
     {
         $query = $request->query('q');
 
-        if (!$query) {
+        if (! $query) {
             return Inertia::render('search/index', [
                 'query' => '',
                 'results' => null,
@@ -34,7 +34,7 @@ class SearchController extends Controller
     {
         $query = $request->query('q');
 
-        if (!$query) {
+        if (! $query) {
             return response()->json(['tracks' => []]);
         }
 

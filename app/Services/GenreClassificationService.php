@@ -39,7 +39,7 @@ class GenreClassificationService
         foreach (self::ARTIST_GENRE_MAP as $artistName => $genreSlugs) {
             $artist = Artist::where('name', $artistName)->first();
 
-            if (!$artist) {
+            if (! $artist) {
                 continue;
             }
 
@@ -54,7 +54,7 @@ class GenreClassificationService
             foreach ($tracks as $track) {
                 foreach ($categories as $category) {
                     // Attach category if not already attached
-                    if (!$track->categories()->where('category_id', $category->id)->exists()) {
+                    if (! $track->categories()->where('category_id', $category->id)->exists()) {
                         $track->categories()->attach($category->id);
                         $classified++;
                     }
@@ -72,7 +72,7 @@ class GenreClassificationService
     {
         $artist = $track->artist;
 
-        if (!$artist) {
+        if (! $artist) {
             return 0;
         }
 
@@ -86,7 +86,7 @@ class GenreClassificationService
         $attached = 0;
 
         foreach ($categories as $category) {
-            if (!$track->categories()->where('category_id', $category->id)->exists()) {
+            if (! $track->categories()->where('category_id', $category->id)->exists()) {
                 $track->categories()->attach($category->id);
                 $attached++;
             }

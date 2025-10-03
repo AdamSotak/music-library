@@ -11,7 +11,7 @@ class GenreClassificationSeeder extends Seeder
     {
         $this->command->info('Classifying tracks by genre...');
 
-        $service = new GenreClassificationService();
+        $service = new GenreClassificationService;
         $classified = $service->classifyAllTracks();
 
         $this->command->info("✅ {$classified} track-genre associations created!");

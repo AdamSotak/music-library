@@ -1,4 +1,4 @@
-import { Modals } from "@/hooks/useModals"
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog"
 import { router } from "@inertiajs/react"
 import { useState, useEffect } from "react"
