@@ -33,7 +33,9 @@ export default function CategoryPage({ category }: CategoryPageProps) {
 					<p className="text-sm font-medium uppercase tracking-widest mb-4">
 						Category
 					</p>
-					<h1 className="text-8xl font-black leading-none">{category.name}</h1>
+					<h1 className="text-6xl lg:text-8xl font-black leading-none break-words whitespace-pre-line w-full max-w-full overflow-hidden text-ellipsis break-all">
+						{category.name}
+					</h1>
 				</div>
 				<div
 					className="absolute inset-0 opacity-20"
