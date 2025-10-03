@@ -109,21 +109,25 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	return (
 		<div className="min-h-screen text-white">
 			{/* Header */}
-			<div className="flex items-end gap-6 px-8 pt-20 pb-6 bg-gradient-to-b from-pink-900/70 to-150% to-pink-900/40">
-				<div className="w-60 h-60 flex-shrink-0 shadow-2xl bg-zinc-800">
+			<div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 px-4 md:px-8 pt-16 md:pt-20 pb-6 bg-gradient-to-b from-pink-900/70 to-150% to-pink-900/40">
+				<div className="w-40 h-40 md:w-60 md:h-60 flex-shrink-0 shadow-2xl bg-zinc-800">
 					<img
 						src={playlist.image}
 						alt={playlist.name}
 						className="w-full h-full object-cover"
 					/>
 				</div>
-				<div className="flex flex-col justify-end pb-2">
-					<p className="text-sm font-bold mb-2">Public Playlist</p>
-					<h1 className="text-8xl font-black mb-6 leading-none">
+				<div className="flex flex-col justify-end pb-2 text-center md:text-left w-full md:w-auto">
+					<p className="text-xs md:text-sm font-bold mb-1 md:mb-2">
+						Public Playlist
+					</p>
+					<h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-black mb-3 md:mb-6 leading-tight md:leading-none">
 						{playlist.name}
 					</h1>
-					<p className="text-zinc-300 text-sm mb-2">{playlist.description}</p>
-					<div className="flex items-center gap-1 text-sm mt-2">
+					<p className="text-zinc-300 text-xs md:text-sm mb-2">
+						{playlist.description}
+					</p>
+					<div className="flex items-center justify-center md:justify-start gap-1 text-xs md:text-sm mt-2">
 						<span className="font-bold">Spotify</span>
 						<span>•</span>
 						<span>{playlist.tracks.length} songs,</span>
@@ -135,10 +139,10 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 			</div>
 
 			{/* Controls */}
-			<div className="px-8 py-6 flex items-center gap-6 bg-gradient-to-b from-pink-900/40 to-transparent">
-				<button className="bg-green-500 hover:bg-green-400 hover:scale-105 text-black w-14 h-14 rounded-full flex items-center justify-center transition-all">
+			<div className="px-4 md:px-8 py-4 md:py-6 flex items-center gap-4 md:gap-6 bg-gradient-to-b from-pink-900/40 to-transparent">
+				<button className="bg-green-500 hover:bg-green-400 hover:scale-105 text-black w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all">
 					<svg
-						className="w-6 h-6 ml-1"
+						className="w-5 h-5 md:w-6 md:h-6 ml-1"
 						fill="currentColor"
 						viewBox="0 0 24 24"
 						aria-hidden="true"
@@ -148,7 +152,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 				</button>
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
-						className="min-w-8 min-h-8 transition-colors duration-300 group-hover:stroke-white"
+						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"
 						fill="none"
 						stroke="gray"
 						viewBox="0 0 24 24"
@@ -164,7 +168,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 				</Button>
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
-						className="min-w-8 min-h-8 transition-colors duration-300 group-hover:fill-white"
+						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
 						fill="gray"
 						viewBox="0 0 24 24"
 						aria-hidden="true"
@@ -177,11 +181,11 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 			</div>
 
 			{/* Track List or Search */}
-			<div className="px-8 pb-32">
+			<div className="px-4 md:px-8 pb-32">
 				{!isSearchMode ? (
 					<>
-						{/* Header */}
-						<div className="grid grid-cols-[16px_6fr_4fr_3fr_minmax(120px,1fr)] gap-4 px-4 h-9 border-b border-white/10 text-sm text-zinc-400 mb-2 items-center">
+						{/* Header - Hidden on mobile */}
+						<div className="hidden md:grid grid-cols-[16px_6fr_4fr_3fr_minmax(120px,1fr)] gap-4 px-4 h-9 border-b border-white/10 text-sm text-zinc-400 mb-2 items-center">
 							<div className="text-center">#</div>
 							<div>Title</div>
 							<div>Album</div>
@@ -206,12 +210,17 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							return (
 								<div
 									key={track.id}
-									className={`grid grid-cols-[16px_6fr_4fr_3fr_minmax(120px,1fr)] gap-4 px-4 h-14 rounded-md group cursor-pointer items-center ${
-										isCurrentTrack ? "bg-white/10" : "hover:bg-white/10"
-									}`}
+									className={`
+										flex flex-col md:grid md:grid-cols-[16px_6fr_4fr_3fr_minmax(120px,1fr)] 
+                                        md:items-center
+										gap-2 md:gap-4 md:px-4 py-2 md:py-0 md:h-14 
+										rounded-md group cursor-pointer
+										${isCurrentTrack ? "bg-white/10" : "hover:bg-white/10"}
+									`}
 									onClick={(e) => handlePlayTrack(track, index, e)}
 								>
-									<div className="text-center text-sm group-hover:hidden flex justify-center">
+									{/* Desktop track number / play button */}
+									<div className="hidden md:flex text-center text-sm group-hover:hidden justify-center">
 										{isCurrentTrack && isPlaying ? (
 											<WaveformIndicator />
 										) : (
@@ -226,7 +235,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 									</div>
 									<button
 										onClick={(e) => handlePlayTrack(track, index, e)}
-										className="hidden group-hover:flex justify-center"
+										className="hidden md:group-hover:flex justify-center"
 										type="button"
 									>
 										<svg
@@ -238,28 +247,75 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 											<path d="M8 5v14l11-7z" />
 										</svg>
 									</button>
-									<div className="flex items-center gap-3">
+
+									{/* Track info - responsive layout */}
+									<div className="flex items-center gap-3 md:min-w-0">
+										{/* Mobile track number */}
+										<div className="md:hidden text-center text-xs w-6 flex-shrink-0">
+											{isCurrentTrack && isPlaying ? (
+												<WaveformIndicator />
+											) : (
+												<span
+													className={
+														isCurrentTrack ? "text-green-500" : "text-zinc-400"
+													}
+												>
+													{index + 1}
+												</span>
+											)}
+										</div>
 										<img
 											src={
 												track.album_cover ||
 												`https://via.placeholder.com/40?text=${encodeURIComponent(track.album || "Track")}`
 											}
 											alt={track.album || track.name}
-											className="w-10 h-10 flex-shrink-0 rounded"
+											className="w-10 h-10 md:w-10 md:h-10 flex-shrink-0 rounded"
 										/>
-										<div className="min-w-0">
+										<div className="min-w-0 flex-1">
 											<div
-												className={`text-base truncate ${isCurrentTrack ? "text-green-500" : "text-white"}`}
+												className={`text-sm md:text-base truncate ${isCurrentTrack ? "text-green-500" : "text-white"}`}
 											>
 												{track.name}
 											</div>
-											<div className="text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate">
+											<div className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate">
 												{track.artist}
 											</div>
 										</div>
+										{/* Mobile duration and remove button */}
+										<div className="md:hidden flex items-center gap-2 flex-shrink-0">
+											<span className="text-zinc-400 text-xs">
+												{formatDuration(track.duration)}
+											</span>
+											<Button
+												size="icon"
+												variant="spotifyTransparent"
+												className="group h-8 w-8"
+												onClick={(e) =>
+													handleRemoveTrack(track.id, track.name, e)
+												}
+											>
+												<svg
+													className="min-w-4 min-h-4 transition-colors duration-300 group-hover:stroke-white"
+													fill="none"
+													stroke="gray"
+													viewBox="0 0 24 24"
+													aria-hidden="true"
+												>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														strokeWidth={2}
+														d="M6 18L18 6M6 6l12 12"
+													/>
+												</svg>
+											</Button>
+										</div>
 									</div>
+
+									{/* Desktop-only columns */}
 									<div
-										className="text-zinc-400 text-sm hover:text-white hover:underline cursor-pointer truncate"
+										className="hidden md:block text-zinc-400 text-sm hover:text-white hover:underline cursor-pointer truncate"
 										onClick={(e) => {
 											e.stopPropagation()
 											if (track.album_id) {
@@ -269,8 +325,10 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 									>
 										{track.album}
 									</div>
-									<div className="text-zinc-400 text-sm">12 hours ago</div>
-									<div className="flex items-center justify-end gap-4">
+									<div className="hidden md:block text-zinc-400 text-sm">
+										12 hours ago
+									</div>
+									<div className="hidden md:flex items-center justify-end gap-4">
 										<Button
 											size="icon"
 											variant="spotifyTransparent"
@@ -323,15 +381,15 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 						})}
 
 						{/* Add Songs Button */}
-						<div className="mt-8">
+						<div className="mt-6 md:mt-8">
 							<button
 								onClick={() => setIsSearchMode(true)}
-								className="flex items-center gap-4 px-4 py-4 w-full rounded-md hover:bg-white/5 transition-colors text-zinc-400 hover:text-white group cursor-pointer"
+								className="flex items-center gap-3 md:gap-4 px-3 md:px-4 py-3 md:py-4 w-full rounded-md hover:bg-white/5 transition-colors text-zinc-400 hover:text-white group cursor-pointer"
 								type="button"
 							>
-								<div className="w-12 h-12 bg-zinc-800 rounded flex items-center justify-center group-hover:bg-zinc-700 transition-colors">
+								<div className="w-10 h-10 md:w-12 md:h-12 bg-zinc-800 rounded flex items-center justify-center group-hover:bg-zinc-700 transition-colors flex-shrink-0">
 									<svg
-										className="w-6 h-6"
+										className="w-5 h-5 md:w-6 md:h-6"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -346,10 +404,10 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 									</svg>
 								</div>
 								<div className="text-left">
-									<div className="text-white font-medium text-base">
+									<div className="text-white font-medium text-sm md:text-base">
 										Add songs
 									</div>
-									<div className="text-sm">
+									<div className="text-xs md:text-sm">
 										Search for songs to add to this playlist
 									</div>
 								</div>
@@ -359,8 +417,8 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 				) : (
 					/* Search Mode */
 					<div className="py-4">
-						<div className="flex items-center justify-between mb-6">
-							<h2 className="text-2xl font-bold">
+						<div className="flex items-center justify-between gap-3 mb-4 md:mb-6">
+							<h2 className="text-lg md:text-2xl font-bold">
 								Let's find something for your playlist
 							</h2>
 							<button
@@ -369,11 +427,11 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 									setSearchQuery("")
 									setSearchResults([])
 								}}
-								className="text-zinc-400 hover:text-white"
+								className="text-zinc-400 hover:text-white flex-shrink-0"
 								type="button"
 							>
 								<svg
-									className="w-8 h-8"
+									className="w-6 h-6 md:w-8 md:h-8"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -390,13 +448,13 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 						</div>
 
 						{/* Search Input */}
-						<div className="relative mb-6 max-w-md">
+						<div className="relative mb-4 md:mb-6 md:max-w-md">
 							<input
 								type="text"
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
 								placeholder="Search for songs or episodes"
-								className="w-full bg-zinc-800 text-white px-4 py-3 pr-10 rounded focus:outline-none focus:ring-2 focus:ring-white/20"
+								className="w-full bg-zinc-800 text-white px-3 md:px-4 py-2.5 md:py-3 pr-10 rounded text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-white/20"
 							/>
 							{searchQuery && (
 								<button
@@ -422,13 +480,15 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 
 						{/* Search Results */}
 						{isSearching ? (
-							<div className="text-center py-8 text-zinc-400">Searching...</div>
+							<div className="text-center py-8 text-zinc-400 text-sm md:text-base">
+								Searching...
+							</div>
 						) : searchResults.length > 0 ? (
 							<div className="space-y-1">
 								{searchResults.map((track) => (
 									<div
 										key={track.id}
-										className="flex items-center gap-3 p-2 rounded hover:bg-white/5 group"
+										className="flex items-center gap-2 md:gap-3 p-2 rounded hover:bg-white/5 group"
 									>
 										<img
 											src={
@@ -436,22 +496,22 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 												`https://placehold.co/48x48/333/white?text=${encodeURIComponent(track.album || "T")}`
 											}
 											alt={track.name}
-											className="w-12 h-12 rounded flex-shrink-0"
+											className="w-10 h-10 md:w-12 md:h-12 rounded flex-shrink-0"
 										/>
 										<div className="flex-1 min-w-0">
-											<div className="font-medium text-white truncate">
+											<div className="font-medium text-white text-sm md:text-base truncate">
 												{track.name}
 											</div>
-											<div className="text-sm text-zinc-400 truncate">
+											<div className="text-xs md:text-sm text-zinc-400 truncate">
 												{track.artist}
 											</div>
 										</div>
-										<div className="text-sm text-zinc-400 mr-2">
+										<div className="hidden sm:block text-sm text-zinc-400 mr-2">
 											{formatDuration(track.duration)}
 										</div>
 										<button
 											onClick={() => handleAddTrack(track.id)}
-											className="bg-transparent border border-zinc-600 hover:border-white hover:bg-white hover:text-black text-white px-4 py-1.5 rounded-full text-sm font-medium transition-all opacity-0 group-hover:opacity-100"
+											className="bg-transparent border border-zinc-600 hover:border-white hover:bg-white hover:text-black text-white px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 flex-shrink-0"
 											type="button"
 										>
 											Add
@@ -460,11 +520,11 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 								))}
 							</div>
 						) : searchQuery ? (
-							<div className="text-center py-8 text-zinc-400">
+							<div className="text-center py-8 text-zinc-400 text-sm md:text-base">
 								No results found
 							</div>
 						) : (
-							<div className="text-center py-8 text-zinc-400">
+							<div className="text-center py-8 text-zinc-400 text-sm md:text-base">
 								Search for songs to add to this playlist
 							</div>
 						)}

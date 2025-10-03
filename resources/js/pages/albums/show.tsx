@@ -33,20 +33,20 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-blue-900/20 via-black to-black text-white">
 			{/* Header */}
-			<div className="flex items-end gap-6 px-8 pt-20 pb-6 bg-gradient-to-b from-blue-900/30 to-transparent">
-				<div className="w-60 h-60 flex-shrink-0 shadow-2xl bg-zinc-800">
+			<div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 px-4 md:px-8 pt-16 md:pt-20 pb-6 bg-gradient-to-b from-blue-900/30 to-transparent">
+				<div className="w-40 h-40 md:w-60 md:h-60 flex-shrink-0 shadow-2xl bg-zinc-800">
 					<img
 						src={album.cover}
 						alt={album.name}
 						className="w-full h-full object-cover"
 					/>
 				</div>
-				<div className="flex flex-col justify-end pb-2">
-					<p className="text-sm font-bold mb-2">Album</p>
-					<h1 className="text-8xl font-black mb-6 leading-none">
+				<div className="flex flex-col justify-end pb-2 text-center md:text-left w-full md:w-auto">
+					<p className="text-xs md:text-sm font-bold mb-1 md:mb-2">Album</p>
+					<h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-3 md:mb-6 leading-tight md:leading-none">
 						{album.name}
 					</h1>
-					<div className="flex items-center gap-2 text-sm">
+					<div className="flex items-center justify-center md:justify-start gap-2 text-xs md:text-sm flex-wrap">
 						<span className="font-bold">{album.artist}</span>
 						<span>•</span>
 						<span>{album.year}</span>
@@ -60,13 +60,13 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 			</div>
 
 			{/* Controls */}
-			<div className="px-8 py-6 flex items-center gap-6 bg-black/20">
+			<div className="px-4 md:px-8 py-4 md:py-6 flex items-center gap-4 md:gap-6 bg-black/20">
 				<button
-					className="bg-green-500 hover:bg-green-400 hover:scale-105 text-black w-14 h-14 rounded-full flex items-center justify-center transition-all"
+					className="bg-green-500 hover:bg-green-400 hover:scale-105 text-black w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all"
 					type="button"
 				>
 					<svg
-						className="w-6 h-6 ml-1"
+						className="w-5 h-5 md:w-6 md:h-6 ml-1"
 						fill="currentColor"
 						viewBox="0 0 24 24"
 						aria-hidden="true"
@@ -76,7 +76,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 				</button>
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
-						className="min-w-8 min-h-8 transition-colors duration-300 group-hover:stroke-white"
+						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"
 						aria-hidden="true"
 						fill="none"
 						stroke="gray"
@@ -107,7 +107,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 						aria-hidden="true"
 						viewBox="0 0 24 24"
 						fill="gray"
-						className="min-w-8 min-h-8 transition-colors duration-300 group-hover:fill-white"
+						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
 					>
 						<path d="M11.999 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18m-11 9c0-6.075 4.925-11 11-11s11 4.925 11 11-4.925 11-11 11-11-4.925-11-11"></path>
 						<path d="M17.999 12a1 1 0 0 1-1 1h-4v4a1 1 0 1 1-2 0v-4h-4a1 1 0 1 1 0-2h4V7a1 1 0 1 1 2 0v4h4a1 1 0 0 1 1 1"></path>
@@ -115,7 +115,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 				</Button>
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
-						className="min-w-8 min-h-8 transition-colors duration-300 group-hover:fill-white"
+						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
 						aria-hidden="true"
 						fill="gray"
 						viewBox="0 0 24 24"
@@ -128,9 +128,9 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 			</div>
 
 			{/* Track List */}
-			<div className="px-8 pb-32">
-				{/* Header */}
-				<div className="grid grid-cols-[16px_1fr_minmax(120px,1fr)] gap-4 px-4 h-9 border-b border-white/10 text-sm text-zinc-400 mb-2 items-center">
+			<div className="px-4 md:px-8 pb-32">
+				{/* Header - Hidden on mobile */}
+				<div className="hidden md:grid grid-cols-[16px_1fr_minmax(120px,1fr)] gap-4 px-4 h-9 border-b border-white/10 text-sm text-zinc-400 mb-2 items-center">
 					<div className="text-center">#</div>
 					<div>Title</div>
 					<div className="flex justify-end">
@@ -153,12 +153,17 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 					return (
 						<div
 							key={track.id}
-							className={`grid grid-cols-[16px_1fr_minmax(120px,1fr)] gap-4 px-4 h-14 rounded-md group cursor-pointer items-center ${
-								isCurrentTrack ? "bg-white/10" : "hover:bg-white/10"
-							}`}
+							className={`
+								flex flex-col md:grid md:grid-cols-[16px_1fr_minmax(120px,1fr)] 
+								md:items-center
+								gap-2 md:gap-4 md:px-4 py-2 md:py-0 md:h-14 
+								rounded-md group cursor-pointer
+								${isCurrentTrack ? "bg-white/10" : "hover:bg-white/10"}
+							`}
 							onClick={(e) => handlePlayTrack(track, index, e)}
 						>
-							<div className="text-center text-sm group-hover:hidden flex justify-center">
+							{/* Desktop track number / play button */}
+							<div className="hidden md:flex text-center text-sm group-hover:hidden justify-center">
 								{isCurrentTrack && isPlaying ? (
 									<WaveformIndicator />
 								) : (
@@ -173,7 +178,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 							</div>
 							<button
 								onClick={(e) => handlePlayTrack(track, index, e)}
-								className="hidden group-hover:flex justify-center cursor-pointer"
+								className="hidden md:group-hover:flex justify-center cursor-pointer"
 								type="button"
 							>
 								<svg
@@ -185,17 +190,61 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 									<path d="M8 5v14l11-7z" />
 								</svg>
 							</button>
-							<div>
-								<div
-									className={`text-base ${isCurrentTrack ? "text-green-500" : "text-white"}`}
-								>
-									{track.name}
+
+							{/* Track info - responsive layout */}
+							<div className="flex items-center gap-3 md:min-w-0">
+								{/* Mobile track number */}
+								<div className="md:hidden text-center text-xs w-6 flex-shrink-0">
+									{isCurrentTrack && isPlaying ? (
+										<WaveformIndicator />
+									) : (
+										<span
+											className={
+												isCurrentTrack ? "text-green-500" : "text-zinc-400"
+											}
+										>
+											{index + 1}
+										</span>
+									)}
 								</div>
-								<div className="text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer">
-									{track.artist}
+								<div className="min-w-0 flex-1">
+									<div
+										className={`text-sm md:text-base truncate ${isCurrentTrack ? "text-green-500" : "text-white"}`}
+									>
+										{track.name}
+									</div>
+									<div className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate">
+										{track.artist}
+									</div>
+								</div>
+								{/* Mobile duration */}
+								<div className="md:hidden flex items-center gap-2 flex-shrink-0">
+									<span className="text-zinc-400 text-xs">
+										{formatDuration(track.duration)}
+									</span>
+									<Button
+										size="icon"
+										variant="spotifyTransparent"
+										className="group h-8 w-8"
+										onClick={(e) => {
+											e.stopPropagation()
+											setAddToPlaylistModalOpen(true, [track.id])
+										}}
+									>
+										<svg
+											className="w-4 h-4 transition-colors duration-300 group-hover:fill-white"
+											fill="gray"
+											aria-hidden="true"
+											viewBox="0 0 16 16"
+										>
+											<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75"></path>
+										</svg>
+									</Button>
 								</div>
 							</div>
-							<div className="flex items-center justify-end gap-4">
+
+							{/* Desktop actions */}
+							<div className="hidden md:flex items-center justify-end gap-4">
 								<Button
 									size="icon"
 									variant="spotifyTransparent"
