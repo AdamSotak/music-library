@@ -35,3 +35,10 @@ export type Playlist = {
 	image: string
 	tracks: Track[]
 }
+
+export type ShelfItem = {
+	title: string
+	subtitle?: string
+	img?: string
+	circle?: boolean
+}
