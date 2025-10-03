@@ -76,12 +76,12 @@ export default function Index() {
 				aria-hidden
 			/>
 
-			<div className="flex items-center gap-2 px-10 relative z-10 pt-4">
+			<div className="flex items-center gap-2 px-5 lg:px-10 relative z-10 pt-5">
 				{["all", "music", "podcasts"].map((tab) => (
 					<div
 						key={tab}
 						className={cn(
-							"bg-white/10 px-3 py-1 rounded-full cursor-pointer",
+							"flex items-center bg-white/10 px-3 py-1.5 rounded-full cursor-pointer",
 							selectedTab === tab && "bg-white",
 						)}
 						onClick={() => setSelectedTab(tab as typeof selectedTab)}
@@ -98,7 +98,7 @@ export default function Index() {
 				))}
 			</div>
 
-			<div className="relative z-10 px-10 mt-5 flex gap-2">
+			<div className="relative z-10 px-5 lg:px-10 mt-5 flex gap-2">
 				<div className="bg-white/10 hover:bg-white/20 transition-all duration-100 cursor-pointer flex items-center gap-2 rounded-sm w-[22rem] group relative">
 					<img
 						className="w-12 h-12 rounded-tl-sm rounded-bl-sm"

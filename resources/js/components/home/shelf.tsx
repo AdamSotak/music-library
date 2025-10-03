@@ -62,8 +62,8 @@ export default function Shelf({
 
 	return (
 		<section className="mb-8">
-			<div className="flex items-end justify-between pr-10">
-				<div className="flex flex-col pl-10">
+			<div className="flex items-end justify-between pr-5 lg:pr-10">
+				<div className="flex flex-col pl-5 lg:pl-10">
 					{topTitle && (
 						<span className="text-xs text-gray-300">{topTitle}</span>
 					)}
@@ -120,7 +120,7 @@ export default function Shelf({
 
 				<div
 					ref={scrollerRef}
-					className="flex overflow-x-auto no-scrollbar px-10"
+					className="flex overflow-x-auto no-scrollbar px-5 lg:px-10"
 					onScroll={update}
 				>
 					{items.map((item, index) => {
