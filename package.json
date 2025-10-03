@@ -5,7 +5,7 @@
 	"scripts": {
 		"build": "vite build",
 		"dev": "vite",
-		"pint": "./vendor/bin/pint",
+		"pint": "php vendor/bin/pint",
 		"lint": "npx @biomejs/biome lint ./ --write --unsafe",
 		"format": "npm run pint && npm run lint && npx @biomejs/biome format ./ --write",
 		"infra:up": "docker-compose up -d",
