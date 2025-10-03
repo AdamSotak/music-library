@@ -145,7 +145,7 @@ export const SidebarItem = ({
 										if (id) {
 											router.delete(`/playlist/${id}`)
 										}
-									}
+									},
 								)
 							}}
 						>
@@ -255,7 +255,7 @@ export const SidebarItem = ({
 										if (id) {
 											router.delete(`/playlist/${id}`)
 										}
-									}
+									},
 								)
 							}
 						>

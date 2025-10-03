@@ -22,8 +22,13 @@ const useConfirmationModal = create<ConfirmationModalState>((set) => ({
 	description: "",
 	confirmText: "Confirm",
 	onConfirm: undefined,
-	setOpen: (open, title = "", description = "", confirmText = "Confirm", onConfirm) =>
-		set({ open, title, description, confirmText, onConfirm }),
+	setOpen: (
+		open,
+		title = "",
+		description = "",
+		confirmText = "Confirm",
+		onConfirm,
+	) => set({ open, title, description, confirmText, onConfirm }),
 }))
 
 interface PlaylistEditDetailsModalState {

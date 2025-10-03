@@ -1,6 +1,6 @@
 import { SidebarItem } from "./library/sidebar-item"
 import { Button } from "./ui/button"
-import { usePage } from '@inertiajs/react'
+import { usePage } from "@inertiajs/react"
 import { Modals } from "@/hooks/useModals"
 
 interface SidebarProps {
@@ -24,7 +24,8 @@ export default function Sidebar({
 	onClose,
 }: SidebarProps) {
 	const { playlists } = usePage().props as { playlists: Playlist[] }
-	const { setOpen: setEditPlaylistDetailsModalOpen } = Modals.useEditPlaylistDetailsModal()
+	const { setOpen: setEditPlaylistDetailsModalOpen } =
+		Modals.useEditPlaylistDetailsModal()
 
 	// On mobile, always show expanded version
 	const shouldShowExpanded = isMobile || isExpanded

@@ -54,7 +54,9 @@ export const EditPlaylistDetailsModal = () => {
 		<Dialog open={open} onOpenChange={(open) => setOpen(open, playlist)}>
 			<DialogContent className="bg-zinc-800 border-none">
 				<DialogHeader>
-					<DialogTitle>{playlist?.id ? "Edit details" : "Create playlist"}</DialogTitle>
+					<DialogTitle>
+						{playlist?.id ? "Edit details" : "Create playlist"}
+					</DialogTitle>
 				</DialogHeader>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

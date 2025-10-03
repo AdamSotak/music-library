@@ -45,10 +45,13 @@ export const ConfirmationModal = () => {
 					>
 						Cancel
 					</Button>
-					<Button variant="spotifyGreen" onClick={() => {
-						onConfirm?.()
-						setOpen(false)
-					}}>
+					<Button
+						variant="spotifyGreen"
+						onClick={() => {
+							onConfirm?.()
+							setOpen(false)
+						}}
+					>
 						{confirmText}
 					</Button>
 				</DialogFooter>

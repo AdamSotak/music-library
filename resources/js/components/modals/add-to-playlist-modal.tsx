@@ -1,25 +1,26 @@
 import { Modals } from "@/hooks/useModals"
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "../ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog"
 import { usePage, router } from "@inertiajs/react"
 import { Music } from "lucide-react"
 
 export const AddToPlaylistModal = () => {
 	const { open, trackIds, setOpen } = Modals.useAddToPlaylistModal()
-	const { playlists } = usePage().props as { playlists: Array<{ id: number; name: string; image: string }> }
+	const { playlists } = usePage().props as {
+		playlists: Array<{ id: number; name: string; image: string }>
+	}
 
 	const handleAddToPlaylist = (playlistId: number) => {
-		router.post(`/playlist/${playlistId}/tracks`, {
-			track_ids: trackIds,
-		}, {
-			onSuccess: () => {
-				setOpen(false)
+		router.post(
+			`/playlist/${playlistId}/tracks`,
+			{
+				track_ids: trackIds,
 			},
-		})
+			{
+				onSuccess: () => {
+					setOpen(false)
+				},
+			},
+		)
 	}
 
 	return (
@@ -49,12 +50,16 @@ export const AddToPlaylistModal = () => {
 											<Music className="w-6 h-6 text-zinc-400" />
 										</div>
 									)}
-									<span className="text-white font-medium">{playlist.name}</span>
+									<span className="text-white font-medium">
+										{playlist.name}
+									</span>
 								</div>
 							))}
 						</div>
 					) : (
-						<p className="text-zinc-400 text-center py-8">No playlists available</p>
+						<p className="text-zinc-400 text-center py-8">
+							No playlists available
+						</p>
 					)}
 				</div>
 			</DialogContent>

@@ -64,7 +64,8 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 							No results found for "{query}"
 						</h1>
 						<p className="text-zinc-400">
-							Please make sure your words are spelled correctly, or use fewer or different keywords.
+							Please make sure your words are spelled correctly, or use fewer or
+							different keywords.
 						</p>
 					</div>
 				</div>
@@ -79,7 +80,9 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 				{/* Top Result and Songs Section */}
 				<div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 mb-12">
 					{/* Top Result */}
-					{(results.tracks.length > 0 || results.albums.length > 0 || results.artists.length > 0) && (
+					{(results.tracks.length > 0 ||
+						results.albums.length > 0 ||
+						results.artists.length > 0) && (
 						<div>
 							<h2 className="text-2xl font-bold mb-4">Top result</h2>
 							{results.tracks.length > 0 ? (
@@ -108,7 +111,11 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 										</div>
 									</div>
 									<button className="bg-green-500 hover:scale-105 transition-transform w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100">
-										<svg className="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+										<svg
+											className="w-5 h-5 text-black ml-0.5"
+											fill="currentColor"
+											viewBox="0 0 24 24"
+										>
 											<path d="M8 5v14l11-7z" />
 										</svg>
 									</button>
@@ -136,7 +143,11 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 										</div>
 									</div>
 									<button className="bg-green-500 hover:scale-105 transition-transform w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100">
-										<svg className="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+										<svg
+											className="w-5 h-5 text-black ml-0.5"
+											fill="currentColor"
+											viewBox="0 0 24 24"
+										>
 											<path d="M8 5v14l11-7z" />
 										</svg>
 									</button>
@@ -157,7 +168,11 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 										</div>
 									</div>
 									<button className="bg-green-500 hover:scale-105 transition-transform w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100">
-										<svg className="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+										<svg
+											className="w-5 h-5 text-black ml-0.5"
+											fill="currentColor"
+											viewBox="0 0 24 24"
+										>
 											<path d="M8 5v14l11-7z" />
 										</svg>
 									</button>
@@ -201,8 +216,18 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 											className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-white transition-all p-2"
 											title="Add to playlist"
 										>
-											<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+											<svg
+												className="w-4 h-4"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													strokeWidth={2}
+													d="M12 4v16m8-8H4"
+												/>
 											</svg>
 										</button>
 									</div>
@@ -229,7 +254,11 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 											className="w-full aspect-square object-cover rounded-full shadow-xl mb-4"
 										/>
 										<button className="absolute bottom-2 right-2 bg-green-500 hover:scale-105 transition-all w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
-											<svg className="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+											<svg
+												className="w-5 h-5 text-black ml-0.5"
+												fill="currentColor"
+												viewBox="0 0 24 24"
+											>
 												<path d="M8 5v14l11-7z" />
 											</svg>
 										</button>
@@ -262,7 +291,11 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 											className="w-full aspect-square object-cover rounded-md shadow-xl mb-4"
 										/>
 										<button className="absolute bottom-2 right-2 bg-green-500 hover:scale-105 transition-all w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
-											<svg className="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+											<svg
+												className="w-5 h-5 text-black ml-0.5"
+												fill="currentColor"
+												viewBox="0 0 24 24"
+											>
 												<path d="M8 5v14l11-7z" />
 											</svg>
 										</button>
@@ -270,7 +303,9 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 									<h3 className="font-semibold text-base mb-1 truncate text-white">
 										{album.name}
 									</h3>
-									<p className="text-sm text-zinc-400 truncate">{album.artist}</p>
+									<p className="text-sm text-zinc-400 truncate">
+										{album.artist}
+									</p>
 								</div>
 							))}
 						</div>
@@ -295,7 +330,11 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 											className="w-full aspect-square object-cover rounded-md shadow-xl mb-4"
 										/>
 										<button className="absolute bottom-2 right-2 bg-green-500 hover:scale-105 transition-all w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
-											<svg className="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+											<svg
+												className="w-5 h-5 text-black ml-0.5"
+												fill="currentColor"
+												viewBox="0 0 24 24"
+											>
 												<path d="M8 5v14l11-7z" />
 											</svg>
 										</button>
