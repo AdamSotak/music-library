@@ -1,46 +1,17 @@
 import PlayButton from "@/components/home/play-button"
 import Shelf from "@/components/home/shelf"
 import { cn } from "@/lib/utils"
-import type { ShelfItem } from "@/types"
+import type { Album, Artist, Track } from "@/types"
+import { router } from "@inertiajs/react"
 import { useEffect, useState } from "react"
 
-const rows = {
-	featuredCharts: Array.from({ length: 5 }, (_, i) => ({
-		title: `Featured Chart ${i + 1}`,
-		subtitle: "Essential tracks",
-	})) as ShelfItem[],
-
-	bestOf: Array.from({ length: 12 }, (_, i) => ({
-		title: `Best Of: Artist ${i + 1}`,
-		subtitle: "Essential tracks",
-		circle: true,
-	})) as ShelfItem[],
-
-	genres: [
-		{ title: "Pop", subtitle: "Feel-good hits" },
-		{ title: "Rock", subtitle: "Guitar energy" },
-		{ title: "Hip-Hop", subtitle: "Beats & rhymes" },
-		{ title: "Jazz", subtitle: "Smooth & classic" },
-		{ title: "Electronic", subtitle: "Dance & chill" },
-		{ title: "Classical", subtitle: "Timeless pieces" },
-		{ title: "Indie", subtitle: "Alt flavors" },
-		{ title: "R&B", subtitle: "Soulful vibes" },
-		{ title: "Lo-Fi", subtitle: "Cozy beats" },
-		{ title: "Workout", subtitle: "Push the pace" },
-	] as ShelfItem[],
-
-	jumpBackIn: Array.from({ length: 12 }, (_, i) => ({
-		title: `Jump Back ${i + 1}`,
-		subtitle: "Because you listened recently",
-	})) as ShelfItem[],
-
-	recentlyPlayed: Array.from({ length: 12 }, (_, i) => ({
-		title: `Recent ${i + 1}`,
-		circle: true,
-	})) as ShelfItem[],
+interface IndexProps {
+	albums: Album[]
+	artists: Artist[]
+	tracks: Track[]
 }
 
-export default function Index() {
+export default function Index({ albums, artists, tracks }: IndexProps) {
 	const topGradientClasses = [
 		"from-purple-900/70",
 		"from-blue-900/70",
@@ -69,7 +40,7 @@ export default function Index() {
 			{/* Only the gradient fades in/out */}
 			<div
 				className={cn(
-					"absolute inset-0 z-0 bg-gradient-to-b to-transparent to-10% transition-opacity duration-700 pointer-events-none",
+					"absolute inset-0 z-0 bg-gradient-to-b to-transparent to-20% transition-opacity duration-700 pointer-events-none",
 					topGradientClass,
 					gradientVisible ? "opacity-100" : "opacity-0",
 				)}
@@ -127,17 +98,51 @@ export default function Index() {
 			</div>
 
 			<div className="pt-10">
-				<Shelf title="Adam" topTitle="Made For" items={rows.featuredCharts} />
-				<Shelf title="Featured Charts" items={rows.featuredCharts} />
+				<Shelf
+					title="Adam"
+					topTitle="Made For"
+					items={tracks.map((track) => ({
+						id: track.id,
+						title: track.name,
+						subtitle: track.artist,
+						type: "track",
+						image: track.album_cover,
+					}))}
+					onItemSelected={(item) => router.visit(`/track/${item.id}`)}
+				/>
+				<Shelf
+					title="Featured Charts"
+					items={albums.map((album) => ({
+						id: album.id,
+						title: album.name,
+						subtitle: album.artist,
+						type: "album",
+						image: album.cover,
+					}))}
+					onItemSelected={(item) => router.visit(`/album/${item.id}`)}
+				/>
 				<Shelf
 					title="Hot Hits Denmark"
 					topTitle="More like"
-					items={rows.genres}
+					items={albums.map((album) => ({
+						id: album.id,
+						title: album.name,
+						subtitle: album.artist,
+						type: "album",
+						image: album.cover,
+					}))}
+					onItemSelected={(item) => router.visit(`/album/${item.id}`)}
 				/>
 				<Shelf
 					title="Throwback"
 					topTitle="Playlists full of favorites, still going strong."
-					items={rows.jumpBackIn}
+					items={artists.map((artist) => ({
+						id: artist.id,
+						title: artist.name,
+						type: "artist",
+						image: artist.image,
+					}))}
+					onItemSelected={(item) => router.visit(`/artist/${item.id}`)}
 				/>
 			</div>
 		</main>

@@ -25,6 +25,10 @@ export const EditPlaylistDetailsModal = () => {
 	const form = useForm<FormData>({
 		resolver: zodResolver(editPlaylistDetailsSchema),
 		defaultValues: {
+			name: "",
+			description: "",
+		},
+		values: {
 			name: playlist?.name || "",
 			description: playlist?.description || "",
 		},

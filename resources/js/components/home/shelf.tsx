@@ -7,10 +7,14 @@ export default function Shelf({
 	title,
 	items,
 	topTitle,
+	showMoreVisible = true,
+	onItemSelected,
 }: {
-	title: string
+	title?: string
 	items: ShelfItem[]
 	topTitle?: string
+	showMoreVisible?: boolean
+	onItemSelected?: (item: ShelfItem) => void
 }) {
 	const scrollerRef = useRef<HTMLDivElement | null>(null)
 	const [canLeft, setCanLeft] = useState(false)
@@ -72,9 +76,11 @@ export default function Shelf({
 					</span>
 				</div>
 
-				<span className="text-sm font-[700] hover:underline text-gray-300 cursor-pointer">
-					Show all
-				</span>
+				{showMoreVisible && (
+					<span className="text-sm font-[700] hover:underline text-gray-300 cursor-pointer">
+						Show all
+					</span>
+				)}
 			</div>
 			<div className="relative mt-2 group/row">
 				{canLeft && (
@@ -126,16 +132,15 @@ export default function Shelf({
 					{items.map((item, index) => {
 						if (index === 0) {
 							return (
-								<div key={`${title}-${item.title}`} className="-ml-2">
-									<Card item={item} />
+								<div key={item.id} className="-ml-2">
+									<Card item={item} onItemSelected={onItemSelected} />
 								</div>
 							)
 						}
 
 						return (
-							<div key={`${title}-${item.title}`}>
-								{/* ✅ stable key */}
-								<Card item={item} />
+							<div key={item.id}>
+								<Card item={item} onItemSelected={onItemSelected} />
 							</div>
 						)
 					})}

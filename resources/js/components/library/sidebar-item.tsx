@@ -13,6 +13,7 @@ import { Modals } from "@/hooks/useModals"
 interface SidebarItemProps {
 	id?: string
 	title: string
+	description: string
 	image?: string
 	href?: string
 	isLikedSongs?: boolean
@@ -24,6 +25,7 @@ interface SidebarItemProps {
 export const SidebarItem = ({
 	id,
 	title,
+	description,
 	image,
 	href,
 	isLikedSongs = false,
@@ -112,9 +114,11 @@ export const SidebarItem = ({
 							onClick={(e) => {
 								e.stopPropagation()
 								setEditPlaylistDetailsModalOpen(true, {
-									id,
+									id: id ?? "",
 									name: title,
-									description: "",
+									description: description,
+									image: "",
+									tracks: [],
 								})
 							}}
 						>
@@ -225,9 +229,11 @@ export const SidebarItem = ({
 						<ContextMenuItem
 							onClick={() =>
 								setEditPlaylistDetailsModalOpen(true, {
-									id,
+									id: id ?? "",
 									name: title,
-									description: "",
+									description: description,
+									image: "",
+									tracks: [],
 								})
 							}
 						>

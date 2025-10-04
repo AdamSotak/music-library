@@ -35,6 +35,7 @@ class PlaylistController extends Controller
                     'id' => $track->id,
                     'name' => $track->name,
                     'artist' => $track->artist->name,
+                    'artist_id' => $track->artist->id,
                     'album' => $track->album->name,
                     'album_id' => $track->album->id,
                     'album_cover' => $track->album->cover,
