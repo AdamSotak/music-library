@@ -1,4 +1,5 @@
 import { Music } from "lucide-react"
+import { router } from "@inertiajs/react"
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -10,7 +11,10 @@ import { Button } from "../ui/button"
 import { Modals } from "@/hooks/useModals"
 
 interface SidebarItemProps {
+	id?: string
 	title: string
+	image?: string
+	href?: string
 	isLikedSongs?: boolean
 	isCollapsed?: boolean
 	onClose?: () => void
@@ -18,7 +22,10 @@ interface SidebarItemProps {
 }
 
 export const SidebarItem = ({
+	id,
 	title,
+	image,
+	href,
 	isLikedSongs = false,
 	isCollapsed = false,
 	onClose,
@@ -28,14 +35,30 @@ export const SidebarItem = ({
 	const { setOpen: setEditPlaylistDetailsModalOpen } =
 		Modals.useEditPlaylistDetailsModal()
 
+	const handleClick = () => {
+		if (href) {
+			router.visit(href)
+		}
+		onClose?.()
+	}
+
 	if (isCollapsed) {
 		return (
-			<div className="flex items-center gap-2 cursor-pointer hover:bg-zinc-900 rounded-md p-1 active:bg-zinc-900">
+			<div
+				className="flex items-center gap-2 cursor-pointer hover:bg-zinc-900 rounded-md p-1 active:bg-zinc-900"
+				onClick={handleClick}
+			>
 				{isLikedSongs ? (
 					<img
 						src="/images/liked-songs.png"
 						alt="Liked Songs"
 						className="w-12 h-12 rounded-[4px]"
+					/>
+				) : image ? (
+					<img
+						src={image}
+						alt={title}
+						className="w-12 h-12 rounded-[4px] object-cover"
 					/>
 				) : (
 					<div className="w-12 h-12 rounded-[4px] bg-zinc-800 flex items-center justify-center">
@@ -50,12 +73,18 @@ export const SidebarItem = ({
 	if (isMobile) {
 		return (
 			<div className="flex items-center gap-2 cursor-pointer hover:bg-zinc-800 rounded-md p-1 active:bg-zinc-900">
-				<div className="flex items-center gap-2 flex-1" onClick={onClose}>
+				<div className="flex items-center gap-2 flex-1" onClick={handleClick}>
 					{isLikedSongs ? (
 						<img
 							src="/images/liked-songs.png"
 							alt="Liked Songs"
 							className="w-12 h-12 rounded-[4px]"
+						/>
+					) : image ? (
+						<img
+							src={image}
+							alt={title}
+							className="w-12 h-12 rounded-[4px] object-cover"
 						/>
 					) : (
 						<div className="w-12 h-12 rounded-[4px] bg-zinc-800 flex items-center justify-center">
@@ -83,9 +112,9 @@ export const SidebarItem = ({
 							onClick={(e) => {
 								e.stopPropagation()
 								setEditPlaylistDetailsModalOpen(true, {
-									id: "1",
+									id,
 									name: title,
-									description: "Playlist description",
+									description: "",
 								})
 							}}
 						>
@@ -112,6 +141,11 @@ export const SidebarItem = ({
 									"Delete from Your Library?",
 									`This will delete ${title} from Your Library.`,
 									"Delete",
+									() => {
+										if (id) {
+											router.delete(`/playlist/${id}`)
+										}
+									},
 								)
 							}}
 						>
@@ -139,13 +173,19 @@ export const SidebarItem = ({
 			<ContextMenuTrigger className="p-0 m-0">
 				<div
 					className="flex items-center gap-2 cursor-pointer hover:bg-zinc-800 rounded-md p-1 active:bg-zinc-900"
-					onClick={onClose}
+					onClick={handleClick}
 				>
 					{isLikedSongs ? (
 						<img
 							src="/images/liked-songs.png"
 							alt="Liked Songs"
 							className="w-12 h-12 rounded-[4px]"
+						/>
+					) : image ? (
+						<img
+							src={image}
+							alt={title}
+							className="w-12 h-12 rounded-[4px] object-cover"
 						/>
 					) : (
 						<div className="w-12 h-12 rounded-[4px] bg-zinc-800 flex items-center justify-center">
@@ -185,9 +225,9 @@ export const SidebarItem = ({
 						<ContextMenuItem
 							onClick={() =>
 								setEditPlaylistDetailsModalOpen(true, {
-									id: "1",
+									id,
 									name: title,
-									description: "Playlist description",
+									description: "",
 								})
 							}
 						>
@@ -211,6 +251,11 @@ export const SidebarItem = ({
 									"Delete from Your Library?",
 									`This will delete ${title} from Your Library.`,
 									"Delete",
+									() => {
+										if (id) {
+											router.delete(`/playlist/${id}`)
+										}
+									},
 								)
 							}
 						>

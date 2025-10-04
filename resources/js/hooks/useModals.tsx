@@ -6,11 +6,13 @@ interface ConfirmationModalState {
 	title: string
 	description: string
 	confirmText?: string
+	onConfirm?: () => void
 	setOpen: (
 		open: boolean,
 		title?: string,
 		description?: string,
 		confirmText?: string,
+		onConfirm?: () => void,
 	) => void
 }
 
@@ -19,8 +21,14 @@ const useConfirmationModal = create<ConfirmationModalState>((set) => ({
 	title: "",
 	description: "",
 	confirmText: "Confirm",
-	setOpen: (open, title = "", description = "", confirmText = "Confirm") =>
-		set({ open, title, description, confirmText }),
+	onConfirm: undefined,
+	setOpen: (
+		open,
+		title = "",
+		description = "",
+		confirmText = "Confirm",
+		onConfirm,
+	) => set({ open, title, description, confirmText, onConfirm }),
 }))
 
 interface PlaylistEditDetailsModalState {
@@ -37,7 +45,20 @@ const useEditPlaylistDetailsModal = create<PlaylistEditDetailsModalState>(
 	}),
 )
 
+interface AddToPlaylistModalState {
+	open: boolean
+	trackIds: string[]
+	setOpen: (open: boolean, trackIds?: string[]) => void
+}
+
+const useAddToPlaylistModal = create<AddToPlaylistModalState>((set) => ({
+	open: false,
+	trackIds: [],
+	setOpen: (open, trackIds = []) => set({ open, trackIds }),
+}))
+
 export const Modals = {
 	useConfirmationModal,
 	useEditPlaylistDetailsModal,
+	useAddToPlaylistModal,
 }

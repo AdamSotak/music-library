@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client"
 import Layout from "./layouts/layout"
 
 createInertiaApp({
+	title: (_) => "Spotify - Music Player",
 	resolve: (name) => {
 		const pages = (import.meta as any).glob("./pages/**/*.tsx", {
 			eager: true,
