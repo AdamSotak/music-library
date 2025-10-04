@@ -10,7 +10,7 @@ import {
 } from "../ui/dialog"
 
 export const ConfirmationModal = () => {
-	const { open, title, description, confirmText, setOpen } =
+	const { open, title, description, confirmText, onConfirm, setOpen } =
 		Modals.useConfirmationModal()
 
 	return (
@@ -45,7 +45,13 @@ export const ConfirmationModal = () => {
 					>
 						Cancel
 					</Button>
-					<Button variant="spotifyGreen" onClick={() => setOpen(false)}>
+					<Button
+						variant="spotifyGreen"
+						onClick={() => {
+							onConfirm?.()
+							setOpen(false)
+						}}
+					>
 						{confirmText}
 					</Button>
 				</DialogFooter>

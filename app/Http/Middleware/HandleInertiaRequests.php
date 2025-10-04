@@ -37,7 +37,10 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+            'playlists' => fn () => \App\Models\Playlist::select('id', 'name', 'image', 'description')
+                ->orderBy('created_at', 'desc')
+                ->limit(20)
+                ->get(),
         ];
     }
 }
