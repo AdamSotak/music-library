@@ -1,3 +1,12 @@
+export type Artist = {
+	id: string
+	jamendo_id: string
+	name: string
+	image: string
+	created_at: string
+	updated_at: string
+}
+
 export type Category = {
 	id: string
 	name: string
@@ -12,17 +21,20 @@ export type Track = {
 	id: string
 	name: string
 	artist: string
+	artist_id: string
 	album?: string
 	album_id?: string
 	album_cover?: string
 	duration: number
 	audio: string | null
+	color: string
 }
 
 export type Album = {
 	id: string
 	name: string
 	artist: string
+	artist_id: string
 	cover: string
 	year: number
 	tracks: Track[]
@@ -37,8 +49,9 @@ export type Playlist = {
 }
 
 export type ShelfItem = {
+	id: string
 	title: string
 	subtitle?: string
-	img?: string
-	circle?: boolean
+	type?: "album" | "track" | "artist"
+	image?: string
 }
