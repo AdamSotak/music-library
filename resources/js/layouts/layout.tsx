@@ -2,11 +2,14 @@ import Navbar from "@/components/navbar"
 import Sidebar from "@/components/sidebar"
 import { cn } from "@/lib/utils"
 import ModalsProvider from "@/providers/modals-provider"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import AudioPlayer from "@/components/audio-player"
+import { usePage } from "@inertiajs/react"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+	const _pathname = usePage().url
+	const mainContentRef = useRef<HTMLDivElement>(null)
 	const [isSidebarExpanded, setIsSidebarExpanded] = useState(
 		localStorage.getItem("isSidebarExpanded") === "true",
 	)
@@ -15,6 +18,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		localStorage.setItem("isSidebarExpanded", isSidebarExpanded.toString())
 	}, [isSidebarExpanded])
+
+	useEffect(() => {
+		mainContentRef.current?.scrollTo({ top: 0, behavior: "instant" })
+	}, [])
 
 	return (
 		<>
@@ -38,6 +45,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 						{/* Main Content */}
 						<div
+							ref={mainContentRef}
 							className={cn(
 								"h-full bg-background-base rounded-lg overflow-y-auto transition-all duration-300",
 								"w-full lg:w-5/6",
