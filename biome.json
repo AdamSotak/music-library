@@ -27,7 +27,8 @@
 		"rules": {
 			"recommended": true,
 			"correctness": {
-				"noUnusedImports": "error"
+				"noUnusedImports": "error",
+				"useExhaustiveDependencies": "warn"
 			},
 			"suspicious": {
 				"noUnknownAtRules": "off"

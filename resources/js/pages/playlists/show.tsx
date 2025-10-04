@@ -1,11 +1,13 @@
 import type { Playlist } from "@/types"
 import { router } from "@inertiajs/react"
 import { usePlayer } from "@/hooks/usePlayer"
+import { useImageColor } from "@/hooks/useImageColor"
 import { Modals } from "@/hooks/useModals"
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { WaveformIndicator } from "@/components/waveform-indicator"
 import { Button } from "@/components/ui/button"
+import PlayButton from "@/components/home/play-button"
 
 interface PlaylistShowProps {
 	playlist: Playlist
@@ -15,6 +17,7 @@ interface SearchTrack {
 	id: number
 	name: string
 	artist: string
+	artist_id: string
 	album?: string
 	album_cover?: string
 	duration: number
@@ -23,6 +26,7 @@ interface SearchTrack {
 export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	const { currentTrack, isPlaying, setCurrentTrack } = usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
+	const { rgba } = useImageColor(playlist.image)
 	const [isSearchMode, setIsSearchMode] = useState(false)
 	const [searchQuery, setSearchQuery] = useState("")
 	const [searchResults, setSearchResults] = useState<SearchTrack[]>([])
@@ -109,7 +113,12 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	return (
 		<div className="min-h-screen text-white">
 			{/* Header */}
-			<div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 px-4 md:px-8 pt-16 md:pt-20 pb-6 bg-gradient-to-b from-pink-900/70 to-150% to-pink-900/40">
+			<div
+				className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 px-4 md:px-8 pt-16 md:pt-20 pb-6 bg-gradient-to-b to-150%"
+				style={{
+					backgroundImage: `linear-gradient(to bottom, ${rgba(0.7)}, ${rgba(0.4)})`,
+				}}
+			>
 				<div className="w-40 h-40 md:w-60 md:h-60 flex-shrink-0 shadow-2xl bg-zinc-800">
 					<img
 						src={playlist.image}
@@ -139,17 +148,13 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 			</div>
 
 			{/* Controls */}
-			<div className="px-4 md:px-8 py-4 md:py-6 flex items-center gap-4 md:gap-6 bg-gradient-to-b from-pink-900/40 to-transparent">
-				<button className="bg-green-500 hover:bg-green-400 hover:scale-105 text-black w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all">
-					<svg
-						className="w-5 h-5 md:w-6 md:h-6 ml-1"
-						fill="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path d="M8 5v14l11-7z" />
-					</svg>
-				</button>
+			<div
+				className="px-4 md:px-8 py-4 md:py-6 flex items-center gap-4 md:gap-6 bg-gradient-to-b to-transparent"
+				style={{
+					backgroundImage: `linear-gradient(to bottom, ${rgba(0.4)}, transparent)`,
+				}}
+			>
+				<PlayButton hoverable={false} />
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
 						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"
@@ -278,7 +283,13 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 											>
 												{track.name}
 											</div>
-											<div className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate">
+											<div
+												className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate"
+												onClick={(e) => {
+													e.stopPropagation()
+													router.visit(`/artist/${track.artist_id}`)
+												}}
+											>
 												{track.artist}
 											</div>
 										</div>
@@ -502,7 +513,13 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 											<div className="font-medium text-white text-sm md:text-base truncate">
 												{track.name}
 											</div>
-											<div className="text-xs md:text-sm text-zinc-400 truncate">
+											<div
+												className="text-xs md:text-sm text-zinc-400 truncate"
+												onClick={(e) => {
+													e.stopPropagation()
+													router.visit(`/artist/${track.artist_id}`)
+												}}
+											>
 												{track.artist}
 											</div>
 										</div>

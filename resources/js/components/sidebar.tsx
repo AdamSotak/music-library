@@ -75,12 +75,18 @@ export default function Sidebar({
 							key={playlist.id}
 							id={String(playlist.id)}
 							title={playlist.name}
+							description={playlist.description}
 							image={playlist.image}
 							href={`/playlist/${playlist.id}`}
 							isCollapsed
 						/>
 					))}
-					<SidebarItem title="Liked Songs" isLikedSongs isCollapsed />
+					<SidebarItem
+						title="Liked Songs"
+						isLikedSongs
+						isCollapsed
+						description=""
+					/>
 				</div>
 			</div>
 		)
@@ -159,6 +165,7 @@ export default function Sidebar({
 						key={playlist.id}
 						id={String(playlist.id)}
 						title={playlist.name}
+						description={playlist.description}
 						image={playlist.image}
 						href={`/playlist/${playlist.id}`}
 						onClose={isMobile ? onClose : undefined}
@@ -167,6 +174,7 @@ export default function Sidebar({
 				))}
 				<SidebarItem
 					title="Liked Songs"
+					description=""
 					isLikedSongs
 					onClose={isMobile ? onClose : undefined}
 					isMobile={isMobile}

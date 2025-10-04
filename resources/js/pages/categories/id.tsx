@@ -55,12 +55,12 @@ export default function CategoryPage({ category }: CategoryPageProps) {
 								Popular {category.name} Playlists
 							</h2>
 						</div>
-						<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+						<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
 							{category.playlists.slice(0, 5).map((playlist) => (
 								<div
 									key={playlist.id}
 									onClick={() => router.visit(`/playlist/${playlist.id}`)}
-									className="bg-zinc-900/40 hover:bg-zinc-800/60 p-4 rounded-lg cursor-pointer transition-all duration-200 group"
+									className="bg-zinc-900/40 hover:bg-zinc-800/60 active:bg-zinc-800/20 p-4 rounded-lg cursor-pointer transition-all duration-200 group"
 								>
 									<div className="relative mb-4">
 										<img
@@ -96,12 +96,12 @@ export default function CategoryPage({ category }: CategoryPageProps) {
 						<div className="flex items-center justify-between mb-6">
 							<h2 className="text-3xl font-bold">Top {category.name} Albums</h2>
 						</div>
-						<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+						<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
 							{category.albums.slice(0, 12).map((album) => (
 								<div
 									key={album.id}
 									onClick={() => router.visit(`/album/${album.id}`)}
-									className="bg-zinc-900/40 hover:bg-zinc-800/60 p-4 rounded-lg cursor-pointer transition-all duration-200 group"
+									className="bg-zinc-900/40 hover:bg-zinc-800/60 active:bg-zinc-800/20 p-4 rounded-lg cursor-pointer transition-all duration-200 group"
 								>
 									<div className="relative mb-4">
 										<img

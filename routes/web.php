@@ -1,16 +1,19 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\AudioProxyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TrackController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', fn () => Inertia::render('index'));
+Route::controller(HomeController::class)->group(function () {
+    Route::get('/', 'index');
+});
 
 Route::controller(AuthController::class)->group(function () {
     Route::get('/login', 'login');
@@ -29,6 +32,10 @@ Route::prefix('collection')->group(function () {
     Route::get('/tracks', [TrackController::class, 'index'])->name('collection.tracks');
 });
 
+// Artist routes
+Route::get('/artist/{id}', [ArtistController::class, 'show'])->name('artists.show');
+
+// Album routes
 Route::get('/album/{id}', [AlbumController::class, 'show'])->name('albums.show');
 Route::get('/playlist/{id}', [PlaylistController::class, 'show'])->name('playlists.show');
 Route::get('/track/{id}', [TrackController::class, 'show'])->name('tracks.show');

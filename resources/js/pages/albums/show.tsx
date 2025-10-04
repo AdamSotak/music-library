@@ -1,8 +1,11 @@
 import type { Album } from "@/types"
 import { Modals } from "@/hooks/useModals"
 import { usePlayer } from "@/hooks/usePlayer"
+import { useImageColor } from "@/hooks/useImageColor"
 import { WaveformIndicator } from "@/components/waveform-indicator"
 import { Button } from "@/components/ui/button"
+import PlayButton from "@/components/home/play-button"
+import { router } from "@inertiajs/react"
 
 interface AlbumShowProps {
 	album: Album
@@ -11,6 +14,7 @@ interface AlbumShowProps {
 export default function AlbumShow({ album }: AlbumShowProps) {
 	const { setOpen: setAddToPlaylistModalOpen } = Modals.useAddToPlaylistModal()
 	const { currentTrack, isPlaying, setCurrentTrack } = usePlayer()
+	const { rgba } = useImageColor(album.cover)
 
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
@@ -31,9 +35,19 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 	const minutes = Math.floor((totalDuration % 3600) / 60)
 
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-blue-900/20 via-black to-black text-white">
+		<div
+			className="min-h-screen bg-gradient-to-b via-black to-black text-white"
+			style={{
+				backgroundImage: `linear-gradient(to bottom, ${rgba(0.2)}, black 50%, black)`,
+			}}
+		>
 			{/* Header */}
-			<div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 px-4 md:px-8 pt-16 md:pt-20 pb-6 bg-gradient-to-b from-blue-900/30 to-transparent">
+			<div
+				className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 px-4 md:px-8 pt-16 md:pt-20 pb-6 bg-gradient-to-b to-transparent"
+				style={{
+					backgroundImage: `linear-gradient(to bottom, ${rgba(0.4)}, transparent)`,
+				}}
+			>
 				<div className="w-40 h-40 md:w-60 md:h-60 flex-shrink-0 shadow-2xl bg-zinc-800">
 					<img
 						src={album.cover}
@@ -47,7 +61,15 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 						{album.name}
 					</h1>
 					<div className="flex items-center justify-center md:justify-start gap-2 text-xs md:text-sm flex-wrap">
-						<span className="font-bold">{album.artist}</span>
+						<span
+							className="font-bold hover:underline cursor-pointer"
+							onClick={(e) => {
+								e.stopPropagation()
+								router.visit(`/artist/${album.artist_id}`)
+							}}
+						>
+							{album.artist}
+						</span>
 						<span>•</span>
 						<span>{album.year}</span>
 						<span>•</span>
@@ -61,19 +83,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 
 			{/* Controls */}
 			<div className="px-4 md:px-8 py-4 md:py-6 flex items-center gap-4 md:gap-6 bg-black/20">
-				<button
-					className="bg-green-500 hover:bg-green-400 hover:scale-105 text-black w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all"
-					type="button"
-				>
-					<svg
-						className="w-5 h-5 md:w-6 md:h-6 ml-1"
-						fill="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path d="M8 5v14l11-7z" />
-					</svg>
-				</button>
+				<PlayButton hoverable={false} />
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
 						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"
@@ -213,7 +223,13 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 									>
 										{track.name}
 									</div>
-									<div className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate">
+									<div
+										className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate"
+										onClick={(e) => {
+											e.stopPropagation()
+											router.visit(`/artist/${track.artist_id}`)
+										}}
+									>
 										{track.artist}
 									</div>
 								</div>

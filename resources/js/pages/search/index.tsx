@@ -1,6 +1,7 @@
 import type { Album, Track, Playlist } from "@/types"
 import { router } from "@inertiajs/react"
 import { Modals } from "@/hooks/useModals"
+import PlayButton from "@/components/home/play-button"
 
 interface Artist {
 	type: string
@@ -88,7 +89,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 							{results.tracks.length > 0 ? (
 								<div
 									onClick={() => router.visit(`/track/${results.tracks[0].id}`)}
-									className="bg-zinc-900/40 hover:bg-zinc-800/60 p-5 rounded-lg cursor-pointer group transition-all"
+									className="relative bg-zinc-900/40 hover:bg-zinc-800/60 p-5 rounded-lg cursor-pointer group transition-all"
 								>
 									<img
 										src={
@@ -110,20 +111,14 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 											</span>
 										</div>
 									</div>
-									<button className="bg-green-500 hover:scale-105 transition-transform w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100">
-										<svg
-											className="w-5 h-5 text-black ml-0.5"
-											fill="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path d="M8 5v14l11-7z" />
-										</svg>
-									</button>
+									<div className="translate-2.5">
+										<PlayButton />
+									</div>
 								</div>
 							) : results.albums.length > 0 ? (
 								<div
 									onClick={() => router.visit(`/album/${results.albums[0].id}`)}
-									className="bg-zinc-900/40 hover:bg-zinc-800/60 p-5 rounded-lg cursor-pointer group transition-all"
+									className="relative bg-zinc-900/40 hover:bg-zinc-800/60 p-5 rounded-lg cursor-pointer group transition-all"
 								>
 									<img
 										src={results.albums[0].cover}
@@ -142,18 +137,12 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 											</span>
 										</div>
 									</div>
-									<button className="bg-green-500 hover:scale-105 transition-transform w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100">
-										<svg
-											className="w-5 h-5 text-black ml-0.5"
-											fill="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path d="M8 5v14l11-7z" />
-										</svg>
-									</button>
+									<div className="translate-2.5">
+										<PlayButton />
+									</div>
 								</div>
 							) : results.artists.length > 0 ? (
-								<div className="bg-zinc-900/40 hover:bg-zinc-800/60 p-5 rounded-lg cursor-pointer group transition-all">
+								<div className="relative bg-zinc-900/40 hover:bg-zinc-800/60 p-5 rounded-lg cursor-pointer group transition-all">
 									<img
 										src={results.artists[0].image}
 										alt={results.artists[0].name}
@@ -167,15 +156,9 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 											<span className="text-white">Artist</span>
 										</div>
 									</div>
-									<button className="bg-green-500 hover:scale-105 transition-transform w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100">
-										<svg
-											className="w-5 h-5 text-black ml-0.5"
-											fill="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path d="M8 5v14l11-7z" />
-										</svg>
-									</button>
+									<div className="translate-2.5">
+										<PlayButton />
+									</div>
 								</div>
 							) : null}
 						</div>
@@ -253,15 +236,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 											alt={artist.name}
 											className="w-full aspect-square object-cover rounded-full shadow-xl mb-4"
 										/>
-										<button className="absolute bottom-2 right-2 bg-green-500 hover:scale-105 transition-all w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
-											<svg
-												className="w-5 h-5 text-black ml-0.5"
-												fill="currentColor"
-												viewBox="0 0 24 24"
-											>
-												<path d="M8 5v14l11-7z" />
-											</svg>
-										</button>
+										<PlayButton />
 									</div>
 									<h3 className="font-semibold text-base mb-1 truncate text-white">
 										{artist.name}
@@ -290,15 +265,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 											alt={album.name}
 											className="w-full aspect-square object-cover rounded-md shadow-xl mb-4"
 										/>
-										<button className="absolute bottom-2 right-2 bg-green-500 hover:scale-105 transition-all w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
-											<svg
-												className="w-5 h-5 text-black ml-0.5"
-												fill="currentColor"
-												viewBox="0 0 24 24"
-											>
-												<path d="M8 5v14l11-7z" />
-											</svg>
-										</button>
+										<PlayButton />
 									</div>
 									<h3 className="font-semibold text-base mb-1 truncate text-white">
 										{album.name}
