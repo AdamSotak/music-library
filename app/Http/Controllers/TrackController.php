@@ -17,6 +17,7 @@ class TrackController extends Controller
                 'name' => $track->name,
                 'artist' => $track->artist->name,
                 'album' => $track->album->name,
+                'album_cover' => $track->album->cover,
                 'duration' => $track->duration,
                 'audio' => $track->audio_url,
             ],
