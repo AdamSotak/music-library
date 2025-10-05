@@ -15,7 +15,7 @@ class AlbumController extends Controller
                 'id' => $album->id,
                 'name' => $album->name,
                 'artist' => $album->artist->name,
-                'cover' => $album->cover,
+                'cover' => $album->image_url,
             ]);
 
         return Inertia::render('albums/index', ['albums' => $albums]);
@@ -32,7 +32,7 @@ class AlbumController extends Controller
                 'name' => $album->name,
                 'artist' => $album->artist->name,
                 'artist_id' => $album->artist->id,
-                'cover' => $album->cover,
+                'cover' => $album->image_url,
                 'year' => $album->release_date?->year ?? 2024,
                 'tracks' => $album->tracks->map(fn ($track) => [
                     'id' => $track->id,
