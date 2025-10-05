@@ -3,6 +3,7 @@ import Shelf from "@/components/home/shelf"
 import { Button } from "@/components/ui/button"
 import { usePlayer } from "@/hooks/usePlayer"
 import type { Album, Artist, ShelfItem, Track } from "@/types"
+import { Utils } from "@/utils"
 import { router } from "@inertiajs/react"
 
 interface ArtistPageProps {
@@ -33,29 +34,31 @@ export default function ArtistPage({
 		<>
 			{/* Hero Header */}
 			<div className="h-[18rem] sm:h-[22rem] flex flex-col justify-end px-4 sm:px-6 pb-4 sm:pb-6 relative">
-				<div className="flex items-center gap-2 z-30">
-					<svg
-						data-encore-id="verifiedBadge"
-						role="img"
-						aria-hidden="false"
-						viewBox="0 0 24 24"
-						fill="#4cb3ff"
-						className="w-5 h-5 sm:w-6 sm:h-6"
-					>
-						<path d="M10.814.5a1.66 1.66 0 0 1 2.372 0l2.512 2.572 3.595-.043a1.66 1.66 0 0 1 1.678 1.678l-.043 3.595 2.572 2.512c.667.65.667 1.722 0 2.372l-2.572 2.512.043 3.595a1.66 1.66 0 0 1-1.678 1.678l-3.595-.043-2.512 2.572a1.66 1.66 0 0 1-2.372 0l-2.512-2.572-3.595.043a1.66 1.66 0 0 1-1.678-1.678l.043-3.595L.5 13.186a1.66 1.66 0 0 1 0-2.372l2.572-2.512-.043-3.595a1.66 1.66 0 0 1 1.678-1.678l3.595.043z" />
-						<path
-							d="M17.398 9.62a1 1 0 0 0-1.414-1.413l-6.011 6.01-1.894-1.893a1 1 0 0 0-1.414 1.414l3.308 3.308z"
-							fill="#fff"
-						/>
-					</svg>
-					<span className="text-sm sm:text-base">Verified Artist</span>
-				</div>
+				{artist.is_verified && (
+					<div className="flex items-center gap-2 z-30">
+						<svg
+							data-encore-id="verifiedBadge"
+							role="img"
+							aria-hidden="false"
+							viewBox="0 0 24 24"
+							fill="#4cb3ff"
+							className="w-5 h-5 sm:w-6 sm:h-6"
+						>
+							<path d="M10.814.5a1.66 1.66 0 0 1 2.372 0l2.512 2.572 3.595-.043a1.66 1.66 0 0 1 1.678 1.678l-.043 3.595 2.572 2.512c.667.65.667 1.722 0 2.372l-2.572 2.512.043 3.595a1.66 1.66 0 0 1-1.678 1.678l-3.595-.043-2.512 2.572a1.66 1.66 0 0 1-2.372 0l-2.512-2.572-3.595.043a1.66 1.66 0 0 1-1.678-1.678l.043-3.595L.5 13.186a1.66 1.66 0 0 1 0-2.372l2.572-2.512-.043-3.595a1.66 1.66 0 0 1 1.678-1.678l3.595.043z" />
+							<path
+								d="M17.398 9.62a1 1 0 0 0-1.414-1.413l-6.011 6.01-1.894-1.893a1 1 0 0 0-1.414 1.414l3.308 3.308z"
+								fill="#fff"
+							/>
+						</svg>
+						<span className="text-sm sm:text-base">Verified Artist</span>
+					</div>
+				)}
 				<h1 className="text-white text-4xl sm:text-6xl lg:text-8xl font-bold z-30 mt-2 break-words">
 					{artist.name}
 				</h1>
 				<div className="absolute left-0 right-0 bottom-0 h-32 opacity-30 z-20 bg-gradient-to-b from-transparent to-black" />
 				<span className="text-white text-sm sm:text-base z-30 mt-3 sm:mt-5">
-					30,564,048 monthly listeners
+					{Utils.formatNumber(artist.monthly_listeners ?? 0)} monthly listeners
 				</span>
 			</div>
 
@@ -166,7 +169,7 @@ export default function ArtistPage({
 								src={albums[0].cover}
 								alt={albums[0].name}
 								className="w-20 h-20 sm:w-24 sm:h-24 rounded-sm cursor-pointer flex-shrink-0"
-								onClick={() => router.visit(`/album/${albums[0].id}`)}
+								onClick={() => router.visit(`/albums/${albums[0].id}`)}
 							/>
 							<div className="flex flex-col items-start min-w-0">
 								<span className="bg-white text-black rounded-full py-1 px-3 text-xs sm:text-sm mb-2">
@@ -174,7 +177,7 @@ export default function ArtistPage({
 								</span>
 
 								<span
-									onClick={() => router.visit(`/album/${albums[0].id}`)}
+									onClick={() => router.visit(`/albums/${albums[0].id}`)}
 									className="font-[700] hover:underline cursor-pointer text-sm sm:text-base truncate w-full"
 								>
 									{albums[0].name}
@@ -224,9 +227,9 @@ export default function ArtistPage({
 							showMoreVisible={false}
 							onItemSelected={(item) => {
 								if (item.type === "album") {
-									router.visit(`/album/${item.id}`)
+									router.visit(`/albums/${item.id}`)
 								} else if (item.type === "track") {
-									router.visit(`/track/${item.id}`)
+									router.visit(`/tracks/${item.id}`)
 								}
 							}}
 						/>

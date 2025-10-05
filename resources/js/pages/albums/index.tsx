@@ -14,7 +14,7 @@ export default function AlbumsIndex({ albums }: AlbumsIndexProps) {
 					{albums.map((album) => (
 						<a
 							key={album.id}
-							href={`/album/${album.id}`}
+							href={`/albums/${album.id}`}
 							className="group cursor-pointer"
 						>
 							<div className="bg-zinc-800 p-4 rounded-lg hover:bg-zinc-700 transition-colors">

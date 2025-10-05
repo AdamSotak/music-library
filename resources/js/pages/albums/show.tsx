@@ -224,7 +224,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 										{track.name}
 									</div>
 									<div
-										className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate"
+										className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate w-fit"
 										onClick={(e) => {
 											e.stopPropagation()
 											router.visit(`/artist/${track.artist_id}`)

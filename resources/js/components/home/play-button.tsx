@@ -9,7 +9,7 @@ export default function PlayButton({
 	className?: string
 	size?: "default" | "small"
 	hoverable?: boolean
-	onClick?: () => void
+	onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
 }) {
 	const sizeClasses = size === "small" ? "w-8 h-8" : "w-12 h-12"
 	const iconSize = size === "small" ? "w-3 h-3" : "w-4 h-4"

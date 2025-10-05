@@ -8,6 +8,7 @@ import axios from "axios"
 import { WaveformIndicator } from "@/components/waveform-indicator"
 import { Button } from "@/components/ui/button"
 import PlayButton from "@/components/home/play-button"
+import { Music } from "lucide-react"
 
 interface PlaylistShowProps {
 	playlist: Playlist
@@ -26,7 +27,11 @@ interface SearchTrack {
 export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	const { currentTrack, isPlaying, setCurrentTrack } = usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
-	const { rgba } = useImageColor(playlist.image)
+	const { rgba } = useImageColor(
+		playlist.is_default
+			? "/images/liked-songs.jpg"
+			: playlist.tracks[0]?.album_cover,
+	)
 	const [isSearchMode, setIsSearchMode] = useState(false)
 	const [searchQuery, setSearchQuery] = useState("")
 	const [searchResults, setSearchResults] = useState<SearchTrack[]>([])
@@ -120,11 +125,28 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 				}}
 			>
 				<div className="w-40 h-40 md:w-60 md:h-60 flex-shrink-0 shadow-2xl bg-zinc-800">
-					<img
-						src={playlist.image}
-						alt={playlist.name}
-						className="w-full h-full object-cover"
-					/>
+					{playlist.is_default ? (
+						<img
+							src="/images/liked-songs.jpg"
+							alt="Liked Songs"
+							className="w-full h-full object-cover"
+						/>
+					) : (
+						// biome-ignore lint/complexity/noUselessFragments: wrong linting
+						<>
+							{playlist.tracks[0]?.album_cover ? (
+								<img
+									src={playlist.tracks[0].album_cover}
+									alt={playlist.name}
+									className="w-full h-full object-cover"
+								/>
+							) : (
+								<div className="w-full h-full flex items-center justify-center text-white">
+									<Music className="w-20 h-20" />
+								</div>
+							)}
+						</>
+					)}
 				</div>
 				<div className="flex flex-col justify-end pb-2 text-center md:text-left w-full md:w-auto">
 					<p className="text-xs md:text-sm font-bold mb-1 md:mb-2">
@@ -139,7 +161,10 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 					<div className="flex items-center justify-center md:justify-start gap-1 text-xs md:text-sm mt-2">
 						<span className="font-bold">Spotify</span>
 						<span>•</span>
-						<span>{playlist.tracks.length} songs,</span>
+						<span>
+							{playlist.tracks.length}{" "}
+							{playlist.tracks.length === 1 ? "song" : "songs"},
+						</span>
 						<span className="text-zinc-400">
 							{hours > 0 && `${hours} hr`} {minutes} min
 						</span>
@@ -330,7 +355,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 										onClick={(e) => {
 											e.stopPropagation()
 											if (track.album_id) {
-												router.visit(`/album/${track.album_id}`)
+												router.visit(`/albums/${track.album_id}`)
 											}
 										}}
 									>
@@ -528,7 +553,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 										</div>
 										<button
 											onClick={() => handleAddTrack(track.id)}
-											className="bg-transparent border border-zinc-600 hover:border-white hover:bg-white hover:text-black text-white px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 flex-shrink-0"
+											className="bg-transparent border border-zinc-600 hover:border-white hover:bg-white hover:text-black text-white px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 flex-shrink-0 cursor-pointer"
 											type="button"
 										>
 											Add

@@ -3,6 +3,7 @@ import { Button } from "./ui/button"
 import { Slider } from "./ui/slider"
 import { ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react"
 import { usePlayer, type Track } from "@/hooks/usePlayer"
+import { router } from "@inertiajs/react"
 
 // Mobile compact player component
 function MobilePlayer({
@@ -140,7 +141,12 @@ function DesktopPlayer({
 							<span className="text-sm font-medium text-white leading-none">
 								{currentTrack?.name || "No track"}
 							</span>
-							<span className="text-xs text-white/70 leading-none">
+							<span
+								className="text-xs text-white/70 leading-none hover:underline cursor-pointer"
+								onClick={() =>
+									router.visit(`/artist/${currentTrack?.artist_id}`)
+								}
+							>
 								{currentTrack?.artist || "Unknown artist"}
 							</span>
 						</div>

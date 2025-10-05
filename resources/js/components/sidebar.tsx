@@ -2,19 +2,13 @@ import { SidebarItem } from "./library/sidebar-item"
 import { Button } from "./ui/button"
 import { usePage } from "@inertiajs/react"
 import { Modals } from "@/hooks/useModals"
+import type { Playlist } from "@/types"
 
 interface SidebarProps {
 	isExpanded: boolean
 	setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>
 	isMobile?: boolean
 	onClose?: () => void
-}
-
-interface Playlist {
-	id: number
-	name: string
-	image: string
-	description: string
 }
 
 export default function Sidebar({
@@ -75,18 +69,14 @@ export default function Sidebar({
 							key={playlist.id}
 							id={String(playlist.id)}
 							title={playlist.name}
+							tracks={playlist.tracks}
 							description={playlist.description}
 							image={playlist.image}
 							href={`/playlist/${playlist.id}`}
 							isCollapsed
+							isLikedSongs={playlist.is_default}
 						/>
 					))}
-					<SidebarItem
-						title="Liked Songs"
-						isLikedSongs
-						isCollapsed
-						description=""
-					/>
 				</div>
 			</div>
 		)
@@ -165,20 +155,15 @@ export default function Sidebar({
 						key={playlist.id}
 						id={String(playlist.id)}
 						title={playlist.name}
+						tracks={playlist.tracks}
 						description={playlist.description}
 						image={playlist.image}
 						href={`/playlist/${playlist.id}`}
 						onClose={isMobile ? onClose : undefined}
 						isMobile={isMobile}
+						isLikedSongs={playlist.is_default}
 					/>
 				))}
-				<SidebarItem
-					title="Liked Songs"
-					description=""
-					isLikedSongs
-					onClose={isMobile ? onClose : undefined}
-					isMobile={isMobile}
-				/>
 			</div>
 		</div>
 	)
