@@ -49,7 +49,7 @@ class SearchController extends Controller
                 'name' => $track->name,
                 'artist' => $track->artist->name,
                 'album' => $track->album->name,
-                'album_cover' => $track->album->cover,
+                'album_cover' => $track->album->image_url,
                 'duration' => $track->duration,
             ]);
 
@@ -71,7 +71,7 @@ class SearchController extends Controller
                 'name' => $track->name,
                 'artist' => $track->artist->name,
                 'album' => $track->album->name,
-                'album_cover' => $track->album->cover,
+                'album_cover' => $track->album->image_url,
                 'duration' => $track->duration,
                 'audio' => $track->audio_url,
             ]);
@@ -84,7 +84,7 @@ class SearchController extends Controller
                 'type' => 'artist',
                 'id' => $artist->id,
                 'name' => $artist->name,
-                'image' => $artist->image,
+                'image' => $artist->image_url,
             ]);
 
         // Search albums
@@ -97,7 +97,7 @@ class SearchController extends Controller
                 'id' => $album->id,
                 'name' => $album->name,
                 'artist' => $album->artist->name,
-                'cover' => $album->cover,
+                'cover' => $album->image_url,
             ]);
 
         // Search playlists
@@ -109,7 +109,7 @@ class SearchController extends Controller
                 'id' => $playlist->id,
                 'name' => $playlist->name,
                 'description' => $playlist->description,
-                'image' => $playlist->image,
+                'image' => $playlist->image_url,
             ]);
 
         return [

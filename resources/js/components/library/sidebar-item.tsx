@@ -9,6 +9,7 @@ import {
 } from "../ui/context-menu"
 import { Button } from "../ui/button"
 import { Modals } from "@/hooks/useModals"
+import type { Track } from "@/types"
 
 interface SidebarItemProps {
 	id?: string
@@ -20,6 +21,7 @@ interface SidebarItemProps {
 	isCollapsed?: boolean
 	onClose?: () => void
 	isMobile?: boolean
+	tracks?: Track[]
 }
 
 export const SidebarItem = ({
@@ -27,6 +29,7 @@ export const SidebarItem = ({
 	title,
 	description,
 	image,
+	tracks,
 	href,
 	isLikedSongs = false,
 	isCollapsed = false,
@@ -52,7 +55,7 @@ export const SidebarItem = ({
 			>
 				{isLikedSongs ? (
 					<img
-						src="/images/liked-songs.png"
+						src="/images/liked-songs.jpg"
 						alt="Liked Songs"
 						className="w-12 h-12 rounded-[4px]"
 					/>
@@ -78,7 +81,7 @@ export const SidebarItem = ({
 				<div className="flex items-center gap-2 flex-1" onClick={handleClick}>
 					{isLikedSongs ? (
 						<img
-							src="/images/liked-songs.png"
+							src="/images/liked-songs.jpg"
 							alt="Liked Songs"
 							className="w-12 h-12 rounded-[4px]"
 						/>
@@ -99,7 +102,8 @@ export const SidebarItem = ({
 							{title}
 						</span>
 						<span className="text-white/70 text-xs leading-none">
-							Playlist &bull; 10 songs
+							Playlist &bull; {tracks?.length}{" "}
+							{tracks?.length === 1 ? "song" : "songs"}
 						</span>
 					</div>
 				</div>
@@ -181,7 +185,7 @@ export const SidebarItem = ({
 				>
 					{isLikedSongs ? (
 						<img
-							src="/images/liked-songs.png"
+							src="/images/liked-songs.jpg"
 							alt="Liked Songs"
 							className="w-12 h-12 rounded-[4px]"
 						/>
@@ -202,7 +206,8 @@ export const SidebarItem = ({
 							{title}
 						</span>
 						<span className="text-white/70 text-xs leading-none">
-							Playlist &bull; 10 songs
+							Playlist &bull; {tracks?.length}{" "}
+							{tracks?.length === 1 ? "song" : "songs"}
 						</span>
 					</div>
 				</div>

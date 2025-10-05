@@ -8,18 +8,6 @@ use Inertia\Inertia;
 
 class PlaylistController extends Controller
 {
-    public function index()
-    {
-        $playlists = Playlist::all()->map(fn ($playlist) => [
-            'id' => $playlist->id,
-            'name' => $playlist->name,
-            'description' => $playlist->description,
-            'image' => $playlist->image,
-        ]);
-
-        return Inertia::render('playlists/index', ['playlists' => $playlists]);
-    }
-
     public function show(string $id)
     {
         $playlist = Playlist::with(['tracks.artist', 'tracks.album'])
@@ -30,7 +18,8 @@ class PlaylistController extends Controller
                 'id' => $playlist->id,
                 'name' => $playlist->name,
                 'description' => $playlist->description,
-                'image' => $playlist->image,
+                'image' => $playlist->image_url,
+                'is_default' => $playlist->is_default,
                 'tracks' => $playlist->tracks->map(fn ($track) => [
                     'id' => $track->id,
                     'name' => $track->name,
@@ -38,7 +27,7 @@ class PlaylistController extends Controller
                     'artist_id' => $track->artist->id,
                     'album' => $track->album->name,
                     'album_id' => $track->album->id,
-                    'album_cover' => $track->album->cover,
+                    'album_cover' => $track->album->image_url,
                     'duration' => $track->duration,
                     'audio' => $track->audio_url,
                 ]),
@@ -56,8 +45,7 @@ class PlaylistController extends Controller
         $playlist = Playlist::create([
             'name' => $validated['name'],
             'description' => $validated['description'] ?? '',
-            'image' => 'https://placehold.co/600x600/1a1a1a/white?text=Playlist',
-            'is_curated' => false,
+            'is_default' => false,
         ]);
 
         return redirect()->back();
@@ -96,16 +84,11 @@ class PlaylistController extends Controller
 
         $playlist = Playlist::findOrFail($id);
 
-        // Get the max position in the playlist
-        $maxPosition = $playlist->tracks()->max('playlist_track.position') ?? 0;
-
-        // Attach tracks with incremented positions
-        foreach ($validated['track_ids'] as $index => $trackId) {
+        // Attach tracks
+        foreach ($validated['track_ids'] as $trackId) {
             // Check if track is already in the playlist
-            if (! $playlist->tracks()->where('playlist_track.track_id', $trackId)->exists()) {
-                $playlist->tracks()->attach($trackId, [
-                    'position' => $maxPosition + $index + 1,
-                ]);
+            if (! $playlist->tracks()->where('track_id', $trackId)->exists()) {
+                $playlist->tracks()->attach($trackId);
             }
         }
 

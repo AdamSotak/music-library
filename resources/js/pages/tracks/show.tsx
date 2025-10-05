@@ -2,6 +2,7 @@ import PlayButton from "@/components/home/play-button"
 import { Button } from "@/components/ui/button"
 import { useImageColor } from "@/hooks/useImageColor"
 import type { Track } from "@/types"
+import { router } from "@inertiajs/react"
 
 interface TrackShowProps {
 	track: Track
@@ -9,7 +10,6 @@ interface TrackShowProps {
 
 export default function TrackShow({ track }: TrackShowProps) {
 	const { rgba } = useImageColor(track.album_cover)
-	console.log(track.album_cover)
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
 		const secs = seconds % 60
@@ -50,7 +50,14 @@ export default function TrackShow({ track }: TrackShowProps) {
 						{track.name}
 					</h1>
 					<div className="flex items-center justify-center md:justify-start gap-2 text-xs md:text-sm flex-wrap">
-						<span className="font-bold">{track.artist}</span>
+						<span
+							className="font-bold hover:underline cursor-pointer"
+							onClick={() => {
+								router.visit(`/artist/${track.artist_id}`)
+							}}
+						>
+							{track.artist}
+						</span>
 						{track.album && (
 							<>
 								<span>•</span>

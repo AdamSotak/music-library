@@ -64,7 +64,11 @@ export default function CategoryPage({ category }: CategoryPageProps) {
 								>
 									<div className="relative mb-4">
 										<img
-											src={playlist.image}
+											src={
+												playlist.is_default
+													? "/images/liked-songs.jpg"
+													: playlist.image
+											}
 											alt={playlist.name}
 											className="w-full aspect-square object-cover rounded-md shadow-xl"
 										/>
@@ -100,7 +104,7 @@ export default function CategoryPage({ category }: CategoryPageProps) {
 							{category.albums.slice(0, 12).map((album) => (
 								<div
 									key={album.id}
-									onClick={() => router.visit(`/album/${album.id}`)}
+									onClick={() => router.visit(`/albums/${album.id}`)}
 									className="bg-zinc-900/40 hover:bg-zinc-800/60 active:bg-zinc-800/20 p-4 rounded-lg cursor-pointer transition-all duration-200 group"
 								>
 									<div className="relative mb-4">
@@ -143,7 +147,7 @@ export default function CategoryPage({ category }: CategoryPageProps) {
 							{category.tracks.slice(0, 10).map((track, index) => (
 								<div
 									key={track.id}
-									onClick={() => router.visit(`/track/${track.id}`)}
+									onClick={() => router.visit(`/tracks/${track.id}`)}
 									className="flex items-center gap-4 p-3 rounded-md hover:bg-zinc-800/60 cursor-pointer group"
 								>
 									<div className="text-zinc-400 text-base w-6 text-center">

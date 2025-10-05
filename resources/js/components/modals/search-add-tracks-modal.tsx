@@ -145,7 +145,7 @@ export const SearchAddTracksModal = ({
 									</div>
 									<button
 										onClick={() => handleAddTrack(track.id)}
-										className="bg-transparent border border-zinc-600 hover:border-white text-white px-4 py-1.5 rounded-full text-sm font-medium transition-all opacity-0 group-hover:opacity-100"
+										className="bg-transparent border border-zinc-600 hover:border-white text-white px-4 py-1.5 rounded-full text-sm font-medium transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
 									>
 										Add
 									</button>

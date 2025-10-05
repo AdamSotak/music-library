@@ -28,7 +28,6 @@ Route::controller(CategoryController::class)->group(function () {
 // Canonical Spotify routing structure
 Route::prefix('collection')->group(function () {
     Route::get('/albums', [AlbumController::class, 'index'])->name('collection.albums');
-    Route::get('/playlists', [PlaylistController::class, 'index'])->name('collection.playlists');
     Route::get('/tracks', [TrackController::class, 'index'])->name('collection.tracks');
 });
 
@@ -36,9 +35,9 @@ Route::prefix('collection')->group(function () {
 Route::get('/artist/{id}', [ArtistController::class, 'show'])->name('artists.show');
 
 // Album routes
-Route::get('/album/{id}', [AlbumController::class, 'show'])->name('albums.show');
+Route::get('/albums/{id}', [AlbumController::class, 'show'])->name('albums.show');
 Route::get('/playlist/{id}', [PlaylistController::class, 'show'])->name('playlists.show');
-Route::get('/track/{id}', [TrackController::class, 'show'])->name('tracks.show');
+Route::get('/tracks/{id}', [TrackController::class, 'show'])->name('tracks.show');
 
 // Playlist management
 Route::post('/playlist', [PlaylistController::class, 'store'])->name('playlists.store');
