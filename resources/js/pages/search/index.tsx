@@ -88,7 +88,9 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 							<h2 className="text-2xl font-bold mb-4">Top result</h2>
 							{results.tracks.length > 0 ? (
 								<div
-									onClick={() => router.visit(`/track/${results.tracks[0].id}`)}
+									onClick={() =>
+										router.visit(`/tracks/${results.tracks[0].id}`)
+									}
 									className="relative bg-zinc-900/40 hover:bg-zinc-800/60 p-5 rounded-lg cursor-pointer group transition-all"
 								>
 									<img
@@ -117,7 +119,9 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 								</div>
 							) : results.albums.length > 0 ? (
 								<div
-									onClick={() => router.visit(`/album/${results.albums[0].id}`)}
+									onClick={() =>
+										router.visit(`/albums/${results.albums[0].id}`)
+									}
 									className="relative bg-zinc-900/40 hover:bg-zinc-800/60 p-5 rounded-lg cursor-pointer group transition-all"
 								>
 									<img
@@ -172,7 +176,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 								{results.tracks.slice(0, 4).map((track, _index) => (
 									<div
 										key={track.id}
-										onClick={() => router.visit(`/track/${track.id}`)}
+										onClick={() => router.visit(`/tracks/${track.id}`)}
 										className="flex items-center gap-3 p-2 rounded-md hover:bg-zinc-800/60 cursor-pointer group"
 									>
 										<img
@@ -256,7 +260,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 							{results.albums.map((album) => (
 								<div
 									key={album.id}
-									onClick={() => router.visit(`/album/${album.id}`)}
+									onClick={() => router.visit(`/albums/${album.id}`)}
 									className="bg-zinc-900/40 hover:bg-zinc-800/60 p-4 rounded-lg cursor-pointer group transition-all"
 								>
 									<div className="relative mb-4">

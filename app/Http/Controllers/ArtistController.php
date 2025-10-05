@@ -15,11 +15,13 @@ class ArtistController extends Controller
             'artist' => [
                 'id' => $artist->id,
                 'name' => $artist->name,
-                'image' => $artist->image,
+                'image' => $artist->image_url,
+                'monthly_listeners' => $artist->monthly_listeners,
+                'is_verified' => $artist->is_verified,
                 'albums' => $artist->albums->map(fn ($album) => [
                     'id' => $album->id,
                     'name' => $album->name,
-                    'cover' => $album->cover,
+                    'cover' => $album->image_url,
                 ]),
             ],
             'tracks' => $artist->tracks->map(fn ($track) => [
@@ -28,13 +30,14 @@ class ArtistController extends Controller
                 'artist_id' => $track->artist->id,
                 'name' => $track->name,
                 'album' => $track->album->name,
-                'album_cover' => $track->album->cover,
+                'album_cover' => $track->album->image_url,
                 'duration' => $track->duration,
             ]),
             'albums' => $artist->albums->map(fn ($album) => [
                 'id' => $album->id,
                 'name' => $album->name,
-                'cover' => $album->cover,
+                'cover' => $album->image_url,
+                'year' => $album->release_date?->year ?? 2024,
             ]),
         ]);
     }

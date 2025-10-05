@@ -8,14 +8,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Track extends Model
 {
+    protected $keyType = 'string';
+
+    public $incrementing = false;
+
     protected $fillable = [
-        'jamendo_id',
+        'id',
         'name',
         'artist_id',
         'album_id',
         'duration',
         'audio_url',
-        'position',
+        'category_slug',
     ];
 
     public function artist(): BelongsTo
@@ -28,16 +32,14 @@ class Track extends Model
         return $this->belongsTo(Album::class);
     }
 
-    public function playlists(): BelongsToMany
+    public function category(): BelongsTo
     {
-        return $this->belongsToMany(Playlist::class, 'playlist_track')
-            ->withPivot('position')
-            ->withTimestamps();
+        return $this->belongsTo(Category::class, 'category_slug', 'slug');
     }
 
-    public function categories(): BelongsToMany
+    public function playlists(): BelongsToMany
     {
-        return $this->belongsToMany(Category::class, 'category_track')
+        return $this->belongsToMany(Playlist::class, 'playlist_tracks', 'track_id', 'playlist_id')
             ->withTimestamps();
     }
 }

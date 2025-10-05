@@ -11,25 +11,25 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $tracks = Track::all()->map(fn ($track) => [
+        $tracks = Track::all()->shuffle()->map(fn ($track) => [
             'id' => $track->id,
             'name' => $track->name,
             'artist' => $track->artist->name,
             'album' => $track->album->name,
-            'album_cover' => $track->album->cover,
+            'album_cover' => $track->album->image_url,
         ]);
 
-        $albums = Album::all()->map(fn ($album) => [
+        $albums = Album::all()->shuffle()->map(fn ($album) => [
             'id' => $album->id,
             'name' => $album->name,
             'artist' => $album->artist->name,
-            'cover' => $album->cover,
+            'cover' => $album->image_url,
         ]);
 
-        $artists = Artist::all()->map(fn ($artist) => [
+        $artists = Artist::all()->shuffle()->map(fn ($artist) => [
             'id' => $artist->id,
             'name' => $artist->name,
-            'image' => $artist->image,
+            'image' => $artist->image_url,
         ]);
 
         return Inertia::render('index', [

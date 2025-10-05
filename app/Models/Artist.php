@@ -7,10 +7,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Artist extends Model
 {
+    protected $keyType = 'string';
+
+    public $incrementing = false;
+
     protected $fillable = [
-        'jamendo_id',
+        'id',
         'name',
-        'image',
+        'image_url',
+        'monthly_listeners',
+        'is_verified',
+    ];
+
+    protected $casts = [
+        'is_verified' => 'boolean',
     ];
 
     public function albums(): HasMany

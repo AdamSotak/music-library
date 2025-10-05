@@ -1,10 +1,9 @@
 export type Artist = {
 	id: string
-	jamendo_id: string
 	name: string
 	image: string
-	created_at: string
-	updated_at: string
+	monthly_listeners?: number
+	is_verified?: boolean
 }
 
 export type Category = {
@@ -46,6 +45,7 @@ export type Playlist = {
 	description: string
 	image: string
 	tracks: Track[]
+	is_default?: boolean
 }
 
 export type ShelfItem = {

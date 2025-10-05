@@ -99,7 +99,7 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 
 			<div className="pt-10">
 				<Shelf
-					title="Adam"
+					title="You"
 					topTitle="Made For"
 					items={tracks.map((track) => ({
 						id: track.id,
@@ -108,7 +108,7 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 						type: "track",
 						image: track.album_cover,
 					}))}
-					onItemSelected={(item) => router.visit(`/track/${item.id}`)}
+					onItemSelected={(item) => router.visit(`/tracks/${item.id}`)}
 				/>
 				<Shelf
 					title="Featured Charts"
@@ -119,7 +119,7 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 						type: "album",
 						image: album.cover,
 					}))}
-					onItemSelected={(item) => router.visit(`/album/${item.id}`)}
+					onItemSelected={(item) => router.visit(`/albums/${item.id}`)}
 				/>
 				<Shelf
 					title="Hot Hits Denmark"
@@ -131,7 +131,7 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 						type: "album",
 						image: album.cover,
 					}))}
-					onItemSelected={(item) => router.visit(`/album/${item.id}`)}
+					onItemSelected={(item) => router.visit(`/albums/${item.id}`)}
 				/>
 				<Shelf
 					title="Throwback"

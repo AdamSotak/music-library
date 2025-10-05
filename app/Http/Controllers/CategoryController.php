@@ -12,7 +12,7 @@ class CategoryController extends Controller
         $categories = Category::all()->map(fn ($category) => [
             'id' => $category->slug,
             'name' => $category->name,
-            'image' => $category->image,
+            'image' => $category->image_url,
             'color' => $category->color,
         ]);
 
@@ -34,26 +34,33 @@ class CategoryController extends Controller
                 'id' => $album->id,
                 'name' => $album->name,
                 'artist' => $album->artist->name,
-                'cover' => $album->cover,
+                'cover' => $album->image_url,
                 'year' => $album->release_date?->year ?? 2024,
             ]);
 
-        // Get playlists (for now, just return curated ones)
-        $playlists = \App\Models\Playlist::where('is_curated', true)
+        // Get playlists (for now, just return default ones)
+        $playlists = \App\Models\Playlist::where('is_default', true)
             ->take(8)
             ->get()
-            ->map(fn ($playlist) => [
-                'id' => $playlist->id,
-                'name' => $playlist->name,
-                'description' => $playlist->description,
-                'image' => $playlist->image,
-            ]);
+            ->map(function ($playlist) {
+                // Get the first track in the playlist
+                $firstTrack = $playlist->tracks()->with('album')->first();
+                $image = $firstTrack && $firstTrack->album ? $firstTrack->album->image_url : null;
+
+                return [
+                    'id' => $playlist->id,
+                    'name' => $playlist->name,
+                    'is_default' => $playlist->is_default,
+                    'description' => $playlist->description,
+                    'image' => $image,
+                ];
+            });
 
         return Inertia::render('categories/id', [
             'category' => [
                 'id' => $category->slug,
                 'name' => $category->name,
-                'image' => $category->image,
+                'image' => $category->image_url,
                 'color' => $category->color,
                 'albums' => $albums,
                 'playlists' => $playlists,
@@ -62,7 +69,7 @@ class CategoryController extends Controller
                     'name' => $track->name,
                     'artist' => $track->artist->name,
                     'album' => $track->album->name,
-                    'album_cover' => $track->album->cover,
+                    'album_cover' => $track->album->image_url,
                     'duration' => $track->duration,
                     'audio' => $track->audio_url,
                 ]),

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,12 +36,33 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+
+        $playlists = \App\Models\Playlist::select('id', 'name', 'description', 'is_default')
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get()
+            ->map(function ($playlist) {
+                // Get the first track's album cover for this playlist (if any)
+                $firstTrack = DB::table('playlist_tracks')
+                    ->join('tracks', 'playlist_tracks.track_id', '=', 'tracks.id')
+                    ->join('albums', 'tracks.album_id', '=', 'albums.id')
+                    ->where('playlist_tracks.playlist_id', $playlist->id)
+                    ->select('albums.image_url')
+                    ->first();
+
+                return [
+                    'id' => $playlist->id,
+                    'name' => $playlist->name,
+                    'description' => $playlist->description,
+                    'is_default' => $playlist->is_default,
+                    'image' => $firstTrack->image_url ?? null,
+                    'tracks' => $playlist->tracks,
+                ];
+            });
+
         return [
             ...parent::share($request),
-            'playlists' => fn () => \App\Models\Playlist::select('id', 'name', 'image', 'description')
-                ->orderBy('created_at', 'desc')
-                ->limit(20)
-                ->get(),
+            'playlists' => $playlists,
         ];
     }
 }

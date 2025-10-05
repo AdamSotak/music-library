@@ -25,7 +25,10 @@ export default function Card({ item, onItemSelected }: CardProps) {
 				aria-hidden
 			>
 				{item.type !== "artist" && (
-					<PlayButton className="group-hover/card:translate-y-0 group-hover/card:opacity-100 group-hover/card:scale-100" />
+					<PlayButton
+						className="group-hover/card:translate-y-0 group-hover/card:opacity-100 group-hover/card:scale-100"
+						onClick={(e) => e.stopPropagation()}
+					/>
 				)}
 			</div>
 			<div className="mt-3 text-white font-semibold leading-tight truncate max-w-36 overflow-x-hidden">

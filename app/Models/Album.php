@@ -8,11 +8,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Album extends Model
 {
+    protected $keyType = 'string';
+
+    public $incrementing = false;
+
     protected $fillable = [
-        'jamendo_id',
+        'id',
         'name',
         'artist_id',
-        'cover',
+        'image_url',
         'release_date',
         'genre',
     ];
@@ -28,6 +32,6 @@ class Album extends Model
 
     public function tracks(): HasMany
     {
-        return $this->hasMany(Track::class)->orderBy('position');
+        return $this->hasMany(Track::class);
     }
 }
