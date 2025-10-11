@@ -1,3 +1,13 @@
+export type InertiaPageProps = {
+	user: {
+		id: number
+		name: string
+		email: string
+		createdAt: string
+	} | null
+	playlists: Playlist[]
+}
+
 export type Artist = {
 	id: string
 	name: string
