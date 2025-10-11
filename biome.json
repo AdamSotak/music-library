@@ -28,7 +28,7 @@
 			"recommended": true,
 			"correctness": {
 				"noUnusedImports": "error",
-				"useExhaustiveDependencies": "warn"
+				"useExhaustiveDependencies": "off"
 			},
 			"suspicious": {
 				"noUnknownAtRules": "off"

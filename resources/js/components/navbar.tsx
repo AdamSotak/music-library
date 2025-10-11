@@ -334,11 +334,11 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 							</div>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent className="w-44 mr-4">
-							<DropdownMenuItem>
+							<DropdownMenuItem onClick={() => router.visit("/account")}>
 								<span>Account</span>
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
-							<DropdownMenuItem>
+							<DropdownMenuItem onClick={() => router.post("/logout")}>
 								<span>Logout</span>
 							</DropdownMenuItem>
 						</DropdownMenuContent>

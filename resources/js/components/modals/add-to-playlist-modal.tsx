@@ -2,12 +2,11 @@ import { Modals } from "@/hooks/useModals"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog"
 import { usePage, router } from "@inertiajs/react"
 import { Music } from "lucide-react"
+import type { InertiaPageProps } from "@/types"
 
 export const AddToPlaylistModal = () => {
 	const { open, trackIds, setOpen } = Modals.useAddToPlaylistModal()
-	const { playlists } = usePage().props as {
-		playlists: Array<{ id: number; name: string; image: string }>
-	}
+	const { playlists } = usePage().props as unknown as InertiaPageProps
 
 	const handleAddToPlaylist = (playlistId: number) => {
 		router.post(
