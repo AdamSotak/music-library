@@ -8,7 +8,7 @@ import AudioPlayer from "@/components/audio-player"
 import { usePage } from "@inertiajs/react"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-	const _pathname = usePage().url
+	const pathname = usePage().url
 	const mainContentRef = useRef<HTMLDivElement>(null)
 	const [isSidebarExpanded, setIsSidebarExpanded] = useState(
 		localStorage.getItem("isSidebarExpanded") === "true",
@@ -21,7 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 	useEffect(() => {
 		mainContentRef.current?.scrollTo({ top: 0, behavior: "instant" })
-	}, [])
+	}, [pathname])
 
 	return (
 		<>

@@ -25,7 +25,7 @@ export default function Signup() {
 	})
 
 	const onSubmit = (data: z.infer<typeof signupFormSchema>) => {
-		console.log(data)
+		router.post("/signup", data)
 	}
 
 	return (

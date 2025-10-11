@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
 
@@ -60,8 +61,16 @@ class HandleInertiaRequests extends Middleware
                 ];
             });
 
+        $user = Auth::user();
+
         return [
             ...parent::share($request),
+            'user' => $user ? [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'createdAt' => $user->created_at,
+            ] : null,
             'playlists' => $playlists,
         ];
     }
