@@ -45,6 +45,12 @@ class AuthController extends Controller
 
     public function storeSignup(Request $request)
     {
+        if (User::where('email', $request->email)->exists()) {
+            return back()->withErrors([
+                'email' => 'User already exists',
+            ]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',

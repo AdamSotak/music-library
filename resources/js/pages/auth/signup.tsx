@@ -25,7 +25,14 @@ export default function Signup() {
 	})
 
 	const onSubmit = (data: z.infer<typeof signupFormSchema>) => {
-		router.post("/signup", data)
+		router.post("/signup", data, {
+			onError: (_) => {
+				form.reset()
+				form.setError("email", {
+					message: "Email already in use",
+				})
+			},
+		})
 	}
 
 	return (
