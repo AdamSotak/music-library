@@ -2,7 +2,7 @@ import { SidebarItem } from "./library/sidebar-item"
 import { Button } from "./ui/button"
 import { usePage } from "@inertiajs/react"
 import { Modals } from "@/hooks/useModals"
-import type { Playlist } from "@/types"
+import type { InertiaPageProps } from "@/types"
 
 interface SidebarProps {
 	isExpanded: boolean
@@ -17,7 +17,7 @@ export default function Sidebar({
 	isMobile = false,
 	onClose,
 }: SidebarProps) {
-	const { playlists } = usePage().props as { playlists: Playlist[] }
+	const { playlists } = usePage().props as unknown as InertiaPageProps
 	const { setOpen: setEditPlaylistDetailsModalOpen } =
 		Modals.useEditPlaylistDetailsModal()
 

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { loginFormSchema } from "@/lib/validation/auth-schemas"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { router } from "@inertiajs/react"
 import { useForm } from "react-hook-form"
 import type { z } from "zod"
 
@@ -24,7 +25,17 @@ export default function Login() {
 	})
 
 	const onSubmit = (data: z.infer<typeof loginFormSchema>) => {
-		console.log(data)
+		router.post("/login", data, {
+			onError: (_) => {
+				form.reset()
+				form.setError("email", {
+					message: "Invalid email address",
+				})
+				form.setError("password", {
+					message: "Invalid password",
+				})
+			},
+		})
 	}
 
 	return (
