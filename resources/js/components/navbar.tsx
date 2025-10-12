@@ -1,5 +1,5 @@
 import { Button, buttonVariants } from "./ui/button"
-import { router } from "@inertiajs/react"
+import { router, usePage } from "@inertiajs/react"
 import { cn } from "@/lib/utils"
 import { Separator } from "./ui/separator"
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -10,6 +10,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
+import { Utils } from "@/utils"
+import type { InertiaPageProps } from "@/types"
 
 interface NavbarProps {
 	onMobileMenuToggle?: () => void
@@ -21,6 +23,7 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 	const [searchQuery, setSearchQuery] = useState("")
 	const searchInputRef = useRef<HTMLInputElement>(null)
 	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const { user } = usePage().props as unknown as InertiaPageProps
 
 	const isHome = window.location.pathname === "/"
 	const isCategoriesOpen = window.location.pathname === "/categories"
@@ -328,7 +331,9 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 							>
 								<div className="min-w-10 max-w-10 min-h-10 max-h-10 rounded-full bg-zinc-900 flex items-center justify-center">
 									<div className="min-w-7 max-w-7 min-h-7 max-h-7 rounded-full bg-blue-400 flex items-center justify-center">
-										<span className="text-black font-medium text-sm">A</span>
+										<span className="text-black font-medium text-sm">
+											{Utils.getInitialLetter(user?.name ?? "")}
+										</span>
 									</div>
 								</div>
 							</div>
