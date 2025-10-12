@@ -1,8 +1,8 @@
 import PlayButton from "@/components/home/play-button"
 import Shelf from "@/components/home/shelf"
 import { cn } from "@/lib/utils"
-import type { Album, Artist, Track } from "@/types"
-import { router } from "@inertiajs/react"
+import type { Album, Artist, InertiaPageProps, Track } from "@/types"
+import { router, usePage } from "@inertiajs/react"
 import { useEffect, useState } from "react"
 
 interface IndexProps {
@@ -12,6 +12,7 @@ interface IndexProps {
 }
 
 export default function Index({ albums, artists, tracks }: IndexProps) {
+	const { user } = usePage().props as unknown as InertiaPageProps
 	const topGradientClasses = [
 		"from-purple-900/70",
 		"from-blue-900/70",
@@ -99,7 +100,7 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 
 			<div className="pt-10">
 				<Shelf
-					title="You"
+					title={user?.name.split(" ")[0]}
 					topTitle="Made For"
 					items={tracks.map((track) => ({
 						id: track.id,
