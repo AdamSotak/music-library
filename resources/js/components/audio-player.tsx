@@ -27,7 +27,7 @@ function MobilePlayer({
 						`https://placehold.co/40x40/333/white?text=T`
 					}
 					alt="Album cover"
-					className="w-10 h-10 rounded-sm flex-shrink-0"
+					className="w-10 h-10 rounded-sm flex-shrink-0 object-cover"
 				/>
 				<div className="flex flex-col min-w-0 flex-1">
 					<span className="text-sm font-medium text-white leading-none truncate">
@@ -132,7 +132,7 @@ function DesktopPlayer({
 								`https://placehold.co/48x48/333/white?text=T`
 							}
 							alt="Album cover"
-							className="w-12 h-12 rounded-sm"
+							className="w-12 h-12 rounded-sm object-cover"
 						/>
 					</div>
 

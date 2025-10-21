@@ -1,12 +1,12 @@
 import { create } from "zustand"
 
 export interface Track {
-	id: number
+	id: string
 	name: string
 	artist: string
 	artist_id: string
 	album: string
-	album_id?: number
+	album_id?: string
 	album_cover?: string
 	duration: number
 	audio: string | null

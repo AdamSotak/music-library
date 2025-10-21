@@ -18,6 +18,7 @@ export default function PlayButton({
 		<button
 			type="button"
 			aria-label="Play"
+			onClick={onClick}
 			className={cn(
 				hoverable
 					? "absolute bottom-2 right-2 cursor-pointer hover:scale-105 active:scale-95 transition-all"

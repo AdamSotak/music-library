@@ -1,4 +1,4 @@
-import type { Album } from "@/types"
+import type { Album, Track } from "@/types"
 import { Modals } from "@/hooks/useModals"
 import { usePlayer } from "@/hooks/usePlayer"
 import { useImageColor } from "@/hooks/useImageColor"
@@ -6,6 +6,8 @@ import { WaveformIndicator } from "@/components/waveform-indicator"
 import { Button } from "@/components/ui/button"
 import PlayButton from "@/components/home/play-button"
 import { router } from "@inertiajs/react"
+import { useMemo, type MouseEvent } from "react"
+import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 
 interface AlbumShowProps {
 	album: Album
@@ -13,8 +15,9 @@ interface AlbumShowProps {
 
 export default function AlbumShow({ album }: AlbumShowProps) {
 	const { setOpen: setAddToPlaylistModalOpen } = Modals.useAddToPlaylistModal()
-	const { currentTrack, isPlaying, setCurrentTrack } = usePlayer()
+	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const { rgba } = useImageColor(album.cover)
+	const playerQueue = useMemo(() => toPlayerQueue(album.tracks), [album.tracks])
 
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
@@ -22,9 +25,29 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 		return `${mins}:${secs.toString().padStart(2, "0")}`
 	}
 
-	const handlePlayTrack = (track: any, index: number, e: React.MouseEvent) => {
-		e.stopPropagation()
-		setCurrentTrack(track, album.tracks as any[], index)
+	const handlePlayTrack = (
+		track: Track,
+		index: number,
+		event: MouseEvent<HTMLElement>,
+	) => {
+		event.stopPropagation()
+		const queueTrack = playerQueue[index] ?? toPlayerTrack(track)
+		if (currentTrack?.id === queueTrack.id) {
+			setIsPlaying(!isPlaying)
+			return
+		}
+		setCurrentTrack(queueTrack, playerQueue, index)
+	}
+
+	const handleHeroPlay = (event: MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation()
+		if (!playerQueue.length) return
+		const firstTrack = playerQueue[0]
+		if (currentTrack?.id === firstTrack.id) {
+			setIsPlaying(!isPlaying)
+			return
+		}
+		setCurrentTrack(firstTrack, playerQueue, 0)
 	}
 
 	const totalDuration = album.tracks.reduce(
@@ -83,7 +106,17 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 
 			{/* Controls */}
 			<div className="px-4 md:px-8 py-4 md:py-6 flex items-center gap-4 md:gap-6 bg-black/20">
-				<PlayButton hoverable={false} />
+				<PlayButton
+					hoverable={false}
+					onClick={handleHeroPlay}
+					className={
+						playerQueue[0] &&
+						currentTrack?.id === playerQueue[0].id &&
+						isPlaying
+							? "bg-white"
+							: undefined
+					}
+				/>
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
 						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"

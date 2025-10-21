@@ -9,7 +9,7 @@ class ArtistController extends Controller
 {
     public function show(string $id)
     {
-        $artist = Artist::with(['albums', 'tracks'])->findOrFail($id);
+        $artist = Artist::with(['albums', 'tracks.album'])->findOrFail($id);
 
         return Inertia::render('artist/id', [
             'artist' => [
@@ -30,8 +30,10 @@ class ArtistController extends Controller
                 'artist_id' => $track->artist->id,
                 'name' => $track->name,
                 'album' => $track->album->name,
+                'album_id' => $track->album->id,
                 'album_cover' => $track->album->image_url,
                 'duration' => $track->duration,
+                'audio' => $track->audio_url,
             ]),
             'albums' => $artist->albums->map(fn ($album) => [
                 'id' => $album->id,

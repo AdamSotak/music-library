@@ -29,8 +29,9 @@ class BackfillDeezerTrackIds extends Command
     {
         $filePath = $this->argument('file') ?? base_path('scrapers/data.json');
 
-        if (!File::exists($filePath)) {
+        if (! File::exists($filePath)) {
             $this->error("File not found: {$filePath}");
+
             return 1;
         }
 
@@ -38,8 +39,9 @@ class BackfillDeezerTrackIds extends Command
 
         $data = json_decode(File::get($filePath), true);
 
-        if (!$data || !isset($data['artists'])) {
-            $this->error("Invalid JSON structure");
+        if (! $data || ! isset($data['artists'])) {
+            $this->error('Invalid JSON structure');
+
             return 1;
         }
 
@@ -59,7 +61,7 @@ class BackfillDeezerTrackIds extends Command
                 $trackName = $trackData['name'] ?? null;
                 $trackArtistName = $trackData['artist_name'] ?? $artistName;
 
-                if (!$deezerId || !$trackName) {
+                if (! $deezerId || ! $trackName) {
                     continue;
                 }
 
@@ -67,17 +69,19 @@ class BackfillDeezerTrackIds extends Command
                 $track = Track::whereHas('artist', function ($query) use ($trackArtistName) {
                     $query->where('name', $trackArtistName);
                 })
-                ->where('name', $trackName)
-                ->first();
+                    ->where('name', $trackName)
+                    ->first();
 
-                if (!$track) {
+                if (! $track) {
                     $this->warn("Track not found in DB: {$trackName} by {$trackArtistName}");
                     $notFound++;
+
                     continue;
                 }
 
                 if ($track->deezer_track_id) {
                     $alreadySet++;
+
                     continue;
                 }
 
@@ -90,7 +94,7 @@ class BackfillDeezerTrackIds extends Command
         }
 
         $this->newLine();
-        $this->info("Backfill complete!");
+        $this->info('Backfill complete!');
         $this->table(
             ['Status', 'Count'],
             [

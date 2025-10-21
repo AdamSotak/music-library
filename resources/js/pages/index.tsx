@@ -1,9 +1,11 @@
 import PlayButton from "@/components/home/play-button"
 import Shelf from "@/components/home/shelf"
 import { cn } from "@/lib/utils"
-import type { Album, Artist, InertiaPageProps, Track } from "@/types"
+import { usePlayer } from "@/hooks/usePlayer"
+import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
+import type { Album, Artist, InertiaPageProps, ShelfItem, Track } from "@/types"
 import { router, usePage } from "@inertiajs/react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 interface IndexProps {
 	albums: Album[]
@@ -13,6 +15,20 @@ interface IndexProps {
 
 export default function Index({ albums, artists, tracks }: IndexProps) {
 	const { user } = usePage().props as unknown as InertiaPageProps
+	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
+	const trackQueue = useMemo(() => toPlayerQueue(tracks), [tracks])
+	const trackShelfItems = useMemo(
+		() =>
+			tracks.map((track) => ({
+				id: track.id,
+				title: track.name,
+				subtitle: track.artist,
+				type: "track" as const,
+				image: track.album_cover,
+				track,
+			})),
+		[tracks],
+	)
 	const topGradientClasses = [
 		"from-purple-900/70",
 		"from-blue-900/70",
@@ -30,6 +46,16 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 	const [selectedTab, setSelectedTab] = useState<"all" | "music" | "podcasts">(
 		"all",
 	)
+
+	const handlePlayHomeTrack = (item: ShelfItem, index: number) => {
+		if (!item.track) return
+		const queueTrack = trackQueue[index] ?? toPlayerTrack(item.track)
+		if (currentTrack?.id === queueTrack.id) {
+			setIsPlaying(!isPlaying)
+			return
+		}
+		setCurrentTrack(queueTrack, trackQueue, index)
+	}
 
 	useEffect(() => {
 		const timeout = setTimeout(() => setGradientVisible(true), 10)
@@ -102,14 +128,9 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 				<Shelf
 					title={user?.name.split(" ")[0]}
 					topTitle="Made For"
-					items={tracks.map((track) => ({
-						id: track.id,
-						title: track.name,
-						subtitle: track.artist,
-						type: "track",
-						image: track.album_cover,
-					}))}
+					items={trackShelfItems}
 					onItemSelected={(item) => router.visit(`/tracks/${item.id}`)}
+					onPlayItem={handlePlayHomeTrack}
 				/>
 				<Shelf
 					title="Featured Charts"

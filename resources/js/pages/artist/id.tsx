@@ -2,9 +2,11 @@ import PlayButton from "@/components/home/play-button"
 import Shelf from "@/components/home/shelf"
 import { Button } from "@/components/ui/button"
 import { usePlayer } from "@/hooks/usePlayer"
+import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 import type { Album, Artist, ShelfItem, Track } from "@/types"
 import { Utils } from "@/utils"
 import { router } from "@inertiajs/react"
+import { useMemo, type MouseEvent } from "react"
 
 interface ArtistPageProps {
 	artist: Artist
@@ -17,7 +19,8 @@ export default function ArtistPage({
 	albums,
 	tracks,
 }: ArtistPageProps) {
-	const { setCurrentTrack } = usePlayer()
+	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
+	const playerQueue = useMemo(() => toPlayerQueue(tracks), [tracks])
 
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
@@ -25,9 +28,29 @@ export default function ArtistPage({
 		return `${mins}:${secs.toString().padStart(2, "0")}`
 	}
 
-	const handlePlayTrack = (track: any, index: number, e: React.MouseEvent) => {
-		e.stopPropagation()
-		setCurrentTrack(track, tracks as any[], index)
+	const handlePlayTrack = (
+		track: Track,
+		index: number,
+		event: MouseEvent<HTMLElement>,
+	) => {
+		event.stopPropagation()
+		const queueTrack = playerQueue[index] ?? toPlayerTrack(track)
+		if (currentTrack?.id === queueTrack.id) {
+			setIsPlaying(!isPlaying)
+			return
+		}
+		setCurrentTrack(queueTrack, playerQueue, index)
+	}
+
+	const handleHeroPlay = (event: MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation()
+		if (!playerQueue.length) return
+		const firstTrack = playerQueue[0]
+		if (currentTrack?.id === firstTrack.id) {
+			setIsPlaying(!isPlaying)
+			return
+		}
+		setCurrentTrack(firstTrack, playerQueue, 0)
 	}
 
 	return (
@@ -65,7 +88,17 @@ export default function ArtistPage({
 			<div className="bg-gradient-to-b from-white/10 to-transparent to-30%">
 				{/* Action Buttons */}
 				<div className="flex items-center gap-4 sm:gap-6 px-4 sm:px-5 pt-5">
-					<PlayButton hoverable={false} />
+					<PlayButton
+						hoverable={false}
+						onClick={handleHeroPlay}
+						className={
+							playerQueue[0] &&
+							currentTrack?.id === playerQueue[0].id &&
+							isPlaying
+								? "bg-white"
+								: undefined
+						}
+					/>
 					<Button size="icon" variant="spotifyTransparent" className="group">
 						<svg
 							className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
