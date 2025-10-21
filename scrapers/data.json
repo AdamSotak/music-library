@@ -1,0 +1,2106 @@
+{
+  "generated_at_utc": "2025-10-20T19:53:01Z",
+  "source": "Deezer API",
+  "artists": [
+    {
+      "query": "Drake",
+      "artist": {
+        "id": 246791,
+        "name": "Drake",
+        "shareurl": "https://www.deezer.com/artist/246791",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/5d2fa7f140a6bdc2c864c3465a61fc71/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 3232025631,
+          "name": "NOKIA",
+          "duration": 241,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3232025631",
+          "album_id": 712442261,
+          "album_name": "$ome $exy $ongs 4 U",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/7/2/4/0/7247d308a563fc4b59d9d35b4387e098.mp3?hdnea=exp=1760990881~acl=/api/1/1/7/2/4/0/7247d308a563fc4b59d9d35b4387e098.mp3*~data=user_id=0,application_id=42~hmac=edd52d67447f7c21e943242d52c0fa4122297517c0d3b6214c5d20658db3e92a",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 246791,
+          "artist_name": "Drake"
+        },
+        {
+          "id": 17347964,
+          "name": "Headlines (Explicit Version)",
+          "duration": 236,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/17347964",
+          "album_id": 1622724,
+          "album_name": "Take Care (Deluxe)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/e/2/0/0/e20ff1b84ea32883a21366e4d3116b9d.mp3?hdnea=exp=1760990881~acl=/api/1/1/e/2/0/0/e20ff1b84ea32883a21366e4d3116b9d.mp3*~data=user_id=0,application_id=42~hmac=71813d05ab146b22883301cd636f4009b0b68e4f4f7a8660cf20b5a21b430cd3",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 246791,
+          "artist_name": "Drake"
+        },
+        {
+          "id": 3476500411,
+          "name": "Which One",
+          "duration": 169,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3476500411",
+          "album_id": 793705691,
+          "album_name": "Which One",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/2/f/0/c2f0725719c8b2dbe16c3dff6e98ce6a.mp3?hdnea=exp=1760990881~acl=/api/1/1/c/2/f/0/c2f0725719c8b2dbe16c3dff6e98ce6a.mp3*~data=user_id=0,application_id=42~hmac=66a1450be3d65a68782bb8fc7d6e326e9721d72349db6eb3a4ccc06f4a1e90b6",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 246791,
+          "artist_name": "Drake"
+        },
+        {
+          "id": 124603270,
+          "name": "One Dance",
+          "duration": 174,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/124603270",
+          "album_id": 13082992,
+          "album_name": "Views",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/7/a/b/0/7ab0602a95834e7862f7ef2ee5389d88.mp3?hdnea=exp=1760990881~acl=/api/1/1/7/a/b/0/7ab0602a95834e7862f7ef2ee5389d88.mp3*~data=user_id=0,application_id=42~hmac=a57aae895485ecb614167179adf3d1e3208bafffc4e621fbecc95da5cb1aedaf",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 246791,
+          "artist_name": "Drake"
+        },
+        {
+          "id": 3232025641,
+          "name": "DIE TRYING",
+          "duration": 195,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3232025641",
+          "album_id": 712442261,
+          "album_name": "$ome $exy $ongs 4 U",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/5/e/0/0/5e03672a36e02e2c1d3d6725e8c8bca3.mp3?hdnea=exp=1760990881~acl=/api/1/1/5/e/0/0/5e03672a36e02e2c1d3d6725e8c8bca3.mp3*~data=user_id=0,application_id=42~hmac=54687e251647896f217a5cc4ff2f64f7749a9d60ee84c05d64ac2c0d43c2c57f",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 4925172,
+          "artist_name": "PARTYNEXTDOOR"
+        }
+      ],
+      "albums": [
+        {
+          "id": 712442261,
+          "name": "$ome $exy $ongs 4 U",
+          "releasedate": "2025-02-14",
+          "shareurl": "https://www.deezer.com/album/712442261",
+          "image": "https://cdn-images.dzcdn.net/images/cover/478562cdbafe4faa1515bd457042cc4a/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 515707142,
+          "name": "For All The Dogs Scary Hours Edition (Instrumental)",
+          "releasedate": "2023-11-23",
+          "shareurl": "https://www.deezer.com/album/515707142",
+          "image": "https://cdn-images.dzcdn.net/images/cover/87f74cbe665d67d47d146561acb060f8/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 513619022,
+          "name": "For All The Dogs Scary Hours Edition",
+          "releasedate": "2023-11-17",
+          "shareurl": "https://www.deezer.com/album/513619022",
+          "image": "https://cdn-images.dzcdn.net/images/cover/ac62d5e7dc2bac7e971657e2a86f946a/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 496789121,
+          "name": "For All The Dogs",
+          "releasedate": "2023-10-06",
+          "shareurl": "https://www.deezer.com/album/496789121",
+          "image": "https://cdn-images.dzcdn.net/images/cover/868162e87da67d647789ed7b6456840c/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 372625207,
+          "name": "Her Loss",
+          "releasedate": "2022-11-04",
+          "shareurl": "https://www.deezer.com/album/372625207",
+          "image": "https://cdn-images.dzcdn.net/images/cover/4599d79a2bea5890737328996e2e7077/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Kendrick Lamar",
+      "artist": {
+        "id": 525046,
+        "name": "Kendrick Lamar",
+        "shareurl": "https://www.deezer.com/artist/525046",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/be0a7c550567f4af0ed202d7235b74d6/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 2783963122,
+          "name": "Not Like Us",
+          "duration": 274,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2783963122",
+          "album_id": 582140742,
+          "album_name": "Not Like Us",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/4/9/0/0/490577bad3aa52043078917ac1cedf60.mp3?hdnea=exp=1760990882~acl=/api/1/1/4/9/0/0/490577bad3aa52043078917ac1cedf60.mp3*~data=user_id=0,application_id=42~hmac=d985510f059300436d756bc141b00fca4f9066d4dd9a181b30e7df9582f7136c",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 525046,
+          "artist_name": "Kendrick Lamar"
+        },
+        {
+          "id": 446082632,
+          "name": "All The Stars (From \"Black Panther: The Album\")",
+          "duration": 235,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/446082632",
+          "album_id": 54317602,
+          "album_name": "All The Stars",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/f/7/0/cf72a0430bc898b8b931254ce13b6bd9.mp3?hdnea=exp=1760990882~acl=/api/1/1/c/f/7/0/cf72a0430bc898b8b931254ce13b6bd9.mp3*~data=user_id=0,application_id=42~hmac=62da58c97a51bf70f7c8057c328c18d8608c4f134e9596e8145c77c46eca252b",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 525046,
+          "artist_name": "Kendrick Lamar"
+        },
+        {
+          "id": 3106586641,
+          "name": "luther",
+          "duration": 178,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3106586641",
+          "album_id": 673968231,
+          "album_name": "GNX",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/2/6/b/0/26b2e6342d760a15e4c87ee5adee1d17.mp3?hdnea=exp=1760990882~acl=/api/1/1/2/6/b/0/26b2e6342d760a15e4c87ee5adee1d17.mp3*~data=user_id=0,application_id=42~hmac=cd3ba7f270bbd4b72f57d0db76b67291dde7ab791c12a9fcd3e97f5a165aaaeb",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 525046,
+          "artist_name": "Kendrick Lamar"
+        },
+        {
+          "id": 3106586681,
+          "name": "tv off",
+          "duration": 221,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3106586681",
+          "album_id": 673968231,
+          "album_name": "GNX",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/d/3/c/0/d3ca5e121eb004e71c881ad5c35ed8fc.mp3?hdnea=exp=1760990882~acl=/api/1/1/d/3/c/0/d3ca5e121eb004e71c881ad5c35ed8fc.mp3*~data=user_id=0,application_id=42~hmac=cf973ae33db80124fe2bf53f705197f11f93681315aa006f8e42af13c173366a",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 525046,
+          "artist_name": "Kendrick Lamar"
+        },
+        {
+          "id": 3106586631,
+          "name": "squabble up",
+          "duration": 158,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3106586631",
+          "album_id": 673968231,
+          "album_name": "GNX",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/6/f/d/0/6fd8f89bcbfc151b5a356f1287d0d5a1.mp3?hdnea=exp=1760990882~acl=/api/1/1/6/f/d/0/6fd8f89bcbfc151b5a356f1287d0d5a1.mp3*~data=user_id=0,application_id=42~hmac=06bcb3da1c6821dd785bc5d2562d3f30985dec4eedbf5e2e53b8fa6a46d480c8",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 525046,
+          "artist_name": "Kendrick Lamar"
+        }
+      ],
+      "albums": [
+        {
+          "id": 789044231,
+          "name": "Live in Amsterdam 2012 (Live)",
+          "releasedate": "2025-07-15",
+          "shareurl": "https://www.deezer.com/album/789044231",
+          "image": "https://cdn-images.dzcdn.net/images/cover/cae2245174d0f56b69e81cfb39f14b6e/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 673968231,
+          "name": "GNX",
+          "releasedate": "2024-11-22",
+          "shareurl": "https://www.deezer.com/album/673968231",
+          "image": "https://cdn-images.dzcdn.net/images/cover/82db4c0f8e9412cafb1cd765b076d58c/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 322019377,
+          "name": "Mr. Morale & The Big Steppers",
+          "releasedate": "2022-05-27",
+          "shareurl": "https://www.deezer.com/album/322019377",
+          "image": "https://cdn-images.dzcdn.net/images/cover/412361ce41f0bd2595978dbf0e035ad3/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 56202752,
+          "name": "Black Panther The Album Music From And Inspired By",
+          "releasedate": "2018-02-09",
+          "shareurl": "https://www.deezer.com/album/56202752",
+          "image": "https://cdn-images.dzcdn.net/images/cover/85a8f14b8f104b4d617cff2efd0e2e35/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 56202932,
+          "name": "Black Panther The Album Music From And Inspired By",
+          "releasedate": "2018-02-11",
+          "shareurl": "https://www.deezer.com/album/56202932",
+          "image": "https://cdn-images.dzcdn.net/images/cover/a9113d022934ce667ac8c6dd74cabac5/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Kanye West",
+      "artist": {
+        "id": 230,
+        "name": "Kanye West",
+        "shareurl": "https://www.deezer.com/artist/230",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/bb76c2ee3b068726ab4c37b0aabdb57a/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 7667065,
+          "name": "Runaway",
+          "duration": 548,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/7667065",
+          "album_id": 707965,
+          "album_name": "My Beautiful Dark Twisted Fantasy",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/e/a/5/0/ea5cf96267ac683180b27ccd1580e45c.mp3?hdnea=exp=1760990882~acl=/api/1/1/e/a/5/0/ea5cf96267ac683180b27ccd1580e45c.mp3*~data=user_id=0,application_id=42~hmac=38f4f0a706bb91545908a91e8e202eb6cd1f66e48ad9680fad9db753544042d9",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 230,
+          "artist_name": "Kanye West"
+        },
+        {
+          "id": 68350113,
+          "name": "Bound 2",
+          "duration": 229,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/68350113",
+          "album_id": 6694046,
+          "album_name": "Yeezus",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/a/2/4/0/a24bef5135eebe751adc619a929d9c24.mp3?hdnea=exp=1760990882~acl=/api/1/1/a/2/4/0/a24bef5135eebe751adc619a929d9c24.mp3*~data=user_id=0,application_id=42~hmac=4f865775da8b093edeb6068d744980a76f5ad17adeedc3c7e12b51b226bc7a40",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 230,
+          "artist_name": "Kanye West"
+        },
+        {
+          "id": 1184309,
+          "name": "Gold Digger",
+          "duration": 208,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/1184309",
+          "album_id": 126525,
+          "album_name": "Late Registration",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/5/2/5/0/525c0a401d49612f4ceb35367c52ccb3.mp3?hdnea=exp=1760990882~acl=/api/1/1/5/2/5/0/525c0a401d49612f4ceb35367c52ccb3.mp3*~data=user_id=0,application_id=42~hmac=0e4c6cd944555b367ad74785b943cb18400a5b8c00f71c06ad9772ca22e9f5c7",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 230,
+          "artist_name": "Kanye West"
+        },
+        {
+          "id": 130412300,
+          "name": "Heartless",
+          "duration": 210,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/130412300",
+          "album_id": 13833162,
+          "album_name": "808s & Heartbreak",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/8/c/e/0/8ce3717c2fe0e8d3fd7d847c220fe708.mp3?hdnea=exp=1760990882~acl=/api/1/1/8/c/e/0/8ce3717c2fe0e8d3fd7d847c220fe708.mp3*~data=user_id=0,application_id=42~hmac=654d73eaf454a06af4fe6efcbadfd9a282b27d10f01e6dd834db8ac117dd307d",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 230,
+          "artist_name": "Kanye West"
+        },
+        {
+          "id": 630827302,
+          "name": "Flashing Lights",
+          "duration": 237,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/630827302",
+          "album_id": 86994002,
+          "album_name": "Graduation",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/1/9/0/c197747c4e0d080521c00e8efd392be5.mp3?hdnea=exp=1760990882~acl=/api/1/1/c/1/9/0/c197747c4e0d080521c00e8efd392be5.mp3*~data=user_id=0,application_id=42~hmac=4b19e4cf763c8ad09a29ec1a6165021594352bb2c5169956087a8b60e1c31174",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 230,
+          "artist_name": "Kanye West"
+        }
+      ],
+      "albums": [
+        {
+          "id": 775971921,
+          "name": "BULLY",
+          "releasedate": "2025-06-20",
+          "shareurl": "https://www.deezer.com/album/775971921",
+          "image": "https://cdn-images.dzcdn.net/images/cover/baf615e642189beb2ea12b0f7e5ced1e/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 783329841,
+          "name": "BULLY",
+          "releasedate": "2025-07-04",
+          "shareurl": "https://www.deezer.com/album/783329841",
+          "image": "https://cdn-images.dzcdn.net/images/cover/baf615e642189beb2ea12b0f7e5ced1e/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 624230681,
+          "name": "VULTURES 2",
+          "releasedate": "2024-08-03",
+          "shareurl": "https://www.deezer.com/album/624230681",
+          "image": "https://cdn-images.dzcdn.net/images/cover/058a48f2674108867cc392d5bdc97fe9/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 624563281,
+          "name": "VULTURES 1",
+          "releasedate": "2024-02-09",
+          "shareurl": "https://www.deezer.com/album/624563281",
+          "image": "https://cdn-images.dzcdn.net/images/cover/cf8eacd91f5484666db893aa01c55f6b/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 755403081,
+          "name": "DONDA 2",
+          "releasedate": "2025-05-10",
+          "shareurl": "https://www.deezer.com/album/755403081",
+          "image": "https://cdn-images.dzcdn.net/images/cover/36ca79a764a4ebe0d904bd68523db754/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Metallica",
+      "artist": {
+        "id": 119,
+        "name": "Metallica",
+        "shareurl": "https://www.deezer.com/artist/119",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/056578a9c2007f69ce198c81875eca41/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 1483825282,
+          "name": "Nothing Else Matters (Remastered 2021)",
+          "duration": 389,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/1483825282",
+          "album_id": 256250622,
+          "album_name": "Metallica (Remastered 2021)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/d/8/9/0/d897487b8b86e39b13d94a5ad5996cbc.mp3?hdnea=exp=1760990883~acl=/api/1/1/d/8/9/0/d897487b8b86e39b13d94a5ad5996cbc.mp3*~data=user_id=0,application_id=42~hmac=88c9e80291bc40c73ce968c9771889f3813255db8d8b5f50f4bc6c4e4c857db1",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 119,
+          "artist_name": "Metallica"
+        },
+        {
+          "id": 1483825212,
+          "name": "Enter Sandman (Remastered 2021)",
+          "duration": 331,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/1483825212",
+          "album_id": 256250622,
+          "album_name": "Metallica (Remastered 2021)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/7/0/0/c70d7e81abc196d915aadd1e7489a75a.mp3?hdnea=exp=1760990883~acl=/api/1/1/c/7/0/0/c70d7e81abc196d915aadd1e7489a75a.mp3*~data=user_id=0,application_id=42~hmac=39bf574f69383944cc52309ea0e7570785e83da5c164642aaa2a4beb686cab20",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 119,
+          "artist_name": "Metallica"
+        },
+        {
+          "id": 1483825242,
+          "name": "The Unforgiven (Remastered 2021)",
+          "duration": 385,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/1483825242",
+          "album_id": 256250622,
+          "album_name": "Metallica (Remastered 2021)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/4/e/b/0/4eb02f5e0bfadf2222115936f96a2568.mp3?hdnea=exp=1760990883~acl=/api/1/1/4/e/b/0/4eb02f5e0bfadf2222115936f96a2568.mp3*~data=user_id=0,application_id=42~hmac=70a3f5451454655c9f7fdcf1990e263cfbb7be1ff7d6e449c96f2466c4a39af4",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 119,
+          "artist_name": "Metallica"
+        },
+        {
+          "id": 2114570,
+          "name": "Whiskey In The Jar",
+          "duration": 304,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2114570",
+          "album_id": 212391,
+          "album_name": "Garage Inc.",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/e/3/1/0/e31f8c7e7bfbb7c924b4339c63fb4f19.mp3?hdnea=exp=1760990883~acl=/api/1/1/e/3/1/0/e31f8c7e7bfbb7c924b4339c63fb4f19.mp3*~data=user_id=0,application_id=42~hmac=e8985dbee118d2a56d848b948afeaaae082708bf8b59547811680f1cbe18753c",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 119,
+          "artist_name": "Metallica"
+        },
+        {
+          "id": 136338506,
+          "name": "Fade To Black (Remastered)",
+          "duration": 417,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/136338506",
+          "album_id": 14581762,
+          "album_name": "Ride The Lightning (Remastered)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/d/c/1/0/dc1e3cac719c5177bb5538cab01b2484.mp3?hdnea=exp=1760990883~acl=/api/1/1/d/c/1/0/dc1e3cac719c5177bb5538cab01b2484.mp3*~data=user_id=0,application_id=42~hmac=fab8d7507fbf884498ea97ef38d93ed4f40c4e7320344006e268ba904fc85cb2",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 119,
+          "artist_name": "Metallica"
+        }
+      ],
+      "albums": [
+        {
+          "id": 428391407,
+          "name": "72 Seasons",
+          "releasedate": "2023-04-14",
+          "shareurl": "https://www.deezer.com/album/428391407",
+          "image": "https://cdn-images.dzcdn.net/images/cover/39aadc0fb5b3ca28614a2e064f7f7440/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 256261892,
+          "name": "The Metallica Blacklist",
+          "releasedate": "2021-09-10",
+          "shareurl": "https://www.deezer.com/album/256261892",
+          "image": "https://cdn-images.dzcdn.net/images/cover/4edf4093eef03ea01a17ebf6dc493244/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 168868012,
+          "name": "S&M2",
+          "releasedate": "2020-08-28",
+          "shareurl": "https://www.deezer.com/album/168868012",
+          "image": "https://cdn-images.dzcdn.net/images/cover/8cb33b8b095e3e1b5dbe841618f37021/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 85669472,
+          "name": "Helping Hands…Live & Acoustic At The Masonic",
+          "releasedate": "2019-02-01",
+          "shareurl": "https://www.deezer.com/album/85669472",
+          "image": "https://cdn-images.dzcdn.net/images/cover/05901c9237ada281beadfb04adbf2bb1/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 49896702,
+          "name": "Live At House Of Vans, London, 18.11.16",
+          "releasedate": "2017-10-20",
+          "shareurl": "https://www.deezer.com/album/49896702",
+          "image": "https://cdn-images.dzcdn.net/images/cover/1da3ace9182ae64431bfac1dfdb17e67/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Taylor Swift",
+      "artist": {
+        "id": 12246,
+        "name": "Taylor Swift",
+        "shareurl": "https://www.deezer.com/artist/12246",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/e528e270424103b527f8a27ac625563b/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 3579685431,
+          "name": "The Fate of Ophelia",
+          "duration": 226,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3579685431",
+          "album_id": 829966251,
+          "album_name": "The Life of a Showgirl",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/0/4/9/0/049e295c37bff556879080a0ec19adb3.mp3?hdnea=exp=1760990883~acl=/api/1/1/0/4/9/0/049e295c37bff556879080a0ec19adb3.mp3*~data=user_id=0,application_id=42~hmac=0855c8633d9b000f7d896f750bee6a2db1c852b8c506f6b614cfaf95cf0a1d4c",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 12246,
+          "artist_name": "Taylor Swift"
+        },
+        {
+          "id": 3579685451,
+          "name": "Opalite",
+          "duration": 235,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3579685451",
+          "album_id": 829966251,
+          "album_name": "The Life of a Showgirl",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/d/4/b/0/d4b8fa364d421f8a3c6b775bf760fd9e.mp3?hdnea=exp=1760990883~acl=/api/1/1/d/4/b/0/d4b8fa364d421f8a3c6b775bf760fd9e.mp3*~data=user_id=0,application_id=42~hmac=1323d20294683790a62c9c911423ca7761ac009eaac513d477e496e27c8e8946",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 12246,
+          "artist_name": "Taylor Swift"
+        },
+        {
+          "id": 3579685441,
+          "name": "Elizabeth Taylor",
+          "duration": 208,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3579685441",
+          "album_id": 829966251,
+          "album_name": "The Life of a Showgirl",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/d/8/8/0/d88eabe64a3e70097e543120bd9baeda.mp3?hdnea=exp=1760990883~acl=/api/1/1/d/8/8/0/d88eabe64a3e70097e543120bd9baeda.mp3*~data=user_id=0,application_id=42~hmac=203456030b79c9ce08a989aa3fc5daebc6477cdae9ddb60964964ca4ee804a1a",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 12246,
+          "artist_name": "Taylor Swift"
+        },
+        {
+          "id": 3579685461,
+          "name": "Father Figure",
+          "duration": 212,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3579685461",
+          "album_id": 829966251,
+          "album_name": "The Life of a Showgirl",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/2/a/4/0/2a4156a77a262647ff8da487caa446e3.mp3?hdnea=exp=1760990883~acl=/api/1/1/2/a/4/0/2a4156a77a262647ff8da487caa446e3.mp3*~data=user_id=0,application_id=42~hmac=008be224490e97276cf93096c1b50f8a1f75e72cd8d5369093fd520db8a60b70",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 12246,
+          "artist_name": "Taylor Swift"
+        },
+        {
+          "id": 3579685471,
+          "name": "Eldest Daughter",
+          "duration": 246,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3579685471",
+          "album_id": 829966251,
+          "album_name": "The Life of a Showgirl",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/b/8/0/cb8e277ae26804d3d37fa3018246a4d1.mp3?hdnea=exp=1760990883~acl=/api/1/1/c/b/8/0/cb8e277ae26804d3d37fa3018246a4d1.mp3*~data=user_id=0,application_id=42~hmac=38cadfd2e23ae3cf53e4f820000f933ef95af2fb9e9de0a9d980274cd10d742f",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 12246,
+          "artist_name": "Taylor Swift"
+        }
+      ],
+      "albums": [
+        {
+          "id": 829966251,
+          "name": "The Life of a Showgirl",
+          "releasedate": "2025-10-03",
+          "shareurl": "https://www.deezer.com/album/829966251",
+          "image": "https://cdn-images.dzcdn.net/images/cover/d0bed55a0efb3c5c3ddb3dacda67d9b3/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 835672072,
+          "name": "The Life of a Showgirl (Track by Track Version)",
+          "releasedate": "2025-10-07",
+          "shareurl": "https://www.deezer.com/album/835672072",
+          "image": "https://cdn-images.dzcdn.net/images/cover/1cd086f149431b11158bd3516ca4ab91/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 574109801,
+          "name": "THE TORTURED POETS DEPARTMENT",
+          "releasedate": "2024-04-19",
+          "shareurl": "https://www.deezer.com/album/574109801",
+          "image": "https://cdn-images.dzcdn.net/images/cover/73bee9f48378d4c95139e693fd997569/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 575252501,
+          "name": "THE TORTURED POETS DEPARTMENT: THE ANTHOLOGY",
+          "releasedate": "2024-04-19",
+          "shareurl": "https://www.deezer.com/album/575252501",
+          "image": "https://cdn-images.dzcdn.net/images/cover/bfabb6f70db5842a2c42d0d431ab65ef/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 504180521,
+          "name": "1989 (Taylor's Version)",
+          "releasedate": "2023-10-27",
+          "shareurl": "https://www.deezer.com/album/504180521",
+          "image": "https://cdn-images.dzcdn.net/images/cover/60c1f1896b2f6b4a4a29ca45d314d4bf/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Ed Sheeran",
+      "artist": {
+        "id": 384236,
+        "name": "Ed Sheeran",
+        "shareurl": "https://www.deezer.com/artist/384236",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/d6bb84390641d8ae9118228d9544e53d/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 3303979891,
+          "name": "Azizam",
+          "duration": 162,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3303979891",
+          "album_id": 736095581,
+          "album_name": "Azizam",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/0/7/a/0/07aeeadf52842c6ce507717dfc37a3d0.mp3?hdnea=exp=1760990884~acl=/api/1/1/0/7/a/0/07aeeadf52842c6ce507717dfc37a3d0.mp3*~data=user_id=0,application_id=42~hmac=6f64c17a67a9bb60508668150da56a162e433e34b926c02df3a3aa8d2252a543",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 384236,
+          "artist_name": "Ed Sheeran"
+        },
+        {
+          "id": 3395410481,
+          "name": "Sapphire",
+          "duration": 179,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3395410481",
+          "album_id": 766124301,
+          "album_name": "Sapphire",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/8/9/5/0/895ad50a63101bf9d3cfef44ec2b8766.mp3?hdnea=exp=1760990884~acl=/api/1/1/8/9/5/0/895ad50a63101bf9d3cfef44ec2b8766.mp3*~data=user_id=0,application_id=42~hmac=e5d6ee172acb27664e559b93dcfccb7276afa718591060504ad32c78e5c0f6ea",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 384236,
+          "artist_name": "Ed Sheeran"
+        },
+        {
+          "id": 142986206,
+          "name": "Perfect",
+          "duration": 263,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/142986206",
+          "album_id": 15478674,
+          "album_name": "÷ (Deluxe)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/e/0/8/0/e08c1728964ec7adccadb383d4db2fcc.mp3?hdnea=exp=1760990884~acl=/api/1/1/e/0/8/0/e08c1728964ec7adccadb383d4db2fcc.mp3*~data=user_id=0,application_id=42~hmac=3f7ec7193cd59ec42ba44b20dc0542e378521fca6c16127e7643b0fc8deba9ad",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 384236,
+          "artist_name": "Ed Sheeran"
+        },
+        {
+          "id": 79875064,
+          "name": "Thinking out Loud",
+          "duration": 281,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/79875064",
+          "album_id": 7964062,
+          "album_name": "x (Deluxe Edition)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/4/9/4/0/494ddfc070ac9ad7615d5a1655804710.mp3?hdnea=exp=1760990884~acl=/api/1/1/4/9/4/0/494ddfc070ac9ad7615d5a1655804710.mp3*~data=user_id=0,application_id=42~hmac=437fb58414c5156ad78690d0162b29c6ba1ba574192741000c7f852f396cbc58",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 384236,
+          "artist_name": "Ed Sheeran"
+        },
+        {
+          "id": 2196044807,
+          "name": "Eyes Closed",
+          "duration": 194,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2196044807",
+          "album_id": 418720487,
+          "album_name": "Eyes Closed",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/4/7/c/0/47c0f80e2240b45ab12d66648177fac1.mp3?hdnea=exp=1760990884~acl=/api/1/1/4/7/c/0/47c0f80e2240b45ab12d66648177fac1.mp3*~data=user_id=0,application_id=42~hmac=541c773888867c56998766ed4f850f2db5dc6065cf0ff692999a1e19ca756573",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 384236,
+          "artist_name": "Ed Sheeran"
+        }
+      ],
+      "albums": [
+        {
+          "id": 814817411,
+          "name": "Play",
+          "releasedate": "2025-09-12",
+          "shareurl": "https://www.deezer.com/album/814817411",
+          "image": "https://cdn-images.dzcdn.net/images/cover/09f34007fcf245de7ef8f67d2173ee6e/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 816260561,
+          "name": "Play (Extended Edition)",
+          "releasedate": "2025-09-12",
+          "shareurl": "https://www.deezer.com/album/816260561",
+          "image": "https://cdn-images.dzcdn.net/images/cover/09f34007fcf245de7ef8f67d2173ee6e/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 681693011,
+          "name": "+-=÷× (Tour Collection: Live)",
+          "releasedate": "2024-12-27",
+          "shareurl": "https://www.deezer.com/album/681693011",
+          "image": "https://cdn-images.dzcdn.net/images/cover/311c91feb28509e66c4de96584dc5382/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 642318961,
+          "name": "+-=÷× (Tour Collection)",
+          "releasedate": "2024-09-27",
+          "shareurl": "https://www.deezer.com/album/642318961",
+          "image": "https://cdn-images.dzcdn.net/images/cover/b7ee024b314ff59a2914e09065ec881d/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 597383682,
+          "name": "x (10th Anniversary Edition)",
+          "releasedate": "2024-06-21",
+          "shareurl": "https://www.deezer.com/album/597383682",
+          "image": "https://cdn-images.dzcdn.net/images/cover/23be2ee76b2a5a90c854d7d30551eaad/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Beyoncé",
+      "artist": {
+        "id": 145,
+        "name": "Beyoncé",
+        "shareurl": "https://www.deezer.com/artist/145",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/0aa9d669be4e7310b8647afae37ffaab/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 2658723742,
+          "name": "TEXAS HOLD 'EM",
+          "duration": 233,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2658723742",
+          "album_id": 546733702,
+          "album_name": "TEXAS HOLD 'EM",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/0/8/8/0/0885b31006caf52814a00ddfa612e998.mp3?hdnea=exp=1760990884~acl=/api/1/1/0/8/8/0/0885b31006caf52814a00ddfa612e998.mp3*~data=user_id=0,application_id=42~hmac=d38531c4bcfd9fa22e89be9cc8a9dfbca9272b36e9972d415d546405e907669e",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 145,
+          "artist_name": "Beyoncé"
+        },
+        {
+          "id": 669486722,
+          "name": "All Night",
+          "duration": 322,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/669486722",
+          "album_id": 94528282,
+          "album_name": "Lemonade",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/b/0/6/0/b0635f051629f76c89e61dd2d1c61d9e.mp3?hdnea=exp=1760990884~acl=/api/1/1/b/0/6/0/b0635f051629f76c89e61dd2d1c61d9e.mp3*~data=user_id=0,application_id=42~hmac=2868d9e0638d0d34b83d3243b4e2952302577009110f61dfc7a818832a6961be",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 145,
+          "artist_name": "Beyoncé"
+        },
+        {
+          "id": 2553265,
+          "name": "Halo",
+          "duration": 262,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2553265",
+          "album_id": 250046,
+          "album_name": "I AM...SASHA FIERCE",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/f/6/d/0/f6db083c41261c5814502cd3c25ec41f.mp3?hdnea=exp=1760990884~acl=/api/1/1/f/6/d/0/f6db083c41261c5814502cd3c25ec41f.mp3*~data=user_id=0,application_id=42~hmac=90eb5f6adbd1e69ce5b204e19124074230b2b25fef26ffe0e93e336df37bf9a0",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 145,
+          "artist_name": "Beyoncé"
+        },
+        {
+          "id": 2455091,
+          "name": "If I Were a Boy",
+          "duration": 249,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2455091",
+          "album_id": 241429,
+          "album_name": "If I Were A Boy",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/8/8/7/0/8876e03a9ed119b6d999c6c9acbd3f15.mp3?hdnea=exp=1760990884~acl=/api/1/1/8/8/7/0/8876e03a9ed119b6d999c6c9acbd3f15.mp3*~data=user_id=0,application_id=42~hmac=1f30ccd115811d2e6b06369fe3dfc9850638e858b97add5ab1fa1eb56b72c936",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 145,
+          "artist_name": "Beyoncé"
+        },
+        {
+          "id": 609244,
+          "name": "Crazy In Love (feat. JAY-Z)",
+          "duration": 235,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/609244",
+          "album_id": 77201,
+          "album_name": "Dangerously In Love",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/9/d/a/0/9da6dc6e093d7afe9aba7868644fda2a.mp3?hdnea=exp=1760990884~acl=/api/1/1/9/d/a/0/9da6dc6e093d7afe9aba7868644fda2a.mp3*~data=user_id=0,application_id=42~hmac=8e2633c83468004c9abe883a768d88100f9a90c67c712ad1c1321503ac8a7d33",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 145,
+          "artist_name": "Beyoncé"
+        }
+      ],
+      "albums": [
+        {
+          "id": 565889181,
+          "name": "COWBOY CARTER",
+          "releasedate": "2024-03-29",
+          "shareurl": "https://www.deezer.com/album/565889181",
+          "image": "https://cdn-images.dzcdn.net/images/cover/e4a77ce7d6781682afb716d21c0a6e3b/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 340077257,
+          "name": "RENAISSANCE",
+          "releasedate": "2022-07-29",
+          "shareurl": "https://www.deezer.com/album/340077257",
+          "image": "https://cdn-images.dzcdn.net/images/cover/c3e2a951678a28a3f541a69c866583d4/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 104290392,
+          "name": "The Lion King: The Gift",
+          "releasedate": "2019-07-19",
+          "shareurl": "https://www.deezer.com/album/104290392",
+          "image": "https://cdn-images.dzcdn.net/images/cover/38dc027b0eae49a8e7fd7af3312a00a6/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 164279722,
+          "name": "The Lion King: The Gift [Deluxe Edition]",
+          "releasedate": "2020-07-31",
+          "shareurl": "https://www.deezer.com/album/164279722",
+          "image": "https://cdn-images.dzcdn.net/images/cover/aafbe5fd22d2be1eacacf93e12f101f0/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 93981892,
+          "name": "HOMECOMING: THE LIVE ALBUM",
+          "releasedate": "2019-04-17",
+          "shareurl": "https://www.deezer.com/album/93981892",
+          "image": "https://cdn-images.dzcdn.net/images/cover/d65174ae1c9bd60b5dd7b377c08c0755/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Billie Eilish",
+      "artist": {
+        "id": 9635624,
+        "name": "Billie Eilish",
+        "shareurl": "https://www.deezer.com/artist/9635624",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/8eab1a9a644889aabaca1e193e05f984/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 2801558052,
+          "name": "BIRDS OF A FEATHER",
+          "duration": 210,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2801558052",
+          "album_id": 586786102,
+          "album_name": "HIT ME HARD AND SOFT",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/5/e/0/0/5e0fb99f6f1e0f18ab70a4c0d18efa5c.mp3?hdnea=exp=1760990885~acl=/api/1/1/5/e/0/0/5e0fb99f6f1e0f18ab70a4c0d18efa5c.mp3*~data=user_id=0,application_id=42~hmac=f3d0f54c4365c5ba6f58c53747492e9139b622080c33fe43d06979eb8401caba",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 9635624,
+          "artist_name": "Billie Eilish"
+        },
+        {
+          "id": 2801558062,
+          "name": "WILDFLOWER",
+          "duration": 261,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2801558062",
+          "album_id": 586786102,
+          "album_name": "HIT ME HARD AND SOFT",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/a/b/6/0/ab6f382533bd12e8905a8141ceaed4e8.mp3?hdnea=exp=1760990885~acl=/api/1/1/a/b/6/0/ab6f382533bd12e8905a8141ceaed4e8.mp3*~data=user_id=0,application_id=42~hmac=705195d3961e23520dcab68971ca6f8f9dd1e2c3b16946d490d9d97f2e5af0d4",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 9635624,
+          "artist_name": "Billie Eilish"
+        },
+        {
+          "id": 2366043655,
+          "name": "What Was I Made For? [From The Motion Picture \"Barbie\"]",
+          "duration": 222,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2366043655",
+          "album_id": 463935645,
+          "album_name": "What Was I Made For? [From The Motion Picture \"Barbie\"]",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/8/0/c/0/80ce163046226da27191c2abf5f5517c.mp3?hdnea=exp=1760990885~acl=/api/1/1/8/0/c/0/80ce163046226da27191c2abf5f5517c.mp3*~data=user_id=0,application_id=42~hmac=e06ea65e89b09d44229f5af3e461c7f79254e73acd619da1253fbf2a60e10fda",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 9635624,
+          "artist_name": "Billie Eilish"
+        },
+        {
+          "id": 655095962,
+          "name": "when the party's over",
+          "duration": 199,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/655095962",
+          "album_id": 91598612,
+          "album_name": "WHEN WE ALL FALL ASLEEP, WHERE DO WE GO?",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/2/6/2/0/2622138c94fa96f4d5f06a4db1db733a.mp3?hdnea=exp=1760990885~acl=/api/1/1/2/6/2/0/2622138c94fa96f4d5f06a4db1db733a.mp3*~data=user_id=0,application_id=42~hmac=ef506dcf927f7e80da301d7a6ba72d4d80085eea23ab55400d65f9a998c56810",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 9635624,
+          "artist_name": "Billie Eilish"
+        },
+        {
+          "id": 136337268,
+          "name": "ocean eyes",
+          "duration": 200,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/136337268",
+          "album_id": 14581616,
+          "album_name": "Ocean Eyes",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/0/2/3/0/0237a3ef9b4e0ed854fd69716497ca54.mp3?hdnea=exp=1760990885~acl=/api/1/1/0/2/3/0/0237a3ef9b4e0ed854fd69716497ca54.mp3*~data=user_id=0,application_id=42~hmac=8c4f152d5f67e82dfecd003478f4b73d1ca3a060ce8f4e11bd25e75ad84525e7",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 9635624,
+          "artist_name": "Billie Eilish"
+        }
+      ],
+      "albums": [
+        {
+          "id": 586786102,
+          "name": "HIT ME HARD AND SOFT",
+          "releasedate": "2024-05-17",
+          "shareurl": "https://www.deezer.com/album/586786102",
+          "image": "https://cdn-images.dzcdn.net/images/cover/5d284b31cb9ddeb1a0c79aede5a94e1c/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 248216622,
+          "name": "Happier Than Ever",
+          "releasedate": "2021-07-30",
+          "shareurl": "https://www.deezer.com/album/248216622",
+          "image": "https://cdn-images.dzcdn.net/images/cover/bb2880548dd3bc71fb97def2eedec130/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 91598612,
+          "name": "WHEN WE ALL FALL ASLEEP, WHERE DO WE GO?",
+          "releasedate": "2019-03-29",
+          "shareurl": "https://www.deezer.com/album/91598612",
+          "image": "https://cdn-images.dzcdn.net/images/cover/6630083f454d48eadb6a9b53f035d734/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 338169017,
+          "name": "Guitar Songs",
+          "releasedate": "2022-07-21",
+          "shareurl": "https://www.deezer.com/album/338169017",
+          "image": "https://cdn-images.dzcdn.net/images/cover/4cc57080cf8a5ce157adf50a85acebf5/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 53522522,
+          "name": "dont smile at me",
+          "releasedate": "2017-12-22",
+          "shareurl": "https://www.deezer.com/album/53522522",
+          "image": "https://cdn-images.dzcdn.net/images/cover/c6e5ffd676146c447a4a81819c5d29ae/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "The Weeknd",
+      "artist": {
+        "id": 4050205,
+        "name": "The Weeknd",
+        "shareurl": "https://www.deezer.com/artist/4050205",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/581693b4724a7fcfa754455101e13a44/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 908604612,
+          "name": "Blinding Lights",
+          "duration": 204,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/908604612",
+          "album_id": 137217782,
+          "album_name": "After Hours",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/1/b/2/0/1b27825bf63c36edcdc7fac9f920214e.mp3?hdnea=exp=1760990885~acl=/api/1/1/1/b/2/0/1b27825bf63c36edcdc7fac9f920214e.mp3*~data=user_id=0,application_id=42~hmac=b0a8d60050a627a0d6cc26972ebc8830ff5ec5bd4faeed72990c4fe237f70abf",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 4050205,
+          "artist_name": "The Weeknd"
+        },
+        {
+          "id": 3210598501,
+          "name": "Timeless",
+          "duration": 256,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3210598501",
+          "album_id": 705649321,
+          "album_name": "Hurry Up Tomorrow",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/d/1/d/0/d1d0f32d011c2139bcff3bf9b591cf67.mp3?hdnea=exp=1760990885~acl=/api/1/1/d/1/d/0/d1d0f32d011c2139bcff3bf9b591cf67.mp3*~data=user_id=0,application_id=42~hmac=d26c223631ad9c862502a7620eb63b9abe1587447183d33d417a40d487072d2c",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 4050205,
+          "artist_name": "The Weeknd"
+        },
+        {
+          "id": 908604632,
+          "name": "Save Your Tears",
+          "duration": 215,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/908604632",
+          "album_id": 137217782,
+          "album_name": "After Hours",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/6/0/3/0/6030d100df57535a6dd78ee08bf99261.mp3?hdnea=exp=1760990885~acl=/api/1/1/6/0/3/0/6030d100df57535a6dd78ee08bf99261.mp3*~data=user_id=0,application_id=42~hmac=ba4f71b2aecd1ee14b48c677b95570cb9d62f6a8587cc5627431180be960b04f",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 4050205,
+          "artist_name": "The Weeknd"
+        },
+        {
+          "id": 106506516,
+          "name": "Can't Feel My Face",
+          "duration": 215,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/106506516",
+          "album_id": 11107272,
+          "album_name": "Beauty Behind The Madness",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/6/f/9/0/6f9235bd9737db1a62149c9f5f474f43.mp3?hdnea=exp=1760990885~acl=/api/1/1/6/f/9/0/6f9235bd9737db1a62149c9f5f474f43.mp3*~data=user_id=0,application_id=42~hmac=17af8c6b89a66941b62bc65f729d12dedc7d09e93e792a744da99b179a9c5b88",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 4050205,
+          "artist_name": "The Weeknd"
+        },
+        {
+          "id": 3210598411,
+          "name": "São Paulo",
+          "duration": 302,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3210598411",
+          "album_id": 705649321,
+          "album_name": "Hurry Up Tomorrow",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/6/7/8/0/6788ad8d6618827664850cac0255251e.mp3?hdnea=exp=1760990885~acl=/api/1/1/6/7/8/0/6788ad8d6618827664850cac0255251e.mp3*~data=user_id=0,application_id=42~hmac=ee59295396134c40deb0f0aa3e5f8241aeda1510bd8b3898b8645a8d88112376",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 4050205,
+          "artist_name": "The Weeknd"
+        }
+      ],
+      "albums": [
+        {
+          "id": 705649321,
+          "name": "Hurry Up Tomorrow",
+          "releasedate": "2025-01-31",
+          "shareurl": "https://www.deezer.com/album/705649321",
+          "image": "https://cdn-images.dzcdn.net/images/cover/07d837e8865ce86684a86fb79ccece96/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 411519667,
+          "name": "Live At SoFi Stadium",
+          "releasedate": "2023-03-04",
+          "shareurl": "https://www.deezer.com/album/411519667",
+          "image": "https://cdn-images.dzcdn.net/images/cover/17bf5f732c2943ad4cb2bf3778b806cc/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 285758422,
+          "name": "Dawn FM",
+          "releasedate": "2022-01-07",
+          "shareurl": "https://www.deezer.com/album/285758422",
+          "image": "https://cdn-images.dzcdn.net/images/cover/478a544d29275755b3b8f7b4a1fd7a3c/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 349788647,
+          "name": "Dawn FM (Alternate World)",
+          "releasedate": "2022-08-26",
+          "shareurl": "https://www.deezer.com/album/349788647",
+          "image": "https://cdn-images.dzcdn.net/images/cover/f5d3f860ea2542b6a99d13de7ccb4d47/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 203644252,
+          "name": "The Highlights",
+          "releasedate": "2021-02-05",
+          "shareurl": "https://www.deezer.com/album/203644252",
+          "image": "https://cdn-images.dzcdn.net/images/cover/7c5999407b612875c906d7ded6358664/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Adele",
+      "artist": {
+        "id": 75798,
+        "name": "Adele",
+        "shareurl": "https://www.deezer.com/artist/75798",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/e5fc443d2abc03b487234ba4de65a001/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 8086126,
+          "name": "Rolling in the Deep",
+          "duration": 228,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/8086126",
+          "album_id": 746059,
+          "album_name": "21",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/a/4/1/0/a4112b02938d990d85783462aa6fa13e.mp3?hdnea=exp=1760990886~acl=/api/1/1/a/4/1/0/a4112b02938d990d85783462aa6fa13e.mp3*~data=user_id=0,application_id=42~hmac=7711fef30bac05128d1e25fc363fe7920620d554c71169f201436f223bee6e97",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 75798,
+          "artist_name": "Adele"
+        },
+        {
+          "id": 1522223672,
+          "name": "Easy On Me",
+          "duration": 224,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/1522223672",
+          "album_id": 265655342,
+          "album_name": "Easy On Me",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/b/d/0/0/bd0cab61ff8ce6402747fe852fc37815.mp3?hdnea=exp=1760990886~acl=/api/1/1/b/d/0/0/bd0cab61ff8ce6402747fe852fc37815.mp3*~data=user_id=0,application_id=42~hmac=e08e6605ce37f36c62309a698cbf320b7d3ee690e8dd3bb2b4c35dbb8f9f7d55",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 75798,
+          "artist_name": "Adele"
+        },
+        {
+          "id": 1557137132,
+          "name": "Oh My God",
+          "duration": 225,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/1557137132",
+          "album_id": 273425942,
+          "album_name": "30",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/6/f/6/0/6f67a5073a9aa6a3c94c817aa4f49d5e.mp3?hdnea=exp=1760990886~acl=/api/1/1/6/f/6/0/6f67a5073a9aa6a3c94c817aa4f49d5e.mp3*~data=user_id=0,application_id=42~hmac=0297ddd53514cb0066407b3bf313542735392ad814f5e2afde2ac9415d3930dd",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 75798,
+          "artist_name": "Adele"
+        },
+        {
+          "id": 8086130,
+          "name": "Set Fire to the Rain",
+          "duration": 242,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/8086130",
+          "album_id": 746059,
+          "album_name": "21",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/8/9/d/0/89d33940ac8fd32e481a6f7ac7fa891a.mp3?hdnea=exp=1760990886~acl=/api/1/1/8/9/d/0/89d33940ac8fd32e481a6f7ac7fa891a.mp3*~data=user_id=0,application_id=42~hmac=af01f8a914ae7408038ac261897fd2df1b1af1558802051ea2f0a02dd1ff37fe",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 75798,
+          "artist_name": "Adele"
+        },
+        {
+          "id": 82715364,
+          "name": "Skyfall",
+          "duration": 286,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/82715364",
+          "album_id": 8307448,
+          "album_name": "Skyfall",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/e/2/6/0/e26bc2264f5f33f2587b0f5cc0b3b54e.mp3?hdnea=exp=1760990886~acl=/api/1/1/e/2/6/0/e26bc2264f5f33f2587b0f5cc0b3b54e.mp3*~data=user_id=0,application_id=42~hmac=8792a2628abe535eac62cfbf367768b646b7e1d71d1254a5f582baf6dd3f7941",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 75798,
+          "artist_name": "Adele"
+        }
+      ],
+      "albums": [
+        {
+          "id": 273425942,
+          "name": "30",
+          "releasedate": "2021-11-19",
+          "shareurl": "https://www.deezer.com/album/273425942",
+          "image": "https://cdn-images.dzcdn.net/images/cover/a87ee7c212c7b0f9ae687c378f260324/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 14880539,
+          "name": "25",
+          "releasedate": "2015-11-20",
+          "shareurl": "https://www.deezer.com/album/14880539",
+          "image": "https://cdn-images.dzcdn.net/images/cover/eaeadce7932a97533fe495881d2fcd7a/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 746059,
+          "name": "21",
+          "releasedate": "2011-01-24",
+          "shareurl": "https://www.deezer.com/album/746059",
+          "image": "https://cdn-images.dzcdn.net/images/cover/8bdaf37e2e7f883e84bbc3462c938293/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 105781,
+          "name": "19",
+          "releasedate": "2008-01-27",
+          "shareurl": "https://www.deezer.com/album/105781",
+          "image": "https://cdn-images.dzcdn.net/images/cover/c396bb2d73c016d7a1ffdaca77b5c255/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 251821,
+          "name": "19",
+          "releasedate": "2008-11-17",
+          "shareurl": "https://www.deezer.com/album/251821",
+          "image": "https://cdn-images.dzcdn.net/images/cover/cdab12a45f072fad70fe2ef35f10e28a/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Coldplay",
+      "artist": {
+        "id": 892,
+        "name": "Coldplay",
+        "shareurl": "https://www.deezer.com/artist/892",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/3087954bca22f306324912e5ac8375c3/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 3128096,
+          "name": "Yellow",
+          "duration": 266,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3128096",
+          "album_id": 301663,
+          "album_name": "Parachutes",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/e/4/5/0/e4565bf1d1d79ab75414dd882a7b58d3.mp3?hdnea=exp=1760990886~acl=/api/1/1/e/4/5/0/e4565bf1d1d79ab75414dd882a7b58d3.mp3*~data=user_id=0,application_id=42~hmac=c5e1f0689e6e7072ccc23635647622a9f53c9fb12062dd898931a40295bf22c2",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 892,
+          "artist_name": "Coldplay"
+        },
+        {
+          "id": 3157972,
+          "name": "Viva La Vida",
+          "duration": 242,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3157972",
+          "album_id": 303627,
+          "album_name": "Viva La Vida or Death and All His Friends",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/5/f/0/c5f0d57a616b78b9428bb966dbb959bf.mp3?hdnea=exp=1760990886~acl=/api/1/1/c/5/f/0/c5f0d57a616b78b9428bb966dbb959bf.mp3*~data=user_id=0,application_id=42~hmac=837faacc2b6e2cecc7cefae2edf5ef91f50e69c29847734a4aac4191e192b029",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 892,
+          "artist_name": "Coldplay"
+        },
+        {
+          "id": 3098840,
+          "name": "The Scientist",
+          "duration": 309,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3098840",
+          "album_id": 299821,
+          "album_name": "A Rush of Blood to the Head",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/3/c/3/0/3c3e78273b93d888ff1f7f6b92ee813b.mp3?hdnea=exp=1760990886~acl=/api/1/1/3/c/3/0/3c3e78273b93d888ff1f7f6b92ee813b.mp3*~data=user_id=0,application_id=42~hmac=f2218e70bde3fed20b7e4f3cf2974655981e22b65de6a923dc1c2b9bdcf2a3f6",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 892,
+          "artist_name": "Coldplay"
+        },
+        {
+          "id": 3106505,
+          "name": "Fix You",
+          "duration": 295,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3106505",
+          "album_id": 300328,
+          "album_name": "X&Y",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/a/8/1/0/a81b6f3b4d941ab1e0beae57cba05960.mp3?hdnea=exp=1760990886~acl=/api/1/1/a/8/1/0/a81b6f3b4d941ab1e0beae57cba05960.mp3*~data=user_id=0,application_id=42~hmac=0458499631993596ebce588e255d988278b20ea9f8dde8de6c3dd033702ffc5d",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 892,
+          "artist_name": "Coldplay"
+        },
+        {
+          "id": 3128095,
+          "name": "Sparks",
+          "duration": 227,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/3128095",
+          "album_id": 301663,
+          "album_name": "Parachutes",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/5/0/9/0/509ecc4c8d84326001251fe7ac0d4fbb.mp3?hdnea=exp=1760990886~acl=/api/1/1/5/0/9/0/509ecc4c8d84326001251fe7ac0d4fbb.mp3*~data=user_id=0,application_id=42~hmac=f6f4af6726d6a629e1ee3230fe1804daf9a72982a07916ca1980e7aaf055c3fd",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 892,
+          "artist_name": "Coldplay"
+        }
+      ],
+      "albums": [
+        {
+          "id": 650278821,
+          "name": "Moon Music",
+          "releasedate": "2024-10-04",
+          "shareurl": "https://www.deezer.com/album/650278821",
+          "image": "https://cdn-images.dzcdn.net/images/cover/8f63a01593c329798544895109f36f8c/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 651030131,
+          "name": "Moon Music (Full Moon Edition)",
+          "releasedate": "2024-10-06",
+          "shareurl": "https://www.deezer.com/album/651030131",
+          "image": "https://cdn-images.dzcdn.net/images/cover/3a9c27423cdcd667d26fa1ba78f6abc3/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 264785262,
+          "name": "Music Of The Spheres",
+          "releasedate": "2021-10-15",
+          "shareurl": "https://www.deezer.com/album/264785262",
+          "image": "https://cdn-images.dzcdn.net/images/cover/1abb9a47ab25986493537b08f00c57d3/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 119673702,
+          "name": "Everyday Life",
+          "releasedate": "2019-11-22",
+          "shareurl": "https://www.deezer.com/album/119673702",
+          "image": "https://cdn-images.dzcdn.net/images/cover/e07822db6d88c5197385835962bcdb98/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 80900852,
+          "name": "Live in Buenos Aires",
+          "releasedate": "2018-12-07",
+          "shareurl": "https://www.deezer.com/album/80900852",
+          "image": "https://cdn-images.dzcdn.net/images/cover/1bc81da3e04b66ccc4faa35fa3c2e74f/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Eminem",
+      "artist": {
+        "id": 13,
+        "name": "Eminem",
+        "shareurl": "https://www.deezer.com/artist/13",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/0f30bbd33a680030054af004d698d6ac/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 1109731,
+          "name": "Lose Yourself",
+          "duration": 326,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/1109731",
+          "album_id": 119606,
+          "album_name": "Curtain Call: The Hits",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/2/7/a/0/27a14827ff1e82c5e40e8b6a934a8637.mp3?hdnea=exp=1760990887~acl=/api/1/1/2/7/a/0/27a14827ff1e82c5e40e8b6a934a8637.mp3*~data=user_id=0,application_id=42~hmac=2a6e8c3da7206a1b392a7463b45dfdd61420b131ecd8abb88e3315fab350cadb",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 13,
+          "artist_name": "Eminem"
+        },
+        {
+          "id": 916424,
+          "name": "Without Me",
+          "duration": 290,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/916424",
+          "album_id": 103248,
+          "album_name": "The Eminem Show",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/a/e/b/0/aeb58f2f63ee57fb9c47cbe8fb5ccdaa.mp3?hdnea=exp=1760990887~acl=/api/1/1/a/e/b/0/aeb58f2f63ee57fb9c47cbe8fb5ccdaa.mp3*~data=user_id=0,application_id=42~hmac=56065ad9dcfef5d127ee84524af67d8c7c46c8b4f90a2adf626c624daa654bb9",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 13,
+          "artist_name": "Eminem"
+        },
+        {
+          "id": 1109739,
+          "name": "Mockingbird",
+          "duration": 251,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/1109739",
+          "album_id": 119606,
+          "album_name": "Curtain Call: The Hits",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/e/4/5/0/e4589311b7cdd524d1767bc2b7b6e17f.mp3?hdnea=exp=1760990887~acl=/api/1/1/e/4/5/0/e4589311b7cdd524d1767bc2b7b6e17f.mp3*~data=user_id=0,application_id=42~hmac=239f6c62256af605b0b8112afe6330d9ef34591efc17a54d408743a6d80588a4",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 13,
+          "artist_name": "Eminem"
+        },
+        {
+          "id": 916445,
+          "name": "Till I Collapse",
+          "duration": 297,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/916445",
+          "album_id": 103248,
+          "album_name": "The Eminem Show",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/8/4/6/0/846995adc7246b0d3a90d6c3281a298a.mp3?hdnea=exp=1760990887~acl=/api/1/1/8/4/6/0/846995adc7246b0d3a90d6c3281a298a.mp3*~data=user_id=0,application_id=42~hmac=a4ff409f6ec2a7cc185e51141ac9acc83b03f156542f7f1994553e3fdcc223fe",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 13,
+          "artist_name": "Eminem"
+        },
+        {
+          "id": 6461440,
+          "name": "Love The Way You Lie",
+          "duration": 263,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/6461440",
+          "album_id": 595243,
+          "album_name": "Recovery",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/8/9/0/c89ba14b5d142a98e3ad48036b05d10d.mp3?hdnea=exp=1760990887~acl=/api/1/1/c/8/9/0/c89ba14b5d142a98e3ad48036b05d10d.mp3*~data=user_id=0,application_id=42~hmac=83f027bdb3810d9612659bae4dfe5b20b5ef7d0638e4111844cdc85ee38f108e",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 13,
+          "artist_name": "Eminem"
+        }
+      ],
+      "albums": [
+        {
+          "id": 810703161,
+          "name": "STANS (The Official Soundtrack)",
+          "releasedate": "2025-08-26",
+          "shareurl": "https://www.deezer.com/album/810703161",
+          "image": "https://cdn-images.dzcdn.net/images/cover/5619aa4f4ff24b1f0d5ae344880ab2dc/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 811771891,
+          "name": "STANS (The Official Soundtrack)",
+          "releasedate": "2025-08-27",
+          "shareurl": "https://www.deezer.com/album/811771891",
+          "image": "https://cdn-images.dzcdn.net/images/cover/71568c0bf186dcbb8c81a47f56a374c2/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 641646351,
+          "name": "The Death of Slim Shady (Coup De Grâce): Expanded Mourner’s Edition",
+          "releasedate": "2024-09-13",
+          "shareurl": "https://www.deezer.com/album/641646351",
+          "image": "https://cdn-images.dzcdn.net/images/cover/95c08f630c379d8f3ff8e58a2d47569f/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 614167792,
+          "name": "The Death of Slim Shady (Coup De Grâce)",
+          "releasedate": "2024-07-12",
+          "shareurl": "https://www.deezer.com/album/614167792",
+          "image": "https://cdn-images.dzcdn.net/images/cover/53b29cc4d8716973b5791cf9679e6001/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 505311641,
+          "name": "The Marshall Mathers LP2 (Expanded Edition)",
+          "releasedate": "2023-11-03",
+          "shareurl": "https://www.deezer.com/album/505311641",
+          "image": "https://cdn-images.dzcdn.net/images/cover/11e1fc126a751dc230a1d761ddd1e7b0/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Rihanna",
+      "artist": {
+        "id": 564,
+        "name": "Rihanna",
+        "shareurl": "https://www.deezer.com/artist/564",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/b78cdc205fae2641b89208e78b30e1b3/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 925109,
+          "name": "Breakin' Dishes",
+          "duration": 200,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/925109",
+          "album_id": 104188,
+          "album_name": "Good Girl Gone Bad: Reloaded",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/1/9/0/c19e120a43539102abfb3a8e1ce00996.mp3?hdnea=exp=1760990887~acl=/api/1/1/c/1/9/0/c19e120a43539102abfb3a8e1ce00996.mp3*~data=user_id=0,application_id=42~hmac=d3467aa24eb02f976f41ef598607a33a8a9e8368f283d22f30585ff08361c650",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 564,
+          "artist_name": "Rihanna"
+        },
+        {
+          "id": 62376291,
+          "name": "Stay",
+          "duration": 241,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/62376291",
+          "album_id": 6120369,
+          "album_name": "Unapologetic (Deluxe)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/0/2/4/0/024fa2b07b9cf44a902aa11ad7494cde.mp3?hdnea=exp=1760990887~acl=/api/1/1/0/2/4/0/024fa2b07b9cf44a902aa11ad7494cde.mp3*~data=user_id=0,application_id=42~hmac=0d96e805bd4750179b87bb932e282ac91b9be7ca9880f3463b12ddad10af4843",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 564,
+          "artist_name": "Rihanna"
+        },
+        {
+          "id": 14525573,
+          "name": "Where Have You Been (Album Version)",
+          "duration": 242,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/14525573",
+          "album_id": 1335314,
+          "album_name": "Talk That Talk (Deluxe)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/e/4/0/ce44521a7f428a80ad11b198f4d63fdc.mp3?hdnea=exp=1760990887~acl=/api/1/1/c/e/4/0/ce44521a7f428a80ad11b198f4d63fdc.mp3*~data=user_id=0,application_id=42~hmac=0549aef8d049209b46992bfb533eb305ec8ec8f224414ecb7c91786de0d8d8a8",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 564,
+          "artist_name": "Rihanna"
+        },
+        {
+          "id": 13529563,
+          "name": "Only Girl (In The World)",
+          "duration": 235,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/13529563",
+          "album_id": 1238967,
+          "album_name": "Loud",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/3/d/1/0/3d19eee9be5382b0e93b98a55a16c507.mp3?hdnea=exp=1760990887~acl=/api/1/1/3/d/1/0/3d19eee9be5382b0e93b98a55a16c507.mp3*~data=user_id=0,application_id=42~hmac=a9991c9d78373c9a622a0cf1696184db85b559b532f625f6cee4c33e896ac933",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 564,
+          "artist_name": "Rihanna"
+        },
+        {
+          "id": 925108,
+          "name": "Don't Stop The Music",
+          "duration": 267,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/925108",
+          "album_id": 104188,
+          "album_name": "Good Girl Gone Bad: Reloaded",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/b/6/8/0/b68999f43dd5f6bc0f6396da4fc0c6c2.mp3?hdnea=exp=1760990887~acl=/api/1/1/b/6/8/0/b68999f43dd5f6bc0f6396da4fc0c6c2.mp3*~data=user_id=0,application_id=42~hmac=4b9c3cdb1cfec3e7a327db8738e8527469c7435374e7368b0db4e66f5e82b086",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 564,
+          "artist_name": "Rihanna"
+        }
+      ],
+      "albums": [
+        {
+          "id": 373539777,
+          "name": "Black Panther: Wakanda Forever - Music From and Inspired By",
+          "releasedate": "2022-11-11",
+          "shareurl": "https://www.deezer.com/album/373539777",
+          "image": "https://cdn-images.dzcdn.net/images/cover/6d416dc66a55cc8914425c365c1e7b74/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 12279688,
+          "name": "ANTI (Deluxe)",
+          "releasedate": "2016-01-28",
+          "shareurl": "https://www.deezer.com/album/12279688",
+          "image": "https://cdn-images.dzcdn.net/images/cover/4fc5f387624c25de0ec96b4719e3a36d/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 12279700,
+          "name": "ANTI",
+          "releasedate": "2016-01-28",
+          "shareurl": "https://www.deezer.com/album/12279700",
+          "image": "https://cdn-images.dzcdn.net/images/cover/37c8008f5bf6b7368fa849a5d5e9b013/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 6703877,
+          "name": "Right Now (Remixes)",
+          "releasedate": "2013-01-01",
+          "shareurl": "https://www.deezer.com/album/6703877",
+          "image": "https://cdn-images.dzcdn.net/images/cover/739c6a7333d3e95adc589993cdf56d80/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 6943071,
+          "name": "What Now (Remixes)",
+          "releasedate": "2013-09-17",
+          "shareurl": "https://www.deezer.com/album/6943071",
+          "image": "https://cdn-images.dzcdn.net/images/cover/396f072a53a24bbe7ef64e3d2dec5044/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Imagine Dragons",
+      "artist": {
+        "id": 416239,
+        "name": "Imagine Dragons",
+        "shareurl": "https://www.deezer.com/artist/416239",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/1ba025c23cae3dee14b51152990285fc/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 63510361,
+          "name": "Demons",
+          "duration": 175,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/63510361",
+          "album_id": 6240279,
+          "album_name": "Night Visions",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/5/3/1/0/5319589be9c58c13483324b4e5a09161.mp3?hdnea=exp=1760990888~acl=/api/1/1/5/3/1/0/5319589be9c58c13483324b4e5a09161.mp3*~data=user_id=0,application_id=42~hmac=3da1c0e616edaa6b0b86aa98fa6b0afd4fa3b2481e061938ee9c64dd6d91f843",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 416239,
+          "artist_name": "Imagine Dragons"
+        },
+        {
+          "id": 528330441,
+          "name": "Believer",
+          "duration": 202,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/528330441",
+          "album_id": 68346981,
+          "album_name": "Evolve",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/b/e/0/cbe9e3bf5b7fb4c15dc76f53c2221559.mp3?hdnea=exp=1760990888~acl=/api/1/1/c/b/e/0/cbe9e3bf5b7fb4c15dc76f53c2221559.mp3*~data=user_id=0,application_id=42~hmac=56c9669d50779053cac98a735ce96621f0d1cd01a5c20f17afb7ad8ce3b15cbe",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 416239,
+          "artist_name": "Imagine Dragons"
+        },
+        {
+          "id": 579893072,
+          "name": "Bad Liar",
+          "duration": 260,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/579893072",
+          "album_id": 77648602,
+          "album_name": "Origins (Deluxe)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/e/e/d/0/eed6fe3894f2fc802bd6ec091488e6d0.mp3?hdnea=exp=1760990888~acl=/api/1/1/e/e/d/0/eed6fe3894f2fc802bd6ec091488e6d0.mp3*~data=user_id=0,application_id=42~hmac=6dc05c1415fd4db2fc03a9f5743e09d42505a8ef463b03507364ff65068ca48f",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 416239,
+          "artist_name": "Imagine Dragons"
+        },
+        {
+          "id": 528330451,
+          "name": "Walking The Wire",
+          "duration": 233,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/528330451",
+          "album_id": 68346981,
+          "album_name": "Evolve",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/a/6/0/ca61e202913dce12da4dd4758d16d7a7.mp3?hdnea=exp=1760990888~acl=/api/1/1/c/a/6/0/ca61e202913dce12da4dd4758d16d7a7.mp3*~data=user_id=0,application_id=42~hmac=42a491ca5d22051da6d4f8d0e7b1db2672fa91b61d6cc8ffe6d85d52ec677322",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 416239,
+          "artist_name": "Imagine Dragons"
+        },
+        {
+          "id": 63510358,
+          "name": "Radioactive",
+          "duration": 187,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/63510358",
+          "album_id": 6240279,
+          "album_name": "Night Visions",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/4/3/2/0/43253a7dedefdd14b613839ab6b6e976.mp3?hdnea=exp=1760990888~acl=/api/1/1/4/3/2/0/43253a7dedefdd14b613839ab6b6e976.mp3*~data=user_id=0,application_id=42~hmac=23db2645ffefdfbba3b1773d51cb785053103305d53df3b496f47bbc88a371db",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 416239,
+          "artist_name": "Imagine Dragons"
+        }
+      ],
+      "albums": [
+        {
+          "id": 712820501,
+          "name": "Reflections (From The Vault Of Smoke + Mirrors)",
+          "releasedate": "2025-02-21",
+          "shareurl": "https://www.deezer.com/album/712820501",
+          "image": "https://cdn-images.dzcdn.net/images/cover/2db5a6a6762862a1846abc9b10e258ba/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 673081991,
+          "name": "Deezer Sessions Live",
+          "releasedate": "2024-11-22",
+          "shareurl": "https://www.deezer.com/album/673081991",
+          "image": "https://cdn-images.dzcdn.net/images/cover/e57e0b72dc4482a9b45f9182b161c091/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 604614962,
+          "name": "LOOM",
+          "releasedate": "2024-06-28",
+          "shareurl": "https://www.deezer.com/album/604614962",
+          "image": "https://cdn-images.dzcdn.net/images/cover/4a3e5538d0d0caa37a76de4a34266191/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 467100135,
+          "name": "Imagine Dragons Live in Vegas",
+          "releasedate": "2023-07-28",
+          "shareurl": "https://www.deezer.com/album/467100135",
+          "image": "https://cdn-images.dzcdn.net/images/cover/cc0dc7fbcbba2e64edeb091c7e339505/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 331818647,
+          "name": "Mercury - Acts 1 & 2",
+          "releasedate": "2022-07-01",
+          "shareurl": "https://www.deezer.com/album/331818647",
+          "image": "https://cdn-images.dzcdn.net/images/cover/7f7aae26b50cb046c872238b6a2a10c2/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    },
+    {
+      "query": "Dua Lipa",
+      "artist": {
+        "id": 8706544,
+        "name": "Dua Lipa",
+        "shareurl": "https://www.deezer.com/artist/8706544",
+        "website": null,
+        "image": "https://cdn-images.dzcdn.net/images/artist/7375742a46dbebb6efc0ae362e18eb24/250x250-000000-80-0-0.jpg",
+        "joindate": null
+      },
+      "tracks": [
+        {
+          "id": 2525537871,
+          "name": "Houdini",
+          "duration": 185,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2525537871",
+          "album_id": 508032681,
+          "album_name": "Houdini",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/3/6/7/0/367e45ecbf07a341e248b400f51fc544.mp3?hdnea=exp=1760990888~acl=/api/1/1/3/6/7/0/367e45ecbf07a341e248b400f51fc544.mp3*~data=user_id=0,application_id=42~hmac=fcd96e33249e1f0f9d53e501c11134a116e41e2a899d6d0d0830468f5de234a2",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 8706544,
+          "artist_name": "Dua Lipa"
+        },
+        {
+          "id": 1457025872,
+          "name": "Cold Heart (PNAU Remix)",
+          "duration": 203,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/1457025872",
+          "album_id": 249925992,
+          "album_name": "Cold Heart (PNAU Remix)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/6/d/d/0/6dd02ab484604599c4351f82fd89a760.mp3?hdnea=exp=1760990888~acl=/api/1/1/6/d/d/0/6dd02ab484604599c4351f82fd89a760.mp3*~data=user_id=0,application_id=42~hmac=1d9fb7799503be64deb520286b132d7f0a9c28b32fbbf2bfe2490e19e22575c2",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 413,
+          "artist_name": "Elton John"
+        },
+        {
+          "id": 1124841682,
+          "name": "Levitating",
+          "duration": 203,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/1124841682",
+          "album_id": 182811182,
+          "album_name": "Future Nostalgia",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/9/c/5/0/9c570bc806fc277bb73ba024e956d057.mp3?hdnea=exp=1760990888~acl=/api/1/1/9/c/5/0/9c570bc806fc277bb73ba024e956d057.mp3*~data=user_id=0,application_id=42~hmac=ee39f8b01e8af6f6d3d49c2c50662a1992a169e59f577e87c0562a8c83f414d2",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 8706544,
+          "artist_name": "Dua Lipa"
+        },
+        {
+          "id": 2661514912,
+          "name": "Training Season",
+          "duration": 209,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2661514912",
+          "album_id": 547520122,
+          "album_name": "Training Season",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/c/5/e/0/c5ec7e82b1818a888cb3061ebb31db1b.mp3?hdnea=exp=1760990888~acl=/api/1/1/c/5/e/0/c5ec7e82b1818a888cb3061ebb31db1b.mp3*~data=user_id=0,application_id=42~hmac=c4feee9e9ac9ff30862aa82bd4836cdd090da928125d7d69ecc24025ea39210e",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 8706544,
+          "artist_name": "Dua Lipa"
+        },
+        {
+          "id": 2299840635,
+          "name": "Dance The Night (From Barbie The Album)",
+          "duration": 176,
+          "releasedate": null,
+          "shareurl": "https://www.deezer.com/track/2299840635",
+          "album_id": 446073025,
+          "album_name": "Dance The Night (From Barbie The Album)",
+          "audio": "https://cdnt-preview.dzcdn.net/api/1/1/f/9/0/0/f90bfaff6477359d65702605fbfe16eb.mp3?hdnea=exp=1760990888~acl=/api/1/1/f/9/0/0/f90bfaff6477359d65702605fbfe16eb.mp3*~data=user_id=0,application_id=42~hmac=d50e571d4025f3abc0a060a25eb5e6345117a8c9463615aefd1041690959cdc0",
+          "audiodownload": null,
+          "audiodownload_allowed": false,
+          "license_ccurl": null,
+          "artist_id": 8706544,
+          "artist_name": "Dua Lipa"
+        }
+      ],
+      "albums": [
+        {
+          "id": 675799951,
+          "name": "Dua Lipa Live from the Royal Albert Hall",
+          "releasedate": "2024-12-06",
+          "shareurl": "https://www.deezer.com/album/675799951",
+          "image": "https://cdn-images.dzcdn.net/images/cover/512ac88bf6636663303b73c3860d915b/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 604972132,
+          "name": "Radical Optimism (Extended Versions)",
+          "releasedate": "2024-06-28",
+          "shareurl": "https://www.deezer.com/album/604972132",
+          "image": "https://cdn-images.dzcdn.net/images/cover/884fdfd4901d4179f8dbbb2be9e0b10d/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 579783251,
+          "name": "Radical Optimism",
+          "releasedate": "2024-05-03",
+          "shareurl": "https://www.deezer.com/album/579783251",
+          "image": "https://cdn-images.dzcdn.net/images/cover/e77de425a3ba0c69f00e6525daec5738/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 169258072,
+          "name": "Club Future Nostalgia (DJ Mix)",
+          "releasedate": "2020-08-28",
+          "shareurl": "https://www.deezer.com/album/169258072",
+          "image": "https://cdn-images.dzcdn.net/images/cover/0b84eed7575c774d6d95f5c98752866e/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        },
+        {
+          "id": 182811182,
+          "name": "Future Nostalgia",
+          "releasedate": "2020-10-30",
+          "shareurl": "https://www.deezer.com/album/182811182",
+          "image": "https://cdn-images.dzcdn.net/images/cover/3c5cd0eb919ff9a7767b8ac7acc89e40/250x250-000000-80-0-0.jpg",
+          "zip": null,
+          "artist_id": null,
+          "artist_name": null
+        }
+      ]
+    }
+  ]
+}

@@ -815,11 +815,11 @@ export default function AudioPlayer() {
 
 	// Load and play track when currentTrack changes
 	useEffect(() => {
-		if (!audioRef.current || !currentTrack?.audio) return
+		if (!audioRef.current || !currentTrack) return
 
-		// Use proxy to bypass CORS
-		const proxyUrl = `/api/audio/stream?url=${encodeURIComponent(currentTrack.audio)}`
-		console.log("Loading track:", currentTrack.name, "via proxy")
+		// Use track ID for smart URL refresh on backend
+		const proxyUrl = `/api/audio/stream?track_id=${encodeURIComponent(currentTrack.id)}`
+		console.log("Loading track:", currentTrack.name, "ID:", currentTrack.id)
 
 		audioRef.current.src = proxyUrl
 		audioRef.current.load()
