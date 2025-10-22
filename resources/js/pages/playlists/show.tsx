@@ -3,12 +3,13 @@ import { router } from "@inertiajs/react"
 import { usePlayer } from "@/hooks/usePlayer"
 import { useImageColor } from "@/hooks/useImageColor"
 import { Modals } from "@/hooks/useModals"
-import { useState, useEffect } from "react"
+import { useEffect, useMemo, useState, type MouseEvent } from "react"
 import axios from "axios"
 import { WaveformIndicator } from "@/components/waveform-indicator"
 import { Button } from "@/components/ui/button"
 import PlayButton from "@/components/home/play-button"
 import { Music } from "lucide-react"
+import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 
 interface PlaylistShowProps {
 	playlist: Playlist
@@ -25,7 +26,7 @@ interface SearchTrack {
 }
 
 export default function PlaylistShow({ playlist }: PlaylistShowProps) {
-	const { currentTrack, isPlaying, setCurrentTrack } = usePlayer()
+	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
 	const { rgba } = useImageColor(
 		playlist.is_default
@@ -36,6 +37,10 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [searchResults, setSearchResults] = useState<SearchTrack[]>([])
 	const [isSearching, setIsSearching] = useState(false)
+	const playerQueue = useMemo(
+		() => toPlayerQueue(playlist.tracks),
+		[playlist.tracks],
+	)
 
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
@@ -43,9 +48,29 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		return `${mins}:${secs.toString().padStart(2, "0")}`
 	}
 
-	const handlePlayTrack = (track: any, index: number, e: React.MouseEvent) => {
-		e.stopPropagation()
-		setCurrentTrack(track, playlist.tracks as any[], index)
+	const handlePlayTrack = (
+		track: Playlist["tracks"][number],
+		index: number,
+		event: MouseEvent<HTMLElement>,
+	) => {
+		event.stopPropagation()
+		const queueTrack = playerQueue[index] ?? toPlayerTrack(track)
+		if (currentTrack?.id === queueTrack.id) {
+			setIsPlaying(!isPlaying)
+			return
+		}
+		setCurrentTrack(queueTrack, playerQueue, index)
+	}
+
+	const handleHeroPlay = (event: MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation()
+		if (!playerQueue.length) return
+		const firstTrack = playerQueue[0]
+		if (currentTrack?.id === firstTrack.id) {
+			setIsPlaying(!isPlaying)
+			return
+		}
+		setCurrentTrack(firstTrack, playerQueue, 0)
 	}
 
 	const handleRemoveTrack = (
@@ -179,7 +204,17 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 					backgroundImage: `linear-gradient(to bottom, ${rgba(0.4)}, transparent)`,
 				}}
 			>
-				<PlayButton hoverable={false} />
+				<PlayButton
+					hoverable={false}
+					onClick={handleHeroPlay}
+					className={
+						playerQueue[0] &&
+						currentTrack?.id === playerQueue[0].id &&
+						isPlaying
+							? "bg-white"
+							: undefined
+					}
+				/>
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
 						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"

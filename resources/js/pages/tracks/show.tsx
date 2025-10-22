@@ -1,8 +1,11 @@
 import PlayButton from "@/components/home/play-button"
 import { Button } from "@/components/ui/button"
 import { useImageColor } from "@/hooks/useImageColor"
+import { usePlayer } from "@/hooks/usePlayer"
+import { toPlayerTrack } from "@/utils/player"
 import type { Track } from "@/types"
 import { router } from "@inertiajs/react"
+import { useMemo, type MouseEvent } from "react"
 
 interface TrackShowProps {
 	track: Track
@@ -10,6 +13,18 @@ interface TrackShowProps {
 
 export default function TrackShow({ track }: TrackShowProps) {
 	const { rgba } = useImageColor(track.album_cover)
+	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
+	const playerTrack = useMemo(() => toPlayerTrack(track), [track])
+	const isCurrentTrack = currentTrack?.id === playerTrack.id
+	const handlePlay = (event?: MouseEvent<HTMLButtonElement>) => {
+		event?.stopPropagation()
+		if (isCurrentTrack) {
+			setIsPlaying(!isPlaying)
+			return
+		}
+		// Track detail pages play a standalone queue with just this track.
+		setCurrentTrack(playerTrack, [playerTrack], 0)
+	}
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
 		const secs = seconds % 60
@@ -79,7 +94,11 @@ export default function TrackShow({ track }: TrackShowProps) {
 					backgroundImage: `linear-gradient(to bottom, ${rgba(0.3)}, transparent)`,
 				}}
 			>
-				<PlayButton hoverable={false} />
+				<PlayButton
+					hoverable={false}
+					onClick={handlePlay}
+					className={isCurrentTrack && isPlaying ? "bg-white" : undefined}
+				/>
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
 						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"

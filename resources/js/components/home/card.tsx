@@ -3,10 +3,17 @@ import PlayButton from "./play-button"
 
 interface CardProps {
 	item: ShelfItem
+	index: number
 	onItemSelected?: (item: ShelfItem) => void
+	onPlay?: (item: ShelfItem, index: number) => void
 }
 
-export default function Card({ item, onItemSelected }: CardProps) {
+export default function Card({
+	item,
+	index,
+	onItemSelected,
+	onPlay,
+}: CardProps) {
 	return (
 		<article
 			className="min-w-[170px] group/card cursor-pointer p-3 hover:bg-zinc-900 active:bg-black transition-all rounded-md"
@@ -27,7 +34,11 @@ export default function Card({ item, onItemSelected }: CardProps) {
 				{item.type !== "artist" && (
 					<PlayButton
 						className="group-hover/card:translate-y-0 group-hover/card:opacity-100 group-hover/card:scale-100"
-						onClick={(e) => e.stopPropagation()}
+						onClick={(event) => {
+							if (!onPlay) return
+							event.stopPropagation()
+							onPlay(item, index)
+						}}
 					/>
 				)}
 			</div>

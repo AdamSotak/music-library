@@ -60,7 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
     Route::get('/api/search/tracks', [SearchController::class, 'searchTracks'])->name('api.search.tracks');
 
-    // Audio proxy to bypass CORS
+    // Audio proxy with smart URL refresh
     Route::get('/api/audio/stream', [AudioProxyController::class, 'stream'])->name('api.audio.stream');
 
     // Debug API endpoint
