@@ -46,7 +46,7 @@ class EnsureLikedSongsPlaylist extends Command
                     'user_id' => $user->id,
                 ]);
 
-                $this->info("✓ Created 'Liked Songs' for user: {$user->name} ({$user->email})");
+                $this->info("Created 'Liked Songs' for user: {$user->name} ({$user->email})");
                 $created++;
             } else {
                 $this->comment("- User {$user->name} already has a 'Liked Songs' playlist");
@@ -54,7 +54,7 @@ class EnsureLikedSongsPlaylist extends Command
         }
 
         if ($created > 0) {
-            $this->info("✅ Success! Created {$created} 'Liked Songs' playlist(s)");
+            $this->info("Success! Created {$created} 'Liked Songs' playlist(s)");
         } else {
             $this->info('All users already have their "Liked Songs" playlist');
         }
