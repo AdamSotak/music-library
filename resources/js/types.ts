@@ -36,7 +36,7 @@ export type Track = {
 	album_cover?: string
 	duration: number
 	audio: string | null
-	color: string
+	color?: string
 }
 
 export type Album = {
@@ -64,4 +64,5 @@ export type ShelfItem = {
 	subtitle?: string
 	type?: "album" | "track" | "artist"
 	image?: string
+	track?: Track
 }

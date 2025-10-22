@@ -9,12 +9,14 @@ export default function Shelf({
 	topTitle,
 	showMoreVisible = true,
 	onItemSelected,
+	onPlayItem,
 }: {
 	title?: string
 	items: ShelfItem[]
 	topTitle?: string
 	showMoreVisible?: boolean
 	onItemSelected?: (item: ShelfItem) => void
+	onPlayItem?: (item: ShelfItem, index: number) => void
 }) {
 	const scrollerRef = useRef<HTMLDivElement | null>(null)
 	const [canLeft, setCanLeft] = useState(false)
@@ -133,14 +135,24 @@ export default function Shelf({
 						if (index === 0) {
 							return (
 								<div key={item.id} className="-ml-2">
-									<Card item={item} onItemSelected={onItemSelected} />
+									<Card
+										item={item}
+										index={index}
+										onItemSelected={onItemSelected}
+										onPlay={onPlayItem}
+									/>
 								</div>
 							)
 						}
 
 						return (
 							<div key={item.id}>
-								<Card item={item} onItemSelected={onItemSelected} />
+								<Card
+									item={item}
+									index={index}
+									onItemSelected={onItemSelected}
+									onPlay={onPlayItem}
+								/>
 							</div>
 						)
 					})}

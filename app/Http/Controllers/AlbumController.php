@@ -40,6 +40,8 @@ class AlbumController extends Controller
                     'artist' => $track->artist->name,
                     'artist_id' => $track->artist->id,
                     'album' => $album->name,
+                    'album_id' => $album->id,
+                    'album_cover' => $album->image_url,
                     'duration' => $track->duration,
                     'audio' => $track->audio_url,
                 ]),

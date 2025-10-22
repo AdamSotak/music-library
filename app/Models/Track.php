@@ -14,6 +14,7 @@ class Track extends Model
 
     protected $fillable = [
         'id',
+        'deezer_track_id',
         'name',
         'artist_id',
         'album_id',
