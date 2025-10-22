@@ -46,6 +46,7 @@ class PlaylistController extends Controller
             'name' => $validated['name'],
             'description' => $validated['description'] ?? '',
             'is_default' => false,
+            'user_id' => auth()->id(),
         ]);
 
         return redirect()->back();
@@ -59,6 +60,12 @@ class PlaylistController extends Controller
         ]);
 
         $playlist = Playlist::findOrFail($id);
+
+        // Authorization: User can only update their own playlists
+        if ($playlist->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $playlist->update([
             'name' => $validated['name'],
             'description' => $validated['description'] ?? '',
@@ -70,6 +77,12 @@ class PlaylistController extends Controller
     public function destroy(string $id)
     {
         $playlist = Playlist::findOrFail($id);
+
+        // Authorization: User can only delete their own playlists
+        if ($playlist->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $playlist->delete();
 
         return redirect()->route('collection.playlists');
@@ -83,6 +96,11 @@ class PlaylistController extends Controller
         ]);
 
         $playlist = Playlist::findOrFail($id);
+
+        // Authorization: User can only add tracks to their own playlists
+        if ($playlist->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
 
         // Attach tracks
         foreach ($validated['track_ids'] as $trackId) {
@@ -98,6 +116,12 @@ class PlaylistController extends Controller
     public function removeTrack(string $playlistId, string $trackId)
     {
         $playlist = Playlist::findOrFail($playlistId);
+
+        // Authorization: User can only remove tracks from their own playlists
+        if ($playlist->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $playlist->tracks()->detach($trackId);
 
         return redirect()->back();

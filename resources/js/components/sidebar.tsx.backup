@@ -28,7 +28,7 @@ interface SidebarProps {
 
 type FilterTab = "playlists" | "artists" | "albums"
 type SortOption = "recents" | "recently_added" | "alphabetical" | "creator"
-type ViewOption = "list" | "compact-list" | "grid" | "large-grid"
+type ViewOption = "list" | "compact" | "grid" | "large-grid"
 
 export default function Sidebar({
 	isExpanded,
@@ -137,22 +137,21 @@ export default function Sidebar({
 						Your Library
 					</span>
 				</div>
-				<div className="flex items-center gap-1">
+				<div className="flex items-center gap-2">
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
-								variant="ghost"
-								size="sm"
-								className="group h-8 px-2 gap-1.5 text-[#b3b3b3] hover:text-white hover:bg-transparent hover:scale-105 transition-all"
+								variant="spotifyTransparent"
+								size="icon"
+								className="group w-8 h-8"
 							>
 								<svg
 									viewBox="0 0 16 16"
-									fill="currentColor"
-									className="w-4 h-4"
+									fill="#b3b3b3"
+									className="w-4 h-4 transition-colors duration-200 group-hover:fill-white"
 								>
 									<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75"></path>
 								</svg>
-								<span className="text-sm">Create</span>
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="start" className="w-56 bg-[#282828] border-none text-white p-1">
@@ -213,20 +212,6 @@ export default function Sidebar({
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-8 w-8 text-[#b3b3b3] hover:text-white hover:bg-transparent hover:scale-105 transition-all"
-						onClick={() => setIsExpanded(false)}
-					>
-						<svg
-							viewBox="0 0 16 16"
-							fill="currentColor"
-							className="w-4 h-4"
-						>
-							<path d="M11.03 8a.75.75 0 0 1-.75.75H1.5a.75.75 0 0 1 0-1.5h8.78a.75.75 0 0 1 .75.75zM6.75 5.5a.75.75 0 0 1-1.5 0V1.75a.75.75 0 0 1 1.5 0V5.5zm-1.5 5a.75.75 0 0 1 1.5 0v3.75a.75.75 0 0 1-1.5 0V10.5z"></path>
-						</svg>
-					</Button>
 				</div>
 			</div>
 
@@ -381,7 +366,7 @@ export default function Sidebar({
 							View as
 						</DropdownMenuLabel>
 						<DropdownMenuItem
-							onClick={() => setViewAs("compact-list")}
+							onClick={() => setViewAs("list")}
 							className="flex justify-between px-3 py-2 hover:bg-[#3e3e3e] cursor-pointer"
 						>
 							<div className="flex items-center gap-2">
@@ -393,33 +378,7 @@ export default function Sidebar({
 								>
 									<path d="M0 1.75A.75.75 0 0 1 .75 1h14.5a.75.75 0 0 1 0 1.5H.75A.75.75 0 0 1 0 1.75zm0 6A.75.75 0 0 1 .75 7h14.5a.75.75 0 0 1 0 1.5H.75A.75.75 0 0 1 0 7.75zm0 6a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H.75a.75.75 0 0 1-.75-.75z"></path>
 								</svg>
-								<span>Compact list</span>
-							</div>
-							{viewAs === "compact-list" && (
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 16 16"
-									fill="currentColor"
-									className="w-4 h-4 text-green-500"
-								>
-									<path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0"></path>
-								</svg>
-							)}
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							onClick={() => setViewAs("list")}
-							className="flex justify-between px-3 py-2 hover:bg-[#3e3e3e] cursor-pointer"
-						>
-							<div className="flex items-center gap-2">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 16 16"
-									fill="currentColor"
-									className="w-4 h-4"
-								>
-									<path d="M15 14.5H5V13h10v1.5zm0-5.75H5v-1.5h10v1.5zM15 3H5V1.5h10V3zM3 3H1V1.5h2V3zm0 11.5H1V13h2v1.5zm0-5.75H1v-1.5h2v1.5z"></path>
-								</svg>
-								<span>List</span>
+								<span>Compact</span>
 							</div>
 							{viewAs === "list" && (
 								<svg
@@ -463,7 +422,7 @@ export default function Sidebar({
 			</div>
 
 			{/* Content Area */}
-			<div className={`px-2 flex-1 overflow-y-auto ${viewAs === "grid" ? "grid grid-cols-2 gap-2 pt-2" : viewAs === "compact-list" ? "flex flex-col gap-0" : "flex flex-col gap-1"}`}>
+			<div className="flex flex-col gap-0 px-2 flex-1 overflow-y-auto">
 				{activeTab === "playlists" &&
 					sortedPlaylists.map((playlist) => (
 						<SidebarItem
@@ -477,7 +436,6 @@ export default function Sidebar({
 							onClose={isMobile ? onClose : undefined}
 							isMobile={isMobile}
 							isLikedSongs={playlist.is_default}
-							viewMode={viewAs}
 						/>
 					))}
 
@@ -494,7 +452,6 @@ export default function Sidebar({
 								href={`/artist/${artist.id}`}
 								onClose={isMobile ? onClose : undefined}
 								isMobile={isMobile}
-								viewMode={viewAs}
 							/>
 						))
 					) : (
@@ -527,7 +484,6 @@ export default function Sidebar({
 								href={`/albums/${album.id}`}
 								onClose={isMobile ? onClose : undefined}
 								isMobile={isMobile}
-								viewMode={viewAs}
 							/>
 						))
 					) : (

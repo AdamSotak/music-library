@@ -2,11 +2,13 @@ import PlayButton from "@/components/home/play-button"
 import Shelf from "@/components/home/shelf"
 import { Button } from "@/components/ui/button"
 import { usePlayer } from "@/hooks/usePlayer"
+import { Modals } from "@/hooks/useModals"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
-import type { Album, Artist, ShelfItem, Track } from "@/types"
+import type { Album, Artist, InertiaPageProps, ShelfItem, Track } from "@/types"
 import { Utils } from "@/utils"
-import { router } from "@inertiajs/react"
-import { useMemo, type MouseEvent } from "react"
+import { router, usePage } from "@inertiajs/react"
+import { useMemo, useState, useEffect, type MouseEvent } from "react"
+import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
 
 interface ArtistPageProps {
 	artist: Artist
@@ -21,6 +23,21 @@ export default function ArtistPage({
 }: ArtistPageProps) {
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const playerQueue = useMemo(() => toPlayerQueue(tracks), [tracks])
+	const { followedArtists, playlists } = usePage().props as unknown as InertiaPageProps
+	const [isFollowing, setIsFollowing] = useState(false)
+	const likedSongsPlaylist = playlists.find((p) => p.is_default)
+	const [likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
+
+	useEffect(() => {
+		setIsFollowing(followedArtists.some((a) => a.id === artist.id))
+	}, [followedArtists, artist.id])
+
+	useEffect(() => {
+		if (likedSongsPlaylist) {
+			const liked = new Set(likedSongsPlaylist.tracks.map((t) => t.id))
+			setLikedTrackIds(liked)
+		}
+	}, [likedSongsPlaylist])
 
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
@@ -51,6 +68,38 @@ export default function ArtistPage({
 			return
 		}
 		setCurrentTrack(firstTrack, playerQueue, 0)
+	}
+
+	const handleFollowArtist = (event: MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation()
+		router.post(
+			`/library/artists/${artist.id}`,
+			{},
+			{
+				preserveScroll: true,
+				onError: (errors) => {
+					console.error("Failed to follow/unfollow artist:", errors)
+				},
+			}
+		)
+	}
+
+	const handleAddTrackToPlaylist = (
+		trackId: string,
+		event: MouseEvent<HTMLButtonElement>
+	) => {
+		event.stopPropagation()
+
+		// First click: Add to Liked Songs
+		if (likedSongsPlaylist) {
+			router.post(
+				`/playlist/${likedSongsPlaylist.id}/tracks`,
+				{ track_ids: [trackId] },
+				{
+					preserveScroll: true,
+				}
+			)
+		}
 	}
 
 	return (
@@ -99,6 +148,18 @@ export default function ArtistPage({
 								: undefined
 						}
 					/>
+					<Button
+						
+						variant="spotifyTransparent"
+					className="border border-[#727272] hover:border-white hover:scale-105 transition-all text-white text-sm font-bold px-4 h-8 rounded-full bg-transparent"
+						onClick={handleFollowArtist}
+					>
+						{isFollowing ? (
+							<span className="text-white text-sm font-bold px-2">Following</span>
+						) : (
+							<span className="text-white text-sm font-bold px-2">Follow</span>
+						)}
+					</Button>
 					<Button size="icon" variant="spotifyTransparent" className="group">
 						<svg
 							className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
@@ -152,32 +213,61 @@ export default function ArtistPage({
 											src={track.album_cover}
 											alt={track.name}
 											className="w-10 h-10 rounded flex-shrink-0"
+											onClick={(e) => {
+												e.stopPropagation()
+												router.visit(`/tracks/${track.id}`)
+											}}
 										/>
-										<span className="text-white font-medium truncate text-sm sm:text-base">
+										<span
+											className="text-white font-medium truncate text-sm sm:text-base hover:underline"
+											onClick={(e) => {
+												e.stopPropagation()
+												router.visit(`/tracks/${track.id}`)
+											}}
+										>
 											{track.name}
 										</span>
 									</div>
 									<div className="flex items-center gap-1 sm:gap-2">
-										<Button
-											size={"icon"}
-											variant={"spotifyTransparent"}
-											className="group group-hover:block hidden"
-											onClick={(e) => {
-												e.stopPropagation()
-											}}
-										>
-											<svg
-												data-encore-id="icon"
-												role="img"
-												aria-hidden="true"
-												fill="gray"
-												viewBox="0 0 16 16"
-												className="min-w-4 min-h-4 transition-colors duration-300 group-hover:fill-white"
+										{likedTrackIds.has(track.id) ? (
+											<AddToPlaylistDropdown trackId={track.id}>
+												<Button
+													size={"icon"}
+													variant={"spotifyTransparent"}
+													className="group hidden md:group-hover:block"
+												>
+													<svg
+														data-encore-id="icon"
+														role="img"
+														aria-hidden="true"
+														fill="#1ed760"
+														viewBox="0 0 16 16"
+														className="min-w-4 min-h-4"
+													>
+														<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
+													</svg>
+												</Button>
+											</AddToPlaylistDropdown>
+										) : (
+											<Button
+												size={"icon"}
+												variant={"spotifyTransparent"}
+												className="group hidden md:group-hover:block"
+												onClick={(e) => handleAddTrackToPlaylist(track.id, e)}
 											>
-												<path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8"></path>
-												<path d="M11.75 8a.75.75 0 0 1-.75.75H8.75V11a.75.75 0 0 1-1.5 0V8.75H5a.75.75 0 0 1 0-1.5h2.25V5a.75.75 0 0 1 1.5 0v2.25H11a.75.75 0 0 1 .75.75"></path>
-											</svg>
-										</Button>
+												<svg
+													data-encore-id="icon"
+													role="img"
+													aria-hidden="true"
+													fill="gray"
+													viewBox="0 0 16 16"
+													className="min-w-4 min-h-4 transition-colors duration-300 group-hover:fill-white"
+												>
+													<path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8"></path>
+													<path d="M11.75 8a.75.75 0 0 1-.75.75H8.75V11a.75.75 0 0 1-1.5 0V8.75H5a.75.75 0 0 1 0-1.5h2.25V5a.75.75 0 0 1 1.5 0v2.25H11a.75.75 0 0 1 .75.75"></path>
+												</svg>
+											</Button>
+										)}
 										<span className="text-zinc-400 text-xs sm:text-sm whitespace-nowrap">
 											{formatDuration(track.duration)}
 										</span>

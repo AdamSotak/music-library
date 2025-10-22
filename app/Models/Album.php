@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Album extends Model
@@ -33,5 +34,11 @@ class Album extends Model
     public function tracks(): HasMany
     {
         return $this->hasMany(Track::class);
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_albums', 'album_id', 'user_id')
+            ->withPivot('saved_at');
     }
 }

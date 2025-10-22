@@ -38,11 +38,12 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
 
-        $playlists = \App\Models\Playlist::select('id', 'name', 'description', 'is_default')
-            ->orderBy('created_at', 'desc')
-            ->limit(20)
-            ->get()
-            ->map(function ($playlist) {
+        $playlists = Auth::check()
+            ? \App\Models\Playlist::select('id', 'name', 'description', 'is_default', 'created_at', 'updated_at')
+                ->where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($playlist) {
                 // Get the first track's album cover for this playlist (if any)
                 $firstTrack = DB::table('playlist_tracks')
                     ->join('tracks', 'playlist_tracks.track_id', '=', 'tracks.id')
@@ -58,8 +59,38 @@ class HandleInertiaRequests extends Middleware
                     'is_default' => $playlist->is_default,
                     'image' => $firstTrack->image_url ?? null,
                     'tracks' => $playlist->tracks,
+                    'created_at' => $playlist->created_at,
+                    'updated_at' => $playlist->updated_at,
                 ];
-            });
+            })
+            : [];
+
+        $savedAlbums = Auth::check()
+            ? Auth::user()->savedAlbums()->with('artist')->get()->map(function ($album) {
+                return [
+                    'id' => $album->id,
+                    'name' => $album->name,
+                    'artist' => $album->artist->name,
+                    'artist_id' => $album->artist->id,
+                    'cover' => $album->image_url,
+                    'year' => $album->release_date ? $album->release_date->format('Y') : null,
+                    'saved_at' => $album->pivot->saved_at,
+                ];
+            })
+            : [];
+
+        $followedArtists = Auth::check()
+            ? Auth::user()->followedArtists()->get()->map(function ($artist) {
+                return [
+                    'id' => $artist->id,
+                    'name' => $artist->name,
+                    'image' => $artist->image_url,
+                    'monthly_listeners' => $artist->monthly_listeners,
+                    'is_verified' => $artist->is_verified,
+                    'followed_at' => $artist->pivot->followed_at,
+                ];
+            })
+            : [];
 
         $user = Auth::user();
 
@@ -72,6 +103,8 @@ class HandleInertiaRequests extends Middleware
                 'createdAt' => $user->created_at,
             ] : null,
             'playlists' => $playlists,
+            'savedAlbums' => $savedAlbums,
+            'followedArtists' => $followedArtists,
         ];
     }
 }
