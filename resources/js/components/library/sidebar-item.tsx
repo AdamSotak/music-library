@@ -10,11 +10,12 @@ import {
 import { Button } from "../ui/button"
 import { Modals } from "@/hooks/useModals"
 import type { Track } from "@/types"
+import { cn } from "@/lib/utils"
 
 interface SidebarItemProps {
 	id?: string
 	title: string
-	description: string
+	description: string | null
 	image?: string
 	href?: string
 	isLikedSongs?: boolean
@@ -22,7 +23,8 @@ interface SidebarItemProps {
 	onClose?: () => void
 	isMobile?: boolean
 	tracks?: Track[]
-	viewMode?: "list" | "compact" | "grid" | "large-grid"
+	viewMode?: "list" | "compact" | "grid"
+	type?: "playlist" | "artist" | "album"
 }
 
 export const SidebarItem = ({
@@ -37,6 +39,7 @@ export const SidebarItem = ({
 	onClose,
 	isMobile = false,
 	viewMode = "list",
+	type = "playlist",
 }: SidebarItemProps) => {
 	const { setOpen: setConfirmationModalOpen } = Modals.useConfirmationModal()
 	const { setOpen: setEditPlaylistDetailsModalOpen } =
@@ -48,6 +51,27 @@ export const SidebarItem = ({
 		}
 		onClose?.()
 	}
+
+	const trackCount = tracks?.length ?? 0
+	const subtitle =
+		type === "playlist"
+			? description?.trim()
+				? description
+				: `Playlist • ${trackCount} ${trackCount === 1 ? "song" : "songs"}`
+			: description
+	const typeLabel =
+		isLikedSongs || type === "playlist"
+			? "Playlist"
+			: type === "artist"
+				? "Artist"
+				: "Album"
+	const compactSubtitle =
+		type === "playlist"
+			? "Playlist"
+			: type === "artist"
+				? "Artist"
+				: "Album"
+	const showPlaylistActions = type === "playlist" && !isLikedSongs
 
 	if (isCollapsed) {
 		return (
@@ -103,15 +127,14 @@ export const SidebarItem = ({
 						<span className="text-white text-sm font-medium leading-none">
 							{title}
 						</span>
-						<span className="text-white/70 text-xs leading-none">
-							Playlist &bull; {tracks?.length}{" "}
-							{tracks?.length === 1 ? "song" : "songs"}
+						<span className="text-white/70 text-xs leading-none line-clamp-1">
+							{subtitle}
 						</span>
 					</div>
 				</div>
 
 				{/* Action buttons for mobile */}
-				{!isLikedSongs && (
+				{type === "playlist" && !isLikedSongs && (
 					<div className="flex items-center gap-1">
 						<Button
 							variant="spotifyTransparent"
@@ -122,7 +145,7 @@ export const SidebarItem = ({
 								setEditPlaylistDetailsModalOpen(true, {
 									id: id ?? "",
 									name: title,
-									description: description,
+									description: description ?? "",
 									image: "",
 									tracks: [],
 								})
@@ -177,40 +200,59 @@ export const SidebarItem = ({
 		)
 	}
 
-	// Grid view layout
-	if (viewMode === "grid") {
+	// Grid view layout (standard & large)
+	if (viewMode === "grid" || viewMode === "large-grid") {
+        const isLargeGrid = viewMode === "large-grid"
+        const cardPadding = isLargeGrid ? "p-3" : "p-1.5"
+        const imageWrapperClasses = isLargeGrid
+            ? "w-full aspect-square rounded-lg object-cover"
+            : "w-full aspect-square rounded-md object-cover"
+		const fallbackWrapperClasses = isLargeGrid
+			? "w-full aspect-square rounded-lg bg-zinc-800 flex items-center justify-center"
+			: "w-full aspect-square rounded-md bg-zinc-800 flex items-center justify-center"
+        const titleClasses = isLargeGrid
+            ? "text-white text-[15px] font-semibold leading-tight line-clamp-1"
+            : "text-white text-sm font-medium leading-tight line-clamp-1"
+        const subtitleClasses = isLargeGrid
+            ? "text-white/70 text-[13px] leading-tight line-clamp-2"
+            : "text-white/70 text-xs leading-tight line-clamp-2"
+
 		return (
 			<ContextMenu>
 				<ContextMenuTrigger className="p-0 m-0">
 					<div
-						className="flex flex-col gap-2 cursor-pointer hover:bg-zinc-800 rounded-md p-2 active:bg-zinc-900 group"
+						className={cn(
+							"flex flex-col gap-2 cursor-pointer hover:bg-zinc-800 active:bg-zinc-900 group",
+							cardPadding,
+							isLargeGrid ? "rounded-lg" : "rounded-md",
+						)}
 						onClick={handleClick}
 					>
 						{isLikedSongs ? (
 							<img
 								src="/images/liked-songs.jpg"
 								alt="Liked Songs"
-								className="w-full aspect-square rounded-md object-cover"
+								className={imageWrapperClasses}
 							/>
 						) : image ? (
 							<img
 								src={image}
 								alt={title}
-								className="w-full aspect-square rounded-md object-cover"
+								className={imageWrapperClasses}
 							/>
 						) : (
-							<div className="w-full aspect-square rounded-md bg-zinc-800 flex items-center justify-center">
-								<Music className="w-8 h-8" />
+							<div className={fallbackWrapperClasses}>
+								<Music className={isLargeGrid ? "w-10 h-10" : "w-8 h-8"} />
 							</div>
 						)}
 
 						<div className="flex flex-col gap-0.5">
-							<span className="text-white text-sm font-medium leading-tight line-clamp-1">
+							<span className={titleClasses}>
 								{title}
 							</span>
-							<span className="text-white/70 text-xs leading-tight line-clamp-2">
-								{description}
-							</span>
+							{subtitle && (
+								<span className={subtitleClasses}>{subtitle}</span>
+							)}
 						</div>
 					</div>
 				</ContextMenuTrigger>
@@ -229,7 +271,7 @@ export const SidebarItem = ({
 						<span>Play</span>
 					</ContextMenuItem>
 
-					{!isLikedSongs && (
+					{showPlaylistActions && (
 						<>
 							<ContextMenuSeparator />
 
@@ -238,7 +280,7 @@ export const SidebarItem = ({
 									setEditPlaylistDetailsModalOpen(true, {
 										id: id ?? "",
 										name: title,
-										description: description,
+										description: description ?? "",
 										image: "",
 										tracks: [],
 									})
@@ -293,44 +335,57 @@ export const SidebarItem = ({
 	}
 
 	// Desktop layout with context menu
-	const imageSize = viewMode === "list" ? "w-14 h-14" : "w-12 h-12"
-	const padding = viewMode === "list" ? "p-2" : "p-1"
+    const isCompactView = viewMode === "compact"
+    const showImage = !isCompactView
+    const imageSize =
+        viewMode === "list" ? "w-14 h-14" : isCompactView ? "w-10 h-10" : "w-12 h-12"
+	const padding =
+		viewMode === "list" ? "px-2 py-2" : isCompactView ? "px-2 py-1" : "p-1.5"
+	const titleClasses = isCompactView
+		? "text-white text-[13px] font-medium leading-tight"
+		: "text-white text-sm font-medium leading-none"
+	const subtitleClasses = isCompactView
+		? "text-[11px] text-white/60 leading-tight"
+		: "text-white/70 text-xs leading-none"
+	const secondaryText = isCompactView ? compactSubtitle : subtitle
+	const infoGap = isCompactView ? "gap-0.5" : "gap-1"
 
 	return (
 		<ContextMenu>
 			<ContextMenuTrigger className="p-0 m-0">
-				<div
-					className={`flex items-center gap-2 cursor-pointer hover:bg-zinc-800 rounded-md ${padding} active:bg-zinc-900`}
-					onClick={handleClick}
-				>
-					{isLikedSongs ? (
-						<img
-							src="/images/liked-songs.jpg"
-							alt="Liked Songs"
-							className={`${imageSize} rounded-[4px]`}
-						/>
-					) : image ? (
-						<img
-							src={image}
-							alt={title}
-							className={`${imageSize} rounded-[4px] object-cover`}
-						/>
-					) : (
-						<div className={`${imageSize} rounded-[4px] bg-zinc-800 flex items-center justify-center`}>
-							<Music className="w-5 h-5" />
-						</div>
-					)}
+                <div
+                    className={`flex items-center ${isCompactView ? "gap-1.5" : "gap-2"} cursor-pointer hover:bg-zinc-800 rounded-md ${padding} active:bg-zinc-900`}
+                    onClick={handleClick}
+                >
+                    {showImage && isLikedSongs ? (
+                        <img
+                            src="/images/liked-songs.jpg"
+                            alt="Liked Songs"
+                            className={`${imageSize} rounded-[4px]`}
+                        />
+                    ) : showImage && image ? (
+                        <img
+                            src={image}
+                            alt={title}
+                            className={`${imageSize} rounded-[4px] object-cover`}
+                        />
+                    ) : showImage ? (
+                        <div
+                            className={`${imageSize} rounded-[4px] bg-zinc-800 flex items-center justify-center`}
+                        >
+                            <Music className="w-5 h-5" />
+                        </div>
+                    ) : null}
 
-					<div className="flex flex-col gap-1">
-						<span className="text-white text-sm font-medium leading-none">
-							{title}
-						</span>
-						<span className="text-white/70 text-xs leading-none">
-							Playlist &bull; {tracks?.length}{" "}
-							{tracks?.length === 1 ? "song" : "songs"}
-						</span>
-					</div>
-				</div>
+                    <div className={`flex flex-col ${infoGap}`}>
+                        <span className={titleClasses}>
+                            {title}
+                        </span>
+                        {secondaryText && (
+                            <span className={subtitleClasses}>{secondaryText}</span>
+                        )}
+                    </div>
+                </div>
 			</ContextMenuTrigger>
 			<ContextMenuContent className="w-60">
 				<ContextMenuItem>
@@ -347,7 +402,7 @@ export const SidebarItem = ({
 					<span>Play</span>
 				</ContextMenuItem>
 
-				{!isLikedSongs && (
+				{showPlaylistActions && (
 					<>
 						<ContextMenuSeparator />
 
@@ -356,7 +411,7 @@ export const SidebarItem = ({
 								setEditPlaylistDetailsModalOpen(true, {
 									id: id ?? "",
 									name: title,
-									description: description,
+									description: description ?? "",
 									image: "",
 									tracks: [],
 								})

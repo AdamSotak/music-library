@@ -31,7 +31,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
 	const { playlists } = usePage().props as unknown as InertiaPageProps
 	const likedSongsPlaylist = playlists.find((p) => p.is_default)
-	const [likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
+	const [_likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
 	const { rgba } = useImageColor(
 		playlist.is_default
 			? "/images/liked-songs.jpg"
@@ -103,9 +103,9 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		)
 	}
 
-	const handleAddTrackToPlaylist = (
+	const _handleAddTrackToPlaylist = (
 		trackId: string,
-		event: MouseEvent<HTMLButtonElement>
+		event: MouseEvent<HTMLButtonElement>,
 	) => {
 		event.stopPropagation()
 
@@ -116,7 +116,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 				{ track_ids: [trackId] },
 				{
 					preserveScroll: true,
-				}
+				},
 			)
 		}
 	}

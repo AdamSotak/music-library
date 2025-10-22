@@ -2,13 +2,13 @@ import PlayButton from "@/components/home/play-button"
 import Shelf from "@/components/home/shelf"
 import { Button } from "@/components/ui/button"
 import { usePlayer } from "@/hooks/usePlayer"
-import { Modals } from "@/hooks/useModals"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 import type { Album, Artist, InertiaPageProps, ShelfItem, Track } from "@/types"
 import { Utils } from "@/utils"
 import { router, usePage } from "@inertiajs/react"
 import { useMemo, useState, useEffect, type MouseEvent } from "react"
 import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
+import { cn } from "@/lib/utils"
 
 interface ArtistPageProps {
 	artist: Artist
@@ -23,7 +23,8 @@ export default function ArtistPage({
 }: ArtistPageProps) {
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const playerQueue = useMemo(() => toPlayerQueue(tracks), [tracks])
-	const { followedArtists, playlists } = usePage().props as unknown as InertiaPageProps
+	const { followedArtists, playlists } = usePage()
+		.props as unknown as InertiaPageProps
 	const [isFollowing, setIsFollowing] = useState(false)
 	const likedSongsPlaylist = playlists.find((p) => p.is_default)
 	const [likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
@@ -80,13 +81,13 @@ export default function ArtistPage({
 				onError: (errors) => {
 					console.error("Failed to follow/unfollow artist:", errors)
 				},
-			}
+			},
 		)
 	}
 
 	const handleAddTrackToPlaylist = (
 		trackId: string,
-		event: MouseEvent<HTMLButtonElement>
+		event: MouseEvent<HTMLButtonElement>,
 	) => {
 		event.stopPropagation()
 
@@ -97,7 +98,7 @@ export default function ArtistPage({
 				{ track_ids: [trackId] },
 				{
 					preserveScroll: true,
-				}
+				},
 			)
 		}
 	}
@@ -149,13 +150,14 @@ export default function ArtistPage({
 						}
 					/>
 					<Button
-						
 						variant="spotifyTransparent"
-					className="border border-[#727272] hover:border-white hover:scale-105 transition-all text-white text-sm font-bold px-4 h-8 rounded-full bg-transparent"
+						className="border border-[#727272] hover:border-white hover:scale-105 transition-all text-white text-sm font-bold px-4 h-8 rounded-full bg-transparent"
 						onClick={handleFollowArtist}
 					>
 						{isFollowing ? (
-							<span className="text-white text-sm font-bold px-2">Following</span>
+							<span className="text-white text-sm font-bold px-2">
+								Following
+							</span>
 						) : (
 							<span className="text-white text-sm font-bold px-2">Follow</span>
 						)}
@@ -231,22 +233,30 @@ export default function ArtistPage({
 									<div className="flex items-center gap-1 sm:gap-2">
 										{likedTrackIds.has(track.id) ? (
 											<AddToPlaylistDropdown trackId={track.id}>
-												<Button
-													size={"icon"}
-													variant={"spotifyTransparent"}
-													className="group hidden md:group-hover:block"
-												>
-													<svg
-														data-encore-id="icon"
-														role="img"
-														aria-hidden="true"
-														fill="#1ed760"
-														viewBox="0 0 16 16"
-														className="min-w-4 min-h-4"
+												{({ isOpen }) => (
+													<Button
+														size="icon"
+														variant="spotifyTransparent"
+													className={cn(
+														"inline-flex items-center justify-center",
+														"h-8 w-8 rounded-full transition-opacity duration-200 hover:bg-white/10",
+														"text-[#1ed760]",
+														"md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto",
+														isOpen && "opacity-100 pointer-events-auto",
+													)}
 													>
-														<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
-													</svg>
-												</Button>
+														<svg
+															data-encore-id="icon"
+															role="img"
+															aria-hidden="true"
+															fill="#1ed760"
+															viewBox="0 0 16 16"
+															className="min-w-4 min-h-4"
+														>
+															<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
+														</svg>
+													</Button>
+												)}
 											</AddToPlaylistDropdown>
 										) : (
 											<Button

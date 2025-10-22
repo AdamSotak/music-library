@@ -39,30 +39,36 @@ class HandleInertiaRequests extends Middleware
     {
 
         $playlists = Auth::check()
-            ? \App\Models\Playlist::select('id', 'name', 'description', 'is_default', 'created_at', 'updated_at')
+            ? \App\Models\Playlist::with([
+                'tracks:id',
+                'user:id,name',
+            ])
                 ->where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($playlist) {
-                // Get the first track's album cover for this playlist (if any)
-                $firstTrack = DB::table('playlist_tracks')
-                    ->join('tracks', 'playlist_tracks.track_id', '=', 'tracks.id')
-                    ->join('albums', 'tracks.album_id', '=', 'albums.id')
-                    ->where('playlist_tracks.playlist_id', $playlist->id)
-                    ->select('albums.image_url')
-                    ->first();
+                    $firstTrack = DB::table('playlist_tracks')
+                        ->join('tracks', 'playlist_tracks.track_id', '=', 'tracks.id')
+                        ->leftJoin('albums', 'tracks.album_id', '=', 'albums.id')
+                        ->where('playlist_tracks.playlist_id', $playlist->id)
+                        ->select('albums.image_url')
+                        ->first();
 
-                return [
-                    'id' => $playlist->id,
-                    'name' => $playlist->name,
-                    'description' => $playlist->description,
-                    'is_default' => $playlist->is_default,
-                    'image' => $firstTrack->image_url ?? null,
-                    'tracks' => $playlist->tracks,
-                    'created_at' => $playlist->created_at,
-                    'updated_at' => $playlist->updated_at,
-                ];
-            })
+                    return [
+                        'id' => $playlist->id,
+                        'name' => $playlist->name,
+                        'description' => $playlist->description ?: null,
+                        'is_default' => $playlist->is_default,
+                        'owner_name' => $playlist->user?->name,
+                        'image' => $firstTrack->image_url ?? null,
+                        'tracks' => $playlist->tracks
+                            ->map(fn ($track) => ['id' => $track->id])
+                            ->values(),
+                        'created_at' => $playlist->created_at,
+                        'updated_at' => $playlist->updated_at,
+                    ];
+                })
+                ->values()
             : [];
 
         $savedAlbums = Auth::check()

@@ -24,7 +24,7 @@ export default function TrackShow({ track }: TrackShowProps) {
 	useEffect(() => {
 		if (likedSongsPlaylist) {
 			setIsInLikedSongs(
-				likedSongsPlaylist.tracks.some((t) => t.id === track.id)
+				likedSongsPlaylist.tracks.some((t) => t.id === track.id),
 			)
 		}
 	}, [likedSongsPlaylist, track.id])
@@ -48,7 +48,7 @@ export default function TrackShow({ track }: TrackShowProps) {
 				{ track_ids: [track.id] },
 				{
 					preserveScroll: true,
-				}
+				},
 			)
 		}
 	}
@@ -129,11 +129,7 @@ export default function TrackShow({ track }: TrackShowProps) {
 				/>
 				{isInLikedSongs ? (
 					<AddToPlaylistDropdown trackId={track.id}>
-						<Button
-							size="icon"
-							variant="spotifyTransparent"
-							className="group"
-						>
+						<Button size="icon" variant="spotifyTransparent" className="group">
 							<svg
 								className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300"
 								fill="#1ed760"

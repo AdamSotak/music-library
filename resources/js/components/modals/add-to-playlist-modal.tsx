@@ -9,13 +9,14 @@ import { Button } from "../ui/button"
 export const AddToPlaylistModal = () => {
 	const { open, trackIds, setOpen } = Modals.useAddToPlaylistModal()
 	const { playlists } = usePage().props as unknown as InertiaPageProps
-	const { setOpen: setCreatePlaylistOpen } = Modals.useEditPlaylistDetailsModal()
+	const { setOpen: setCreatePlaylistOpen } =
+		Modals.useEditPlaylistDetailsModal()
 	const [searchQuery, setSearchQuery] = useState("")
 
 	const filteredPlaylists = useMemo(() => {
 		if (!searchQuery.trim()) return playlists
 		return playlists.filter((playlist) =>
-			playlist.name.toLowerCase().includes(searchQuery.toLowerCase())
+			playlist.name.toLowerCase().includes(searchQuery.toLowerCase()),
 		)
 	}, [playlists, searchQuery])
 

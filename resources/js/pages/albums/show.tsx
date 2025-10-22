@@ -19,7 +19,8 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const { rgba } = useImageColor(album.cover)
 	const playerQueue = useMemo(() => toPlayerQueue(album.tracks), [album.tracks])
-	const { savedAlbums, playlists } = usePage().props as unknown as InertiaPageProps
+	const { savedAlbums, playlists } = usePage()
+		.props as unknown as InertiaPageProps
 	const [isSaved, setIsSaved] = useState(false)
 	const likedSongsPlaylist = playlists.find((p) => p.is_default)
 	const [likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
@@ -45,13 +46,13 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 				onError: (errors) => {
 					console.error("Failed to save/unsave album:", errors)
 				},
-			}
+			},
 		)
 	}
 
 	const handleAddTrackToPlaylist = (
 		trackId: string,
-		event: MouseEvent<HTMLButtonElement>
+		event: MouseEvent<HTMLButtonElement>,
 	) => {
 		event.stopPropagation()
 
@@ -66,7 +67,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 					{ track_ids: [trackId] },
 					{
 						preserveScroll: true,
-					}
+					},
 				)
 			}
 		}
@@ -328,10 +329,10 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 								<div className="min-w-0 flex-1">
 									<div
 										className={`text-sm md:text-base truncate hover:underline cursor-pointer ${isCurrentTrack ? "text-green-500" : "text-white"}`}
-									onClick={(e) => {
-										e.stopPropagation()
-										router.visit(`/tracks/${track.id}`)
-									}}
+										onClick={(e) => {
+											e.stopPropagation()
+											router.visit(`/tracks/${track.id}`)
+										}}
 									>
 										{track.name}
 									</div>
@@ -356,7 +357,6 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 												size="icon"
 												variant="spotifyTransparent"
 												className="group h-8 w-8"
-												
 											>
 												<svg
 													className="w-4 h-4 transition-colors duration-300"
@@ -396,7 +396,6 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 											size="icon"
 											variant="spotifyTransparent"
 											className="group"
-											
 										>
 											<svg
 												className="w-4 h-4 transition-colors duration-300"

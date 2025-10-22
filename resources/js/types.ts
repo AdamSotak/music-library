@@ -73,12 +73,13 @@ export type Album = {
 export type Playlist = {
 	id: string
 	name: string
-	description: string
+	description: string | null
 	image: string
 	tracks: Track[]
 	is_default?: boolean
 	created_at?: string
 	updated_at?: string
+	owner_name?: string | null
 }
 
 export type ShelfItem = {

@@ -85,7 +85,8 @@ class PlaylistController extends Controller
 
         $playlist->delete();
 
-        return redirect()->route('collection.playlists');
+        // Send the user to a safe page (home) to avoid 404 if they were on the playlist page
+        return redirect('/');
     }
 
     public function addTracks(Request $request, string $id)
