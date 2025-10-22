@@ -112,21 +112,26 @@ export default function Sidebar({
 
 	if (!shouldShowExpanded && !isMobile) {
 		return (
-            <div className="flex flex-col justify-center items-center gap-2 py-4">
-                <Button
-                    variant="spotifyTransparent"
-                    size="icon"
-                    className="group"
-                    onClick={() => setSidebarSize("default")}
-                    title="Open Your Library"
-                >
-                    <svg viewBox="0 0 16 16" fill="currentColor" className="h-5 w-5 text-[#b3b3b3] transition-colors duration-300 group-hover:text-white transform scale-x-[-1]" aria-hidden="true">
-                        <path d="M10.97 5.47a.75.75 0 1 1 1.06 1.06L10.56 8l1.47 1.47a.75.75 0 1 1-1.06 1.06l-2-2a.75.75 0 0 1 0-1.06z"></path>
-                        <path d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm.5 1.5H5v13H1.5zm13 13h-8v-13h8z"></path>
-                    </svg>
-                </Button>
+			<div className="flex flex-col justify-center items-center gap-2 py-4">
+				<Button
+					variant="spotifyTransparent"
+					size="icon"
+					className="group"
+					onClick={() => setSidebarSize("default")}
+					title="Open Your Library"
+				>
+					<svg
+						viewBox="0 0 16 16"
+						fill="currentColor"
+						className="h-5 w-5 text-[#b3b3b3] transition-colors duration-300 group-hover:text-white transform scale-x-[-1]"
+						aria-hidden="true"
+					>
+						<path d="M10.97 5.47a.75.75 0 1 1 1.06 1.06L10.56 8l1.47 1.47a.75.75 0 1 1-1.06 1.06l-2-2a.75.75 0 0 1 0-1.06z"></path>
+						<path d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm.5 1.5H5v13H1.5zm13 13h-8v-13h8z"></path>
+					</svg>
+				</Button>
 
-                <div className="mt-2">
+				<div className="mt-2">
 					{playlists.slice(0, 5).map((playlist) => (
 						<SidebarItem
 							key={playlist.id}
@@ -147,25 +152,32 @@ export default function Sidebar({
 
 	return (
 		<div className="h-full flex flex-col bg-[#121212]">
-            <div className="flex justify-between items-center px-4 py-2">
-                <div className="flex items-center gap-3">
-                    {/* Collapse to rail (show only in default/expanded) */}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-[#b3b3b3] hover:text-white hover:bg-transparent"
-                        onClick={() => setSidebarSize("collapsed")}
-                        title="Collapse Your Library"
-                    >
-                        <svg data-encore-id="icon" role="img" aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor">
-                            <path d="M10.97 5.47a.75.75 0 1 1 1.06 1.06L10.56 8l1.47 1.47a.75.75 0 1 1-1.06 1.06l-2-2a.75.75 0 0 1 0-1.06z"></path>
-                            <path d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm.5 1.5H5v13H1.5zm13 13h-8v-13h8z"></path>
-                        </svg>
-                    </Button>
-                    <span className="text-[#b3b3b3] text-base font-bold hover:text-white transition-colors cursor-pointer">
-                        Your Library
-                    </span>
-                </div>
+			<div className="flex justify-between items-center px-4 py-2">
+				<div className="flex items-center gap-3">
+					{/* Collapse to rail (show only in default/expanded) */}
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-8 w-8 text-[#b3b3b3] hover:text-white hover:bg-transparent"
+						onClick={() => setSidebarSize("collapsed")}
+						title="Collapse Your Library"
+					>
+						<svg
+							data-encore-id="icon"
+							role="img"
+							aria-hidden="true"
+							viewBox="0 0 16 16"
+							className="h-4 w-4"
+							fill="currentColor"
+						>
+							<path d="M10.97 5.47a.75.75 0 1 1 1.06 1.06L10.56 8l1.47 1.47a.75.75 0 1 1-1.06 1.06l-2-2a.75.75 0 0 1 0-1.06z"></path>
+							<path d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm.5 1.5H5v13H1.5zm13 13h-8v-13h8z"></path>
+						</svg>
+					</Button>
+					<span className="text-[#b3b3b3] text-base font-bold hover:text-white transition-colors cursor-pointer">
+						Your Library
+					</span>
+				</div>
 				<div className="flex items-center gap-1">
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -247,27 +259,27 @@ export default function Sidebar({
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
-                    {/* Full-screen toggle */}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-[#b3b3b3] hover:text-white hover:bg-transparent hover:scale-105 transition-all"
-                        onClick={() =>
-                            setSidebarSize((prev) =>
-                                prev === "expanded" ? "default" : "expanded",
-                            )
-                        }
-                        title={isExpanded ? "Shrink Your Library" : "Expand Your Library"}
-                    >
-                        {isExpanded ? (
-                            <Minimize2 className="h-4 w-4" />
-                        ) : (
-                            <Maximize2 className="h-4 w-4" />
-                        )}
-                    </Button>
-                    {/* Only fullscreen toggle on the right */}
-                </div>
-            </div>
+					{/* Full-screen toggle */}
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-8 w-8 text-[#b3b3b3] hover:text-white hover:bg-transparent hover:scale-105 transition-all"
+						onClick={() =>
+							setSidebarSize((prev) =>
+								prev === "expanded" ? "default" : "expanded",
+							)
+						}
+						title={isExpanded ? "Shrink Your Library" : "Expand Your Library"}
+					>
+						{isExpanded ? (
+							<Minimize2 className="h-4 w-4" />
+						) : (
+							<Maximize2 className="h-4 w-4" />
+						)}
+					</Button>
+					{/* Only fullscreen toggle on the right */}
+				</div>
+			</div>
 
 			{/* Tabs: Playlists, Artists, Albums */}
 			<div className="flex gap-2 px-2 py-1">
@@ -526,124 +538,126 @@ export default function Sidebar({
 			</div>
 
 			{/* Content Area */}
-            {(() => {
-                const gridStyle = (() => {
-                    if (viewAs === "grid") {
-                        return {
-                            gridTemplateColumns: `repeat(auto-fill, minmax(${sidebarSize === "expanded" ? 160 : 140}px, 1fr))`,
-                        } as React.CSSProperties
-                    }
-                    if (viewAs === "large-grid") {
-                        return {
-                            gridTemplateColumns: `repeat(auto-fill, minmax(${sidebarSize === "expanded" ? 200 : 180}px, 1fr))`,
-                        } as React.CSSProperties
-                    }
-                    return undefined
-                })()
-                return (
-                    <div
-                        className={cn(
-                            "flex-1 overflow-y-auto",
-                            viewAs === "compact" || viewAs === "list" ? "flex flex-col" : "grid",
-                            viewAs === "compact"
-                                ? "gap-0 px-1"
-                                : viewAs === "list"
-                                    ? "gap-1.5 px-2"
-                                    : viewAs === "grid"
-                                        ? "gap-2 px-2 pt-2"
-                                        : "gap-3 px-2 pt-2",
-                        )}
-                        style={gridStyle}
-                    >
-                
-                
-				{activeTab === "playlists" &&
-					sortedPlaylists.map((playlist) => (
-						<SidebarItem
-							key={playlist.id}
-							id={String(playlist.id)}
-							title={playlist.name}
-							tracks={playlist.tracks}
-							description={
-								playlist.description ||
-								`Playlist • ${playlist.tracks.length} ${
-									playlist.tracks.length === 1 ? "song" : "songs"
-								}`
-							}
-							image={playlist.image}
-							href={`/playlist/${playlist.id}`}
-							onClose={isMobile ? onClose : undefined}
-							isMobile={isMobile}
-							isLikedSongs={playlist.is_default}
-							viewMode={viewAs}
-							type="playlist"
-						/>
-					))}
+			{(() => {
+				const gridStyle = (() => {
+					if (viewAs === "grid") {
+						return {
+							gridTemplateColumns: `repeat(auto-fill, minmax(${sidebarSize === "expanded" ? 160 : 140}px, 1fr))`,
+						} as React.CSSProperties
+					}
+					if (viewAs === "large-grid") {
+						return {
+							gridTemplateColumns: `repeat(auto-fill, minmax(${sidebarSize === "expanded" ? 200 : 180}px, 1fr))`,
+						} as React.CSSProperties
+					}
+					return undefined
+				})()
+				return (
+					<div
+						className={cn(
+							"flex-1 overflow-y-auto",
+							viewAs === "compact" || viewAs === "list"
+								? "flex flex-col"
+								: "grid",
+							viewAs === "compact"
+								? "gap-0 px-1"
+								: viewAs === "list"
+									? "gap-1.5 px-2"
+									: viewAs === "grid"
+										? "gap-2 px-2 pt-2"
+										: "gap-3 px-2 pt-2",
+						)}
+						style={gridStyle}
+					>
+						{activeTab === "playlists" &&
+							sortedPlaylists.map((playlist) => (
+								<SidebarItem
+									key={playlist.id}
+									id={String(playlist.id)}
+									title={playlist.name}
+									tracks={playlist.tracks}
+									description={
+										playlist.description ||
+										`Playlist • ${playlist.tracks.length} ${
+											playlist.tracks.length === 1 ? "song" : "songs"
+										}`
+									}
+									image={playlist.image}
+									href={`/playlist/${playlist.id}`}
+									onClose={isMobile ? onClose : undefined}
+									isMobile={isMobile}
+									isLikedSongs={playlist.is_default}
+									viewMode={viewAs}
+									type="playlist"
+								/>
+							))}
 
-                {activeTab === "artists" &&
-					(sortedArtists.length > 0 ? (
-						sortedArtists.map((artist) => (
-							<SidebarItem
-								key={artist.id}
-								id={String(artist.id)}
-								title={artist.name}
-								description="Artist"
-								image={artist.image}
-								href={`/artist/${artist.id}`}
-								onClose={isMobile ? onClose : undefined}
-								isMobile={isMobile}
-								viewMode={viewAs}
-								type="artist"
-							/>
-						))
-					) : (
-						<div className="flex flex-col items-center justify-center h-64 text-[#b3b3b3]">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-								className="w-16 h-16 mb-4 opacity-50"
-							>
-								<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
-							</svg>
-							<p className="text-sm font-medium">No artists yet</p>
-							<p className="text-xs mt-1">Follow artists to see them here</p>
-						</div>
-					))}
+						{activeTab === "artists" &&
+							(sortedArtists.length > 0 ? (
+								sortedArtists.map((artist) => (
+									<SidebarItem
+										key={artist.id}
+										id={String(artist.id)}
+										title={artist.name}
+										description="Artist"
+										image={artist.image}
+										href={`/artist/${artist.id}`}
+										onClose={isMobile ? onClose : undefined}
+										isMobile={isMobile}
+										viewMode={viewAs}
+										type="artist"
+									/>
+								))
+							) : (
+								<div className="flex flex-col items-center justify-center h-64 text-[#b3b3b3]">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill="currentColor"
+										className="w-16 h-16 mb-4 opacity-50"
+									>
+										<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+									</svg>
+									<p className="text-sm font-medium">No artists yet</p>
+									<p className="text-xs mt-1">
+										Follow artists to see them here
+									</p>
+								</div>
+							))}
 
-                {activeTab === "albums" &&
-					(sortedAlbums.length > 0 ? (
-						sortedAlbums.map((album) => (
-							<SidebarItem
-								key={album.id}
-								id={String(album.id)}
-								title={album.name}
-								description={`Album • ${album.artist}`}
-								image={album.cover}
-								href={`/albums/${album.id}`}
-								onClose={isMobile ? onClose : undefined}
-								isMobile={isMobile}
-								viewMode={viewAs}
-								type="album"
-							/>
-						))
-					) : (
-						<div className="flex flex-col items-center justify-center h-64 text-[#b3b3b3]">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-								className="w-16 h-16 mb-4 opacity-50"
-							>
-								<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
-							</svg>
-							<p className="text-sm font-medium">No albums yet</p>
-							<p className="text-xs mt-1">Save albums to see them here</p>
-						</div>
-					))}
-                    </div>
-                )
-            })()}
-        </div>
-    )
+						{activeTab === "albums" &&
+							(sortedAlbums.length > 0 ? (
+								sortedAlbums.map((album) => (
+									<SidebarItem
+										key={album.id}
+										id={String(album.id)}
+										title={album.name}
+										description={`Album • ${album.artist}`}
+										image={album.cover}
+										href={`/albums/${album.id}`}
+										onClose={isMobile ? onClose : undefined}
+										isMobile={isMobile}
+										viewMode={viewAs}
+										type="album"
+									/>
+								))
+							) : (
+								<div className="flex flex-col items-center justify-center h-64 text-[#b3b3b3]">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill="currentColor"
+										className="w-16 h-16 mb-4 opacity-50"
+									>
+										<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
+									</svg>
+									<p className="text-sm font-medium">No albums yet</p>
+									<p className="text-xs mt-1">Save albums to see them here</p>
+								</div>
+							))}
+					</div>
+				)
+			})()}
+		</div>
+	)
 }

@@ -27,18 +27,16 @@ export const AddToPlaylistDropdown = ({
 	const [searchQuery, setSearchQuery] = useState("")
 	const [isOpen, setIsOpen] = useState(false)
 	const renderTrigger =
-			typeof children === "function"
-				? (children as (state: { isOpen: boolean }) => ReactNode)({
-						isOpen,
-					})
-				: children
+		typeof children === "function"
+			? (children as (state: { isOpen: boolean }) => ReactNode)({
+					isOpen,
+				})
+			: children
 	const membershipLookup = useMemo(() => {
 		const next = new Set<string>()
 		playlists.forEach((playlist) => {
 			if (
-				playlist.tracks?.some(
-					(track) => String(track.id) === String(trackId),
-				)
+				playlist.tracks?.some((track) => String(track.id) === String(trackId))
 			) {
 				next.add(String(playlist.id))
 			}
@@ -99,10 +97,10 @@ export const AddToPlaylistDropdown = ({
 	}
 
 	return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
-            <DropdownMenuTrigger asChild>
-                <span onClick={(e) => e.stopPropagation()}>{renderTrigger}</span>
-            </DropdownMenuTrigger>
+		<DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
+			<DropdownMenuTrigger asChild>
+				<span onClick={(e) => e.stopPropagation()}>{renderTrigger}</span>
+			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="start"
 				side="right"

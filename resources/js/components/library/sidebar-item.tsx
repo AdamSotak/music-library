@@ -59,18 +59,14 @@ export const SidebarItem = ({
 				? description
 				: `Playlist • ${trackCount} ${trackCount === 1 ? "song" : "songs"}`
 			: description
-	const typeLabel =
+	const _typeLabel =
 		isLikedSongs || type === "playlist"
 			? "Playlist"
 			: type === "artist"
 				? "Artist"
 				: "Album"
 	const compactSubtitle =
-		type === "playlist"
-			? "Playlist"
-			: type === "artist"
-				? "Artist"
-				: "Album"
+		type === "playlist" ? "Playlist" : type === "artist" ? "Artist" : "Album"
 	const showPlaylistActions = type === "playlist" && !isLikedSongs
 
 	if (isCollapsed) {
@@ -202,20 +198,20 @@ export const SidebarItem = ({
 
 	// Grid view layout (standard & large)
 	if (viewMode === "grid" || viewMode === "large-grid") {
-        const isLargeGrid = viewMode === "large-grid"
-        const cardPadding = isLargeGrid ? "p-3" : "p-1.5"
-        const imageWrapperClasses = isLargeGrid
-            ? "w-full aspect-square rounded-lg object-cover"
-            : "w-full aspect-square rounded-md object-cover"
+		const isLargeGrid = viewMode === "large-grid"
+		const cardPadding = isLargeGrid ? "p-3" : "p-1.5"
+		const imageWrapperClasses = isLargeGrid
+			? "w-full aspect-square rounded-lg object-cover"
+			: "w-full aspect-square rounded-md object-cover"
 		const fallbackWrapperClasses = isLargeGrid
 			? "w-full aspect-square rounded-lg bg-zinc-800 flex items-center justify-center"
 			: "w-full aspect-square rounded-md bg-zinc-800 flex items-center justify-center"
-        const titleClasses = isLargeGrid
-            ? "text-white text-[15px] font-semibold leading-tight line-clamp-1"
-            : "text-white text-sm font-medium leading-tight line-clamp-1"
-        const subtitleClasses = isLargeGrid
-            ? "text-white/70 text-[13px] leading-tight line-clamp-2"
-            : "text-white/70 text-xs leading-tight line-clamp-2"
+		const titleClasses = isLargeGrid
+			? "text-white text-[15px] font-semibold leading-tight line-clamp-1"
+			: "text-white text-sm font-medium leading-tight line-clamp-1"
+		const subtitleClasses = isLargeGrid
+			? "text-white/70 text-[13px] leading-tight line-clamp-2"
+			: "text-white/70 text-xs leading-tight line-clamp-2"
 
 		return (
 			<ContextMenu>
@@ -235,11 +231,7 @@ export const SidebarItem = ({
 								className={imageWrapperClasses}
 							/>
 						) : image ? (
-							<img
-								src={image}
-								alt={title}
-								className={imageWrapperClasses}
-							/>
+							<img src={image} alt={title} className={imageWrapperClasses} />
 						) : (
 							<div className={fallbackWrapperClasses}>
 								<Music className={isLargeGrid ? "w-10 h-10" : "w-8 h-8"} />
@@ -247,12 +239,8 @@ export const SidebarItem = ({
 						)}
 
 						<div className="flex flex-col gap-0.5">
-							<span className={titleClasses}>
-								{title}
-							</span>
-							{subtitle && (
-								<span className={subtitleClasses}>{subtitle}</span>
-							)}
+							<span className={titleClasses}>{title}</span>
+							{subtitle && <span className={subtitleClasses}>{subtitle}</span>}
 						</div>
 					</div>
 				</ContextMenuTrigger>
@@ -335,10 +323,14 @@ export const SidebarItem = ({
 	}
 
 	// Desktop layout with context menu
-    const isCompactView = viewMode === "compact"
-    const showImage = !isCompactView
-    const imageSize =
-        viewMode === "list" ? "w-14 h-14" : isCompactView ? "w-10 h-10" : "w-12 h-12"
+	const isCompactView = viewMode === "compact"
+	const showImage = !isCompactView
+	const imageSize =
+		viewMode === "list"
+			? "w-14 h-14"
+			: isCompactView
+				? "w-10 h-10"
+				: "w-12 h-12"
 	const padding =
 		viewMode === "list" ? "px-2 py-2" : isCompactView ? "px-2 py-1" : "p-1.5"
 	const titleClasses = isCompactView
@@ -353,39 +345,37 @@ export const SidebarItem = ({
 	return (
 		<ContextMenu>
 			<ContextMenuTrigger className="p-0 m-0">
-                <div
-                    className={`flex items-center ${isCompactView ? "gap-1.5" : "gap-2"} cursor-pointer hover:bg-zinc-800 rounded-md ${padding} active:bg-zinc-900`}
-                    onClick={handleClick}
-                >
-                    {showImage && isLikedSongs ? (
-                        <img
-                            src="/images/liked-songs.jpg"
-                            alt="Liked Songs"
-                            className={`${imageSize} rounded-[4px]`}
-                        />
-                    ) : showImage && image ? (
-                        <img
-                            src={image}
-                            alt={title}
-                            className={`${imageSize} rounded-[4px] object-cover`}
-                        />
-                    ) : showImage ? (
-                        <div
-                            className={`${imageSize} rounded-[4px] bg-zinc-800 flex items-center justify-center`}
-                        >
-                            <Music className="w-5 h-5" />
-                        </div>
-                    ) : null}
+				<div
+					className={`flex items-center ${isCompactView ? "gap-1.5" : "gap-2"} cursor-pointer hover:bg-zinc-800 rounded-md ${padding} active:bg-zinc-900`}
+					onClick={handleClick}
+				>
+					{showImage && isLikedSongs ? (
+						<img
+							src="/images/liked-songs.jpg"
+							alt="Liked Songs"
+							className={`${imageSize} rounded-[4px]`}
+						/>
+					) : showImage && image ? (
+						<img
+							src={image}
+							alt={title}
+							className={`${imageSize} rounded-[4px] object-cover`}
+						/>
+					) : showImage ? (
+						<div
+							className={`${imageSize} rounded-[4px] bg-zinc-800 flex items-center justify-center`}
+						>
+							<Music className="w-5 h-5" />
+						</div>
+					) : null}
 
-                    <div className={`flex flex-col ${infoGap}`}>
-                        <span className={titleClasses}>
-                            {title}
-                        </span>
-                        {secondaryText && (
-                            <span className={subtitleClasses}>{secondaryText}</span>
-                        )}
-                    </div>
-                </div>
+					<div className={`flex flex-col ${infoGap}`}>
+						<span className={titleClasses}>{title}</span>
+						{secondaryText && (
+							<span className={subtitleClasses}>{secondaryText}</span>
+						)}
+					</div>
+				</div>
 			</ContextMenuTrigger>
 			<ContextMenuContent className="w-60">
 				<ContextMenuItem>

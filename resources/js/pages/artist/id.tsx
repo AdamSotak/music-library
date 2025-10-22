@@ -237,13 +237,13 @@ export default function ArtistPage({
 													<Button
 														size="icon"
 														variant="spotifyTransparent"
-													className={cn(
-														"inline-flex items-center justify-center",
-														"h-8 w-8 rounded-full transition-opacity duration-200 hover:bg-white/10",
-														"text-[#1ed760]",
-														"md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto",
-														isOpen && "opacity-100 pointer-events-auto",
-													)}
+														className={cn(
+															"inline-flex items-center justify-center",
+															"h-8 w-8 rounded-full transition-opacity duration-200 hover:bg-white/10",
+															"text-[#1ed760]",
+															"md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto",
+															isOpen && "opacity-100 pointer-events-auto",
+														)}
 													>
 														<svg
 															data-encore-id="icon"

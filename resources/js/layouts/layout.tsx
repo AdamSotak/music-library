@@ -35,12 +35,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 		mainContentRef.current?.scrollTo({ top: 0, behavior: "instant" })
 	}, [pathname])
 
-    const sidebarWidthClass =
-        sidebarSize === "collapsed"
-            ? "lg:w-[72px] lg:min-w-[72px]"
-            : sidebarSize === "expanded"
-                ? "lg:w-full"
-                : "lg:w-[26vw] lg:min-w-[320px] lg:max-w-[420px]"
+	const sidebarWidthClass =
+		sidebarSize === "collapsed"
+			? "lg:w-[72px] lg:min-w-[72px]"
+			: sidebarSize === "expanded"
+				? "lg:w-full"
+				: "lg:w-[26vw] lg:min-w-[320px] lg:max-w-[420px]"
 
 	return (
 		<>
@@ -54,13 +54,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 						)}
 					>
 						{/* Desktop Sidebar */}
-                        <div
-                            className={cn(
-                                "hidden lg:block h-full bg-background-base overflow-y-auto transition-all duration-300",
-                                sidebarWidthClass,
-                                sidebarSize === "expanded" ? "lg:flex-1 lg:rounded-none" : "lg:flex-none lg:shrink-0 lg:rounded-lg",
-                            )}
-                        >
+						<div
+							className={cn(
+								"hidden lg:block h-full bg-background-base overflow-y-auto transition-all duration-300",
+								sidebarWidthClass,
+								sidebarSize === "expanded"
+									? "lg:flex-1 lg:rounded-none"
+									: "lg:flex-none lg:shrink-0 lg:rounded-lg",
+							)}
+						>
 							<Sidebar
 								sidebarSize={sidebarSize}
 								setSidebarSize={setSidebarSize}
