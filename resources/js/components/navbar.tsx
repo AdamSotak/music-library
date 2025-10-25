@@ -1,5 +1,5 @@
 import { Button, buttonVariants } from "./ui/button"
-import { router, usePage } from "@inertiajs/react"
+import { Link, router, usePage } from "@inertiajs/react"
 import { cn } from "@/lib/utils"
 import { Separator } from "./ui/separator"
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -127,7 +127,7 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 						</svg>
 					</Button>
 
-					<a href="/">
+					<Link href="/">
 						<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34">
 							<title>Spotify logo</title>
 							<image
@@ -136,7 +136,7 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 								height="34"
 							/>
 						</svg>
-					</a>
+					</Link>
 
 					<div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex items-center gap-1.5 ml-5">
 						<Button

@@ -1,12 +1,13 @@
-import type { Album, Track } from "@/types"
+import type { Album, InertiaPageProps, Track } from "@/types"
 import { Modals } from "@/hooks/useModals"
 import { usePlayer } from "@/hooks/usePlayer"
 import { useImageColor } from "@/hooks/useImageColor"
 import { WaveformIndicator } from "@/components/waveform-indicator"
 import { Button } from "@/components/ui/button"
 import PlayButton from "@/components/home/play-button"
-import { router } from "@inertiajs/react"
-import { useMemo, type MouseEvent } from "react"
+import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
+import { router, usePage } from "@inertiajs/react"
+import { useMemo, useState, useEffect, type MouseEvent } from "react"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 
 interface AlbumShowProps {
@@ -18,6 +19,59 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const { rgba } = useImageColor(album.cover)
 	const playerQueue = useMemo(() => toPlayerQueue(album.tracks), [album.tracks])
+	const { savedAlbums, playlists } = usePage()
+		.props as unknown as InertiaPageProps
+	const [isSaved, setIsSaved] = useState(false)
+	const likedSongsPlaylist = playlists.find((p) => p.is_default)
+	const [likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
+
+	useEffect(() => {
+		setIsSaved(savedAlbums.some((a) => a.id === album.id))
+	}, [savedAlbums, album.id])
+
+	useEffect(() => {
+		if (likedSongsPlaylist) {
+			const liked = new Set(likedSongsPlaylist.tracks.map((t) => t.id))
+			setLikedTrackIds(liked)
+		}
+	}, [likedSongsPlaylist])
+
+	const handleSaveAlbum = (event: MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation()
+		router.post(
+			`/library/albums/${album.id}`,
+			{},
+			{
+				preserveScroll: true,
+				onError: (errors) => {
+					console.error("Failed to save/unsave album:", errors)
+				},
+			},
+		)
+	}
+
+	const handleAddTrackToPlaylist = (
+		trackId: string,
+		event: MouseEvent<HTMLButtonElement>,
+	) => {
+		event.stopPropagation()
+
+		// If track is already in Liked Songs, open the modal
+		if (likedTrackIds.has(trackId)) {
+			setAddToPlaylistModalOpen(true, [trackId])
+		} else {
+			// First click: Add to Liked Songs
+			if (likedSongsPlaylist) {
+				router.post(
+					`/playlist/${likedSongsPlaylist.id}/tracks`,
+					{ track_ids: [trackId] },
+					{
+						preserveScroll: true,
+					},
+				)
+			}
+		}
+	}
 
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
@@ -117,21 +171,43 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 							: undefined
 					}
 				/>
-				<Button size="icon" variant="spotifyTransparent" className="group">
-					<svg
-						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"
-						aria-hidden="true"
-						fill="none"
-						stroke="gray"
-						viewBox="0 0 24 24"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-						/>
-					</svg>
+				<Button
+					size="icon"
+					variant="spotifyTransparent"
+					className="group"
+					onClick={handleSaveAlbum}
+				>
+					{isSaved ? (
+						<svg
+							className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300"
+							aria-hidden="true"
+							fill="#1ed760"
+							stroke="none"
+							viewBox="0 0 24 24"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+							/>
+						</svg>
+					) : (
+						<svg
+							className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"
+							aria-hidden="true"
+							fill="none"
+							stroke="gray"
+							viewBox="0 0 24 24"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+							/>
+						</svg>
+					)}
 				</Button>
 				<Button
 					size="icon"
@@ -252,7 +328,11 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 								</div>
 								<div className="min-w-0 flex-1">
 									<div
-										className={`text-sm md:text-base truncate ${isCurrentTrack ? "text-green-500" : "text-white"}`}
+										className={`text-sm md:text-base truncate hover:underline cursor-pointer ${isCurrentTrack ? "text-green-500" : "text-white"}`}
+										onClick={(e) => {
+											e.stopPropagation()
+											router.visit(`/tracks/${track.id}`)
+										}}
 									>
 										{track.name}
 									</div>
@@ -271,14 +351,68 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 									<span className="text-zinc-400 text-xs">
 										{formatDuration(track.duration)}
 									</span>
+									{likedTrackIds.has(track.id) ? (
+										<AddToPlaylistDropdown trackId={track.id}>
+											<Button
+												size="icon"
+												variant="spotifyTransparent"
+												className="group h-8 w-8"
+											>
+												<svg
+													className="w-4 h-4 transition-colors duration-300"
+													fill="#1ed760"
+													aria-hidden="true"
+													viewBox="0 0 16 16"
+												>
+													<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
+												</svg>
+											</Button>
+										</AddToPlaylistDropdown>
+									) : (
+										<Button
+											size="icon"
+											variant="spotifyTransparent"
+											className="group h-8 w-8"
+											onClick={(e) => handleAddTrackToPlaylist(track.id, e)}
+										>
+											<svg
+												className="w-4 h-4 transition-colors duration-300 group-hover:fill-white"
+												fill="gray"
+												aria-hidden="true"
+												viewBox="0 0 16 16"
+											>
+												<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75"></path>
+											</svg>
+										</Button>
+									)}
+								</div>
+							</div>
+
+							{/* Desktop actions */}
+							<div className="hidden md:flex items-center justify-end gap-4">
+								{likedTrackIds.has(track.id) ? (
+									<AddToPlaylistDropdown trackId={track.id}>
+										<Button
+											size="icon"
+											variant="spotifyTransparent"
+											className="group"
+										>
+											<svg
+												className="w-4 h-4 transition-colors duration-300"
+												fill="#1ed760"
+												aria-hidden="true"
+												viewBox="0 0 16 16"
+											>
+												<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
+											</svg>
+										</Button>
+									</AddToPlaylistDropdown>
+								) : (
 									<Button
 										size="icon"
 										variant="spotifyTransparent"
-										className="group h-8 w-8"
-										onClick={(e) => {
-											e.stopPropagation()
-											setAddToPlaylistModalOpen(true, [track.id])
-										}}
+										className="group"
+										onClick={(e) => handleAddTrackToPlaylist(track.id, e)}
 									>
 										<svg
 											className="w-4 h-4 transition-colors duration-300 group-hover:fill-white"
@@ -289,29 +423,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 											<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75"></path>
 										</svg>
 									</Button>
-								</div>
-							</div>
-
-							{/* Desktop actions */}
-							<div className="hidden md:flex items-center justify-end gap-4">
-								<Button
-									size="icon"
-									variant="spotifyTransparent"
-									className="group"
-									onClick={(e) => {
-										e.stopPropagation()
-										setAddToPlaylistModalOpen(true, [track.id])
-									}}
-								>
-									<svg
-										className="w-4 h-4 transition-colors duration-300 group-hover:fill-white"
-										fill="gray"
-										aria-hidden="true"
-										viewBox="0 0 16 16"
-									>
-										<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75"></path>
-									</svg>
-								</Button>
+								)}
 								<span className="text-zinc-400 text-sm">
 									{formatDuration(track.duration)}
 								</span>

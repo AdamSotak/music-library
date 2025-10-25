@@ -6,6 +6,27 @@ export type InertiaPageProps = {
 		createdAt: string
 	} | null
 	playlists: Playlist[]
+	savedAlbums: SavedAlbum[]
+	followedArtists: FollowedArtist[]
+}
+
+export type SavedAlbum = {
+	id: string
+	name: string
+	artist: string
+	artist_id: string
+	cover: string
+	year: number | null
+	saved_at: string
+}
+
+export type FollowedArtist = {
+	id: string
+	name: string
+	image: string
+	monthly_listeners?: number
+	is_verified?: boolean
+	followed_at: string
 }
 
 export type Artist = {
@@ -52,10 +73,13 @@ export type Album = {
 export type Playlist = {
 	id: string
 	name: string
-	description: string
+	description: string | null
 	image: string
 	tracks: Track[]
 	is_default?: boolean
+	created_at?: string
+	updated_at?: string
+	owner_name?: string | null
 }
 
 export type ShelfItem = {

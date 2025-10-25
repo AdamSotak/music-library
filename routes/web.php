@@ -6,6 +6,7 @@ use App\Http\Controllers\AudioProxyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TrackController;
@@ -56,6 +57,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/playlist/{id}', [PlaylistController::class, 'destroy'])->name('playlists.destroy');
     Route::post('/playlist/{id}/tracks', [PlaylistController::class, 'addTracks'])->name('playlists.addTracks');
     Route::delete('/playlist/{playlistId}/tracks/{trackId}', [PlaylistController::class, 'removeTrack'])->name('playlists.removeTrack');
+
+    // Library management (save albums, follow artists)
+    Route::post('/library/albums/{albumId}', [LibraryController::class, 'saveAlbum'])->name('library.saveAlbum');
+    Route::post('/library/artists/{artistId}', [LibraryController::class, 'followArtist'])->name('library.followArtist');
+    Route::get('/library/albums/{albumId}/check', [LibraryController::class, 'checkAlbumSaved'])->name('library.checkAlbumSaved');
+    Route::get('/library/artists/{artistId}/check', [LibraryController::class, 'checkArtistFollowed'])->name('library.checkArtistFollowed');
 
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
     Route::get('/api/search/tracks', [SearchController::class, 'searchTracks'])->name('api.search.tracks');

@@ -1,5 +1,5 @@
-import type { Playlist } from "@/types"
-import { router } from "@inertiajs/react"
+import type { Playlist, InertiaPageProps } from "@/types"
+import { router, usePage } from "@inertiajs/react"
 import { usePlayer } from "@/hooks/usePlayer"
 import { useImageColor } from "@/hooks/useImageColor"
 import { Modals } from "@/hooks/useModals"
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import PlayButton from "@/components/home/play-button"
 import { Music } from "lucide-react"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
+import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
 
 interface PlaylistShowProps {
 	playlist: Playlist
@@ -28,6 +29,9 @@ interface SearchTrack {
 export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
+	const { playlists } = usePage().props as unknown as InertiaPageProps
+	const likedSongsPlaylist = playlists.find((p) => p.is_default)
+	const [_likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
 	const { rgba } = useImageColor(
 		playlist.is_default
 			? "/images/liked-songs.jpg"
@@ -41,6 +45,13 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		() => toPlayerQueue(playlist.tracks),
 		[playlist.tracks],
 	)
+
+	useEffect(() => {
+		if (likedSongsPlaylist) {
+			const liked = new Set(likedSongsPlaylist.tracks.map((t) => t.id))
+			setLikedTrackIds(liked)
+		}
+	}, [likedSongsPlaylist])
 
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
@@ -90,6 +101,24 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 				})
 			},
 		)
+	}
+
+	const _handleAddTrackToPlaylist = (
+		trackId: string,
+		event: MouseEvent<HTMLButtonElement>,
+	) => {
+		event.stopPropagation()
+
+		// First click: Add to Liked Songs
+		if (likedSongsPlaylist) {
+			router.post(
+				`/playlist/${likedSongsPlaylist.id}/tracks`,
+				{ track_ids: [trackId] },
+				{
+					preserveScroll: true,
+				},
+			)
+		}
 	}
 
 	// Search for tracks
@@ -215,22 +244,6 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							: undefined
 					}
 				/>
-				<Button size="icon" variant="spotifyTransparent" className="group">
-					<svg
-						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"
-						fill="none"
-						stroke="gray"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-						/>
-					</svg>
-				</Button>
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
 						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
@@ -400,26 +413,22 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 										12 hours ago
 									</div>
 									<div className="hidden md:flex items-center justify-end gap-4">
-										<Button
-											size="icon"
-											variant="spotifyTransparent"
-											className="group"
-										>
-											<svg
-												className="min-w-4 min-h-4 transition-colors duration-300 group-hover:stroke-white"
-												fill="none"
-												stroke="gray"
-												viewBox="0 0 24 24"
-												aria-hidden="true"
+										<AddToPlaylistDropdown trackId={track.id}>
+											<Button
+												size="icon"
+												variant="spotifyTransparent"
+												className="group"
 											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-												/>
-											</svg>
-										</Button>
+												<svg
+													className="w-4 h-4 transition-colors duration-300"
+													fill="#1ed760"
+													aria-hidden="true"
+													viewBox="0 0 16 16"
+												>
+													<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
+												</svg>
+											</Button>
+										</AddToPlaylistDropdown>
 										<span className="text-zinc-400 text-sm">
 											{formatDuration(track.duration)}
 										</span>

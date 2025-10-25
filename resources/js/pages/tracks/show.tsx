@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button"
 import { useImageColor } from "@/hooks/useImageColor"
 import { usePlayer } from "@/hooks/usePlayer"
 import { toPlayerTrack } from "@/utils/player"
-import type { Track } from "@/types"
-import { router } from "@inertiajs/react"
-import { useMemo, type MouseEvent } from "react"
+import type { Track, InertiaPageProps } from "@/types"
+import { router, usePage } from "@inertiajs/react"
+import { useMemo, useState, useEffect, type MouseEvent } from "react"
+import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
 
 interface TrackShowProps {
 	track: Track
@@ -16,6 +17,18 @@ export default function TrackShow({ track }: TrackShowProps) {
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const playerTrack = useMemo(() => toPlayerTrack(track), [track])
 	const isCurrentTrack = currentTrack?.id === playerTrack.id
+	const { playlists } = usePage().props as unknown as InertiaPageProps
+	const likedSongsPlaylist = playlists.find((p) => p.is_default)
+	const [isInLikedSongs, setIsInLikedSongs] = useState(false)
+
+	useEffect(() => {
+		if (likedSongsPlaylist) {
+			setIsInLikedSongs(
+				likedSongsPlaylist.tracks.some((t) => t.id === track.id),
+			)
+		}
+	}, [likedSongsPlaylist, track.id])
+
 	const handlePlay = (event?: MouseEvent<HTMLButtonElement>) => {
 		event?.stopPropagation()
 		if (isCurrentTrack) {
@@ -25,6 +38,21 @@ export default function TrackShow({ track }: TrackShowProps) {
 		// Track detail pages play a standalone queue with just this track.
 		setCurrentTrack(playerTrack, [playerTrack], 0)
 	}
+
+	const handleAddToLikedSongs = (event: MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation()
+		// First click: Add to Liked Songs
+		if (likedSongsPlaylist) {
+			router.post(
+				`/playlist/${likedSongsPlaylist.id}/tracks`,
+				{ track_ids: [track.id] },
+				{
+					preserveScroll: true,
+				},
+			)
+		}
+	}
+
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
 		const secs = seconds % 60
@@ -99,21 +127,34 @@ export default function TrackShow({ track }: TrackShowProps) {
 					onClick={handlePlay}
 					className={isCurrentTrack && isPlaying ? "bg-white" : undefined}
 				/>
-				<Button size="icon" variant="spotifyTransparent" className="group">
-					<svg
-						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:stroke-white"
-						fill="none"
-						stroke="gray"
-						viewBox="0 0 24 24"
+				{isInLikedSongs ? (
+					<AddToPlaylistDropdown trackId={track.id}>
+						<Button size="icon" variant="spotifyTransparent" className="group">
+							<svg
+								className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300"
+								fill="#1ed760"
+								viewBox="0 0 16 16"
+							>
+								<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z" />
+							</svg>
+						</Button>
+					</AddToPlaylistDropdown>
+				) : (
+					<Button
+						size="icon"
+						variant="spotifyTransparent"
+						className="group"
+						onClick={handleAddToLikedSongs}
 					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-						/>
-					</svg>
-				</Button>
+						<svg
+							className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
+							fill="gray"
+							viewBox="0 0 16 16"
+						>
+							<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75" />
+						</svg>
+					</Button>
+				)}
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
 						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"

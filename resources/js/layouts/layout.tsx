@@ -10,35 +10,62 @@ import { usePage } from "@inertiajs/react"
 export default function Layout({ children }: { children: React.ReactNode }) {
 	const pathname = usePage().url
 	const mainContentRef = useRef<HTMLDivElement>(null)
-	const [isSidebarExpanded, setIsSidebarExpanded] = useState(
-		localStorage.getItem("isSidebarExpanded") === "true",
-	)
+	type SidebarSize = "collapsed" | "default" | "expanded"
+	const [sidebarSize, setSidebarSize] = useState<SidebarSize>("default")
 	const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
 	useEffect(() => {
-		localStorage.setItem("isSidebarExpanded", isSidebarExpanded.toString())
-	}, [isSidebarExpanded])
+		if (typeof window === "undefined") return
+		const stored = localStorage.getItem("sidebarSize")
+		if (
+			stored === "collapsed" ||
+			stored === "default" ||
+			stored === "expanded"
+		) {
+			setSidebarSize(stored)
+		}
+	}, [])
+
+	useEffect(() => {
+		if (typeof window === "undefined") return
+		localStorage.setItem("sidebarSize", sidebarSize)
+	}, [sidebarSize])
 
 	useEffect(() => {
 		mainContentRef.current?.scrollTo({ top: 0, behavior: "instant" })
 	}, [pathname])
+
+	const sidebarWidthClass =
+		sidebarSize === "collapsed"
+			? "lg:w-[72px] lg:min-w-[72px]"
+			: sidebarSize === "expanded"
+				? "lg:w-full"
+				: "lg:w-[26vw] lg:min-w-[320px] lg:max-w-[420px]"
 
 	return (
 		<>
 			<div className="min-w-screen h-screen bg-black flex flex-col">
 				<Navbar onMobileMenuToggle={() => setIsMobileSidebarOpen(true)} />
 				<main className="flex-1 overflow-hidden">
-					<div className="flex gap-2 w-full h-full bg-black px-2 pb-1">
+					<div
+						className={cn(
+							"flex w-full h-full bg-black px-2 pb-1 gap-2 transition-all duration-300",
+							sidebarSize === "expanded" ? "lg:gap-0 lg:px-0" : "lg:gap-2",
+						)}
+					>
 						{/* Desktop Sidebar */}
 						<div
 							className={cn(
-								"hidden lg:block h-full bg-background-base rounded-lg overflow-y-auto transition-all duration-300",
-								isSidebarExpanded ? "min-w-72 w-1/6" : "min-w-20 w-[4vw]",
+								"hidden lg:block h-full bg-background-base overflow-y-auto transition-all duration-300",
+								sidebarWidthClass,
+								sidebarSize === "expanded"
+									? "lg:flex-1 lg:rounded-none"
+									: "lg:flex-none lg:shrink-0 lg:rounded-lg",
 							)}
 						>
 							<Sidebar
-								isExpanded={isSidebarExpanded}
-								setIsExpanded={setIsSidebarExpanded}
+								sidebarSize={sidebarSize}
+								setSidebarSize={setSidebarSize}
 								isMobile={false}
 							/>
 						</div>
@@ -47,9 +74,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 						<div
 							ref={mainContentRef}
 							className={cn(
-								"h-full bg-background-base rounded-lg overflow-y-auto transition-all duration-300",
-								"w-full lg:w-5/6",
-								isSidebarExpanded ? "lg:w-5/6" : "lg:w-[96vw]",
+								"h-full bg-background-base rounded-lg overflow-y-auto transition-all duration-300 flex-1",
+								sidebarSize === "expanded" ? "lg:hidden" : "",
 							)}
 						>
 							{children}
@@ -64,8 +90,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 			<Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
 				<SheetContent side="left" className="w-80 p-0 border-none sm:max-w-80">
 					<Sidebar
-						isExpanded={true}
-						setIsExpanded={() => {}}
+						sidebarSize="expanded"
+						setSidebarSize={() => {}}
 						isMobile={true}
 						onClose={() => setIsMobileSidebarOpen(false)}
 					/>
