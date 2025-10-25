@@ -1,4 +1,5 @@
 import type { Album } from "@/types"
+import { Link } from "@inertiajs/react"
 
 interface AlbumsIndexProps {
 	albums: Pick<Album, "id" | "name" | "artist" | "cover">[]
@@ -12,7 +13,7 @@ export default function AlbumsIndex({ albums }: AlbumsIndexProps) {
 
 				<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
 					{albums.map((album) => (
-						<a
+						<Link
 							key={album.id}
 							href={`/albums/${album.id}`}
 							className="group cursor-pointer"
@@ -30,7 +31,7 @@ export default function AlbumsIndex({ albums }: AlbumsIndexProps) {
 									{album.artist}
 								</p>
 							</div>
-						</a>
+						</Link>
 					))}
 				</div>
 			</div>

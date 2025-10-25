@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { loginFormSchema } from "@/lib/validation/auth-schemas"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { router } from "@inertiajs/react"
+import { Link, router } from "@inertiajs/react"
 import { useForm } from "react-hook-form"
 import type { z } from "zod"
 
@@ -169,12 +169,12 @@ export default function Login() {
 
 							<span className="text-zinc-400 font-medium text-sm sm:text-base text-center">
 								Don&apos;t have an account?
-								<a
+								<Link
 									href="/signup"
 									className="underline cursor-pointer text-white ml-1 sm:ml-2"
 								>
 									Sign up for Spotify
-								</a>
+								</Link>
 							</span>
 						</div>
 					</form>
