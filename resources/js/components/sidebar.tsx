@@ -2,7 +2,7 @@ import { SidebarItem } from "./library/sidebar-item"
 import { Button } from "./ui/button"
 import { usePage } from "@inertiajs/react"
 import { Modals } from "@/hooks/useModals"
-import type { InertiaPageProps } from "@/types"
+import type { InertiaPageProps, Playlist } from "@/types"
 import { useState, useMemo } from "react"
 import {
 	DropdownMenu,
@@ -12,7 +12,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
-import { Maximize2, Minimize2 } from "lucide-react"
+import { Maximize2, Menu, Minimize2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface SidebarProps {
@@ -50,21 +50,32 @@ export default function Sidebar({
 
 	const sortedPlaylists = useMemo(() => {
 		const items = [...playlists]
+
+		const sortPlaylists = (
+			customSort: (a: Playlist, b: Playlist) => number,
+		) => {
+			return items.sort((a, b) => {
+				if (a.is_default && !b.is_default) return -1
+				if (!a.is_default && b.is_default) return 1
+				return customSort(a, b)
+			})
+		}
+
 		switch (sortBy) {
 			case "recents":
-				return items.sort(
+				return sortPlaylists(
 					(a, b) =>
 						getDateValue(b.updated_at || b.created_at) -
 						getDateValue(a.updated_at || a.created_at),
 				)
 			case "recently_added":
-				return items.sort(
+				return sortPlaylists(
 					(a, b) => getDateValue(b.created_at) - getDateValue(a.created_at),
 				)
 			case "alphabetical":
-				return items.sort((a, b) => a.name.localeCompare(b.name))
+				return sortPlaylists((a, b) => a.name.localeCompare(b.name))
 			case "creator":
-				return items.sort((a, b) =>
+				return sortPlaylists((a, b) =>
 					(a.owner_name || a.description || a.name).localeCompare(
 						b.owner_name || b.description || b.name,
 					),
@@ -340,15 +351,13 @@ export default function Sidebar({
 						<Button
 							variant="ghost"
 							size="sm"
-							className="h-8 text-sm text-[#b3b3b3] hover:text-white px-2 gap-2 hover:bg-transparent"
+							className="h-8 text-sm text-[#b3b3b3] hover:text-white px-2 gap-2 hover:bg-transparent cursor-pointer"
 						>
 							{sortBy === "recents" && "Recents"}
 							{sortBy === "recently_added" && "Recently Added"}
 							{sortBy === "alphabetical" && "Alphabetical"}
 							{sortBy === "creator" && "Creator"}
-							<svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
-								<path d="M15 14.5H5V13h10z M15 11H5V9.5h10z M15 7.5H5V6h10z M3 3v11l-2-1.5" />
-							</svg>
+							<Menu className="w-4 h-4" />
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent
@@ -363,16 +372,7 @@ export default function Sidebar({
 							className="flex justify-between px-3 py-2 hover:bg-[#3e3e3e] cursor-pointer"
 						>
 							<span>Recents</span>
-							{sortBy === "recents" && (
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 16 16"
-									fill="currentColor"
-									className="w-4 h-4 text-green-500"
-								>
-									<path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0"></path>
-								</svg>
-							)}
+							{sortBy === "recents" && <Menu className="w-4 h-4" />}
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={() => setSortBy("recently_added")}
