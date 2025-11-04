@@ -817,11 +817,10 @@ export default function AudioPlayer() {
 	useEffect(() => {
 		if (!audioRef.current || !currentTrack) return
 
-		// Use track ID for smart URL refresh on backend
-		const proxyUrl = `/api/audio/stream?track_id=${encodeURIComponent(currentTrack.id)}`
+		const url = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
 		console.log("Loading track:", currentTrack.name, "ID:", currentTrack.id)
 
-		audioRef.current.src = proxyUrl
+		audioRef.current.src = url
 		audioRef.current.load()
 
 		if (isPlaying) {
@@ -829,8 +828,13 @@ export default function AudioPlayer() {
 				console.error("Playback failed:", err)
 				setIsPlaying(false)
 			})
+		} else {
+			audioRef.current.pause()
 		}
-	}, [currentTrack, isPlaying, setIsPlaying])
+	}, [isPlaying, currentTrack, setIsPlaying])
+
+
+
 
 	// Handle play/pause state changes
 	useEffect(() => {
@@ -936,11 +940,10 @@ export default function AudioPlayer() {
 			{/* Full-screen mobile player modal */}
 			{isExpanded && (
 				<div
-					className={`fixed inset-0 z-50 bg-gradient-to-b from-zinc-800 to-zinc-900 lg:hidden transition-transform duration-300 ease-in-out ${
-						isClosing
-							? "animate-out slide-out-to-bottom"
-							: "animate-in slide-in-from-bottom"
-					}`}
+					className={`fixed inset-0 z-50 bg-gradient-to-b from-zinc-800 to-zinc-900 lg:hidden transition-transform duration-300 ease-in-out ${isClosing
+						? "animate-out slide-out-to-bottom"
+						: "animate-in slide-in-from-bottom"
+						}`}
 					onClick={(e) => {
 						// Close if clicking on backdrop (not on content)
 						if (e.target === e.currentTarget) {
