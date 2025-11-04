@@ -833,9 +833,6 @@ export default function AudioPlayer() {
 		}
 	}, [isPlaying, currentTrack, setIsPlaying])
 
-
-
-
 	// Handle play/pause state changes
 	useEffect(() => {
 		if (!audioRef.current || !currentTrack) return
@@ -940,10 +937,11 @@ export default function AudioPlayer() {
 			{/* Full-screen mobile player modal */}
 			{isExpanded && (
 				<div
-					className={`fixed inset-0 z-50 bg-gradient-to-b from-zinc-800 to-zinc-900 lg:hidden transition-transform duration-300 ease-in-out ${isClosing
-						? "animate-out slide-out-to-bottom"
-						: "animate-in slide-in-from-bottom"
-						}`}
+					className={`fixed inset-0 z-50 bg-gradient-to-b from-zinc-800 to-zinc-900 lg:hidden transition-transform duration-300 ease-in-out ${
+						isClosing
+							? "animate-out slide-out-to-bottom"
+							: "animate-in slide-in-from-bottom"
+					}`}
 					onClick={(e) => {
 						// Close if clicking on backdrop (not on content)
 						if (e.target === e.currentTarget) {

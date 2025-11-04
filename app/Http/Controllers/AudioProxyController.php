@@ -17,19 +17,19 @@ class AudioProxyController extends Controller
         $q = $request->query('q');
         $redirect = $request->boolean('redirect', true);
 
-        if (!$deezerId && !$q) {
+        if (! $deezerId && ! $q) {
             return response()->json(['error' => 'deezer_id or q is required'], 400);
         }
 
-        if ($deezerId && !preg_match('/^\d+$/', (string)$deezerId)) {
+        if ($deezerId && ! preg_match('/^\d+$/', (string) $deezerId)) {
             return response()->json(['error' => 'deezer_id must be numeric'], 400);
         }
 
         $url = $deezerId
-            ? $this->deezer->getPreviewUrl((string)$deezerId)
-            : $this->deezer->searchPreviewUrl((string)$q);
+            ? $this->deezer->getPreviewUrl((string) $deezerId)
+            : $this->deezer->searchPreviewUrl((string) $q);
 
-        if (!$url) {
+        if (! $url) {
             return response()->json(['error' => 'preview not found'], 404);
         }
 
@@ -50,6 +50,7 @@ class AudioProxyController extends Controller
         });
         $resp->headers->set('Content-Type', 'audio/mpeg');
         $resp->headers->set('Cache-Control', 'no-store');
+
         return $resp;
     }
 }
