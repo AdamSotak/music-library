@@ -16,6 +16,23 @@ export default function Account() {
 		<div className="p-4">
 			<h1 className="text-2xl font-bold">Your Account</h1>
 
+			{user.isGuest && (
+				<div className="mt-4 p-4 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+					<h2 className="text-lg font-semibold text-yellow-400 mb-2">Guest Account</h2>
+					<p className="text-sm text-zinc-300">
+						You are currently using a guest account. Your data will not be saved permanently.
+						Consider creating a regular account to save your playlists and preferences.
+					</p>
+					<Button
+						className="mt-3"
+						variant={"spotifyGreen"}
+						onClick={() => router.visit("/signup")}
+					>
+						Create Account
+					</Button>
+				</div>
+			)}
+
 			<div className="mt-4 flex flex-col gap-4">
 				<div>
 					<span className="block text-sm font-medium text-zinc-400 mb-1">
@@ -23,12 +40,14 @@ export default function Account() {
 					</span>
 					<div className="text-xl font-semibold text-white">{user?.name}</div>
 				</div>
-				<div>
-					<span className="block text-sm font-medium text-zinc-400 mb-1">
-						Email
-					</span>
-					<div className="text-base text-zinc-200">{user?.email}</div>
-				</div>
+				{!user.isGuest && (
+					<div>
+						<span className="block text-sm font-medium text-zinc-400 mb-1">
+							Email
+						</span>
+						<div className="text-base text-zinc-200">{user?.email}</div>
+					</div>
+				)}
 				<div>
 					<span className="block text-sm font-medium text-zinc-400 mb-1">
 						Created At
@@ -48,21 +67,23 @@ export default function Account() {
 					Logout
 				</Button>
 
-				<Button
-					className="mt-4 bg-red-500 text-white"
-					variant={"spotifyGreen"}
-					onClick={() =>
-						setOpen(
-							true,
-							"Delete Account",
-							"Are you sure you want to delete your account?",
-							"Delete",
-							() => router.post("/delete-account"),
-						)
-					}
-				>
-					Delete Account
-				</Button>
+				{!user.isGuest && (
+					<Button
+						className="mt-4 bg-red-500 text-white"
+						variant={"spotifyGreen"}
+						onClick={() =>
+							setOpen(
+								true,
+								"Delete Account",
+								"Are you sure you want to delete your account?",
+								"Delete",
+								() => router.post("/delete-account"),
+							)
+						}
+					>
+						Delete Account
+					</Button>
+				)}
 			</div>
 		</div>
 	)

@@ -4,6 +4,7 @@ export type InertiaPageProps = {
 		name: string
 		email: string
 		createdAt: string
+		isGuest: boolean
 	} | null
 	playlists: Playlist[]
 	savedAlbums: SavedAlbum[]

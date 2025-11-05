@@ -18,6 +18,7 @@ Route::controller(AuthController::class)->group(function () {
 
     Route::post('/login', 'storeLogin');
     Route::post('/signup', 'storeSignup');
+    Route::post('/guest-login', 'guestLogin')->name('guest-login');
 });
 
 // Protected routes

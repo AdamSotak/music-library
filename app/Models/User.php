@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_guest',
     ];
 
     /**
@@ -45,6 +46,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_guest' => 'boolean',
         ];
     }
 
@@ -65,5 +67,34 @@ class User extends Authenticatable
         return $this->belongsToMany(Artist::class, 'user_artists', 'user_id', 'artist_id')
             ->withPivot('followed_at')
             ->orderByPivot('followed_at', 'desc');
+    }
+
+    /**
+     * Check if the user is a guest user.
+     */
+    public function isGuest(): bool
+    {
+        return $this->is_guest;
+    }
+
+    /**
+     * Check if the user is a registered user.
+     */
+    public function isRegistered(): bool
+    {
+        return !$this->is_guest;
+    }
+
+    /**
+     * Create a new guest user.
+     */
+    public static function createGuest(): self
+    {
+        return self::create([
+            'name' => 'Guest User',
+            'email' => null,
+            'password' => null,
+            'is_guest' => true,
+        ]);
     }
 }

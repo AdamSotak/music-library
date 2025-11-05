@@ -107,6 +107,7 @@ class HandleInertiaRequests extends Middleware
                 'name' => $user->name,
                 'email' => $user->email,
                 'createdAt' => $user->created_at,
+                'isGuest' => $user->is_guest ?? false,
             ] : null,
             'playlists' => $playlists,
             'savedAlbums' => $savedAlbums,

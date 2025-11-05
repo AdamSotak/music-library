@@ -167,6 +167,15 @@ export default function Login() {
 								Continue
 							</Button>
 
+							<Button
+								type="button"
+								className="w-full py-3 sm:py-2 text-sm sm:text-base"
+								variant={"spotifyTransparent"}
+								onClick={() => router.post("/guest-login")}
+							>
+								Continue as Guest
+							</Button>
+
 							<span className="text-zinc-400 font-medium text-sm sm:text-base text-center">
 								Don&apos;t have an account?
 								<Link
