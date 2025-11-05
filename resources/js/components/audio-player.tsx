@@ -818,7 +818,6 @@ export default function AudioPlayer() {
 		if (!audioRef.current || !currentTrack) return
 
 		const url = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
-		console.log("Loading track:", currentTrack.name, "ID:", currentTrack.id)
 
 		audioRef.current.src = url
 		audioRef.current.load()
@@ -863,7 +862,6 @@ export default function AudioPlayer() {
 	const handleLoadedMetadata = () => {
 		if (audioRef.current) {
 			setDuration(audioRef.current.duration)
-			console.log("Audio loaded, duration:", audioRef.current.duration)
 		}
 	}
 

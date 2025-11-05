@@ -38,24 +38,6 @@ class CategoryController extends Controller
                 'year' => $album->release_date?->year ?? 2024,
             ]);
 
-        // Get playlists (for now, just return default ones)
-        $playlists = \App\Models\Playlist::where('is_default', true)
-            ->take(8)
-            ->get()
-            ->map(function ($playlist) {
-                // Get the first track in the playlist
-                $firstTrack = $playlist->tracks()->with('album')->first();
-                $image = $firstTrack && $firstTrack->album ? $firstTrack->album->image_url : null;
-
-                return [
-                    'id' => $playlist->id,
-                    'name' => $playlist->name,
-                    'is_default' => $playlist->is_default,
-                    'description' => $playlist->description,
-                    'image' => $image,
-                ];
-            });
-
         return Inertia::render('categories/id', [
             'category' => [
                 'id' => $category->slug,
@@ -63,7 +45,6 @@ class CategoryController extends Controller
                 'image' => $category->image_url,
                 'color' => $category->color,
                 'albums' => $albums,
-                'playlists' => $playlists,
                 'tracks' => $category->tracks->take(20)->map(fn ($track) => [
                     'id' => $track->id,
                     'name' => $track->name,
