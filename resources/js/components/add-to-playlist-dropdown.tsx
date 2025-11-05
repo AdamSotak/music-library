@@ -93,7 +93,9 @@ export const AddToPlaylistDropdown = ({
 
 	const handleCreateNewPlaylist = () => {
 		if (user?.isGuest) {
-			alert('Guest users cannot create playlists. Please create an account to save playlists.')
+			alert(
+				"Guest users cannot create playlists. Please create an account to save playlists.",
+			)
 			return
 		}
 		setIsOpen(false)
@@ -145,7 +147,11 @@ export const AddToPlaylistDropdown = ({
 						onClick={handleCreateNewPlaylist}
 						disabled={user?.isGuest}
 						className="w-full bg-transparent hover:bg-white/10 text-white text-[13px] justify-start border-0 rounded h-8 font-normal px-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-						title={user?.isGuest ? "Guest users cannot create playlists" : "Create playlist"}
+						title={
+							user?.isGuest
+								? "Guest users cannot create playlists"
+								: "Create playlist"
+						}
 					>
 						<svg
 							viewBox="0 0 16 16"

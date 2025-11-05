@@ -214,17 +214,23 @@ export default function Sidebar({
 							<DropdownMenuItem
 								onClick={() => {
 									if (user?.isGuest) {
-										alert('Guest users cannot create playlists. Please create an account to save playlists.')
+										alert(
+											"Guest users cannot create playlists. Please create an account to save playlists.",
+										)
 										return
 									}
 									setEditPlaylistDetailsModalOpen(true, null)
 								}}
 								className={`flex items-center gap-3 px-3 py-3 rounded ${
 									user?.isGuest
-										? 'cursor-not-allowed opacity-50'
-										: 'hover:bg-[#3e3e3e] cursor-pointer'
+										? "cursor-not-allowed opacity-50"
+										: "hover:bg-[#3e3e3e] cursor-pointer"
 								}`}
-								title={user?.isGuest ? 'Guest users cannot create playlists' : 'Create a playlist'}
+								title={
+									user?.isGuest
+										? "Guest users cannot create playlists"
+										: "Create a playlist"
+								}
 							>
 								<svg
 									viewBox="0 0 24 24"

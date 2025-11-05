@@ -36,7 +36,9 @@ export const AddToPlaylistModal = () => {
 
 	const handleCreateNewPlaylist = () => {
 		if (user?.isGuest) {
-			alert('Guest users cannot create playlists. Please create an account to save playlists.')
+			alert(
+				"Guest users cannot create playlists. Please create an account to save playlists.",
+			)
 			return
 		}
 		setOpen(false)
