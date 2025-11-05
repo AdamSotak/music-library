@@ -8,7 +8,7 @@ import { Button } from "../ui/button"
 
 export const AddToPlaylistModal = () => {
 	const { open, trackIds, setOpen } = Modals.useAddToPlaylistModal()
-	const { playlists } = usePage().props as unknown as InertiaPageProps
+	const { playlists, user } = usePage().props as unknown as InertiaPageProps
 	const { setOpen: setCreatePlaylistOpen } =
 		Modals.useEditPlaylistDetailsModal()
 	const [searchQuery, setSearchQuery] = useState("")
@@ -35,6 +35,10 @@ export const AddToPlaylistModal = () => {
 	}
 
 	const handleCreateNewPlaylist = () => {
+		if (user?.isGuest) {
+			alert('Guest users cannot create playlists. Please create an account to save playlists.')
+			return
+		}
 		setOpen(false)
 		setCreatePlaylistOpen(true, null)
 	}
@@ -69,21 +73,31 @@ export const AddToPlaylistModal = () => {
 				</div>
 
 				{/* New Playlist Button */}
-				<div className="px-6 pb-2">
-					<Button
-						onClick={handleCreateNewPlaylist}
-						className="w-full bg-transparent hover:bg-white/10 text-white border border-zinc-600 hover:border-white rounded-full h-10 font-bold text-sm transition-all"
-					>
-						<svg
-							viewBox="0 0 16 16"
-							fill="currentColor"
-							className="w-4 h-4 mr-2"
+				{!user?.isGuest && (
+					<div className="px-6 pb-2">
+						<Button
+							onClick={handleCreateNewPlaylist}
+							className="w-full bg-transparent hover:bg-white/10 text-white border border-zinc-600 hover:border-white rounded-full h-10 font-bold text-sm transition-all"
 						>
-							<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75" />
-						</svg>
-						New playlist
-					</Button>
-				</div>
+							<svg
+								viewBox="0 0 16 16"
+								fill="currentColor"
+								className="w-4 h-4 mr-2"
+							>
+								<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75" />
+							</svg>
+							New playlist
+						</Button>
+					</div>
+				)}
+
+				{user?.isGuest && (
+					<div className="px-6 pb-2">
+						<div className="text-zinc-400 text-sm text-center py-3 border border-zinc-600 rounded-full">
+							<span>Guest users cannot create playlists</span>
+						</div>
+					</div>
+				)}
 
 				{/* Playlists List */}
 				<div className="flex-1 overflow-y-auto px-2">

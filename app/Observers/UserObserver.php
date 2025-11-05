@@ -12,6 +12,11 @@ class UserObserver
      */
     public function created(User $user): void
     {
+        // Don't create default playlists for guest users
+        if ($user->is_guest) {
+            return;
+        }
+
         // Automatically create a "Liked Songs" playlist for new users
         Playlist::create([
             'name' => 'Liked Songs',

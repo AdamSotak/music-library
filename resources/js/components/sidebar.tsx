@@ -34,7 +34,7 @@ export default function Sidebar({
 	isMobile = false,
 	onClose,
 }: SidebarProps) {
-	const { playlists, savedAlbums, followedArtists } = usePage()
+	const { playlists, savedAlbums, followedArtists, user } = usePage()
 		.props as unknown as InertiaPageProps
 	const { setOpen: setEditPlaylistDetailsModalOpen } =
 		Modals.useEditPlaylistDetailsModal()
@@ -212,8 +212,19 @@ export default function Sidebar({
 							className="w-56 bg-[#282828] border-none text-white p-1"
 						>
 							<DropdownMenuItem
-								onClick={() => setEditPlaylistDetailsModalOpen(true, null)}
-								className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded"
+								onClick={() => {
+									if (user?.isGuest) {
+										alert('Guest users cannot create playlists. Please create an account to save playlists.')
+										return
+									}
+									setEditPlaylistDetailsModalOpen(true, null)
+								}}
+								className={`flex items-center gap-3 px-3 py-3 rounded ${
+									user?.isGuest
+										? 'cursor-not-allowed opacity-50'
+										: 'hover:bg-[#3e3e3e] cursor-pointer'
+								}`}
+								title={user?.isGuest ? 'Guest users cannot create playlists' : 'Create a playlist'}
 							>
 								<svg
 									viewBox="0 0 24 24"

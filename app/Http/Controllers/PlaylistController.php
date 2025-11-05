@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Playlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class PlaylistController extends Controller
@@ -37,6 +38,13 @@ class PlaylistController extends Controller
 
     public function store(Request $request)
     {
+        // Prevent guest users from creating playlists
+        if (Auth::user()->is_guest) {
+            return back()->withErrors([
+                'error' => 'Guest users cannot create playlists. Please create an account to save playlists.',
+            ]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -46,7 +54,7 @@ class PlaylistController extends Controller
             'name' => $validated['name'],
             'description' => $validated['description'] ?? '',
             'is_default' => false,
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
         ]);
 
         return redirect()->back();
@@ -62,7 +70,7 @@ class PlaylistController extends Controller
         $playlist = Playlist::findOrFail($id);
 
         // Authorization: User can only update their own playlists
-        if ($playlist->user_id !== auth()->id()) {
+        if ($playlist->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -79,7 +87,7 @@ class PlaylistController extends Controller
         $playlist = Playlist::findOrFail($id);
 
         // Authorization: User can only delete their own playlists
-        if ($playlist->user_id !== auth()->id()) {
+        if ($playlist->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -99,7 +107,7 @@ class PlaylistController extends Controller
         $playlist = Playlist::findOrFail($id);
 
         // Authorization: User can only add tracks to their own playlists
-        if ($playlist->user_id !== auth()->id()) {
+        if ($playlist->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -119,7 +127,7 @@ class PlaylistController extends Controller
         $playlist = Playlist::findOrFail($playlistId);
 
         // Authorization: User can only remove tracks from their own playlists
-        if ($playlist->user_id !== auth()->id()) {
+        if ($playlist->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
 

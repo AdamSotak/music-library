@@ -16,7 +16,7 @@ export default function Account() {
 		<div className="p-4">
 			<h1 className="text-2xl font-bold">Your Account</h1>
 
-			{user.isGuest && (
+			{user?.isGuest && (
 				<div className="mt-4 p-4 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
 					<h2 className="text-lg font-semibold text-yellow-400 mb-2">
 						Guest Account
@@ -43,7 +43,7 @@ export default function Account() {
 					</span>
 					<div className="text-xl font-semibold text-white">{user?.name}</div>
 				</div>
-				{!user.isGuest && (
+				{!user?.isGuest && (
 					<div>
 						<span className="block text-sm font-medium text-zinc-400 mb-1">
 							Email
@@ -70,7 +70,7 @@ export default function Account() {
 					Logout
 				</Button>
 
-				{!user.isGuest && (
+				{!user?.isGuest && (
 					<Button
 						className="mt-4 bg-red-500 text-white"
 						variant={"spotifyGreen"}
