@@ -40,7 +40,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 			? "lg:w-[72px] lg:min-w-[72px]"
 			: sidebarSize === "expanded"
 				? "lg:w-full"
-				: "lg:w-[26vw] lg:min-w-[320px] lg:max-w-[420px]"
+				: "lg:w-[26vw] lg:min-w-[320px] lg:max-w-[320px]"
 
 	return (
 		<>

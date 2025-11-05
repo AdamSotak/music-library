@@ -817,11 +817,9 @@ export default function AudioPlayer() {
 	useEffect(() => {
 		if (!audioRef.current || !currentTrack) return
 
-		// Use track ID for smart URL refresh on backend
-		const proxyUrl = `/api/audio/stream?track_id=${encodeURIComponent(currentTrack.id)}`
-		console.log("Loading track:", currentTrack.name, "ID:", currentTrack.id)
+		const url = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
 
-		audioRef.current.src = proxyUrl
+		audioRef.current.src = url
 		audioRef.current.load()
 
 		if (isPlaying) {
@@ -829,8 +827,10 @@ export default function AudioPlayer() {
 				console.error("Playback failed:", err)
 				setIsPlaying(false)
 			})
+		} else {
+			audioRef.current.pause()
 		}
-	}, [currentTrack, isPlaying, setIsPlaying])
+	}, [isPlaying, currentTrack, setIsPlaying])
 
 	// Handle play/pause state changes
 	useEffect(() => {
@@ -862,7 +862,6 @@ export default function AudioPlayer() {
 	const handleLoadedMetadata = () => {
 		if (audioRef.current) {
 			setDuration(audioRef.current.duration)
-			console.log("Audio loaded, duration:", audioRef.current.duration)
 		}
 	}
 
