@@ -63,7 +63,7 @@ class FriendController extends Controller
             ->where('status', 'pending')
             ->first();
 
-        if (!$friendRequest) {
+        if (! $friendRequest) {
             return redirect()->back()->with('error', 'Friend request not found.');
         }
 

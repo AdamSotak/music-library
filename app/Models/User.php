@@ -75,7 +75,7 @@ class User extends Authenticatable
             ->where('status', 'accepted')
             ->where(function ($query) {
                 $query->where('user_id', $this->id)
-                      ->orWhere('friend_id', $this->id);
+                    ->orWhere('friend_id', $this->id);
             })
             ->pluck('user_id', 'friend_id')
             ->map(function ($userId, $friendId) {

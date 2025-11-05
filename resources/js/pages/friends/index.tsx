@@ -1,5 +1,5 @@
 import type { Friend, ReceivedFriendRequest, SentFriendRequest } from "@/types"
-import { Link, router } from "@inertiajs/react"
+import { router } from "@inertiajs/react"
 
 interface FriendsIndexProps {
 	friends: Friend[]
@@ -45,7 +45,8 @@ export default function FriendsIndex({
 										<h3 className="text-white font-medium">{request.name}</h3>
 										<p className="text-zinc-400 text-sm">{request.email}</p>
 										<p className="text-zinc-500 text-xs">
-											Requested {new Date(request.requested_at).toLocaleDateString()}
+											Requested{" "}
+											{new Date(request.requested_at).toLocaleDateString()}
 										</p>
 									</div>
 									<div className="flex gap-2">
@@ -84,7 +85,8 @@ export default function FriendsIndex({
 										<h3 className="text-white font-medium">{friend.name}</h3>
 										<p className="text-zinc-400 text-sm">{friend.email}</p>
 										<p className="text-zinc-500 text-xs">
-											Friends since {new Date(friend.created_at).toLocaleDateString()}
+											Friends since{" "}
+											{new Date(friend.created_at).toLocaleDateString()}
 										</p>
 									</div>
 									<button
@@ -98,7 +100,9 @@ export default function FriendsIndex({
 						</div>
 					) : (
 						<div className="bg-zinc-800 p-8 rounded-lg text-center">
-							<p className="text-zinc-400 mb-4">You don't have any friends yet.</p>
+							<p className="text-zinc-400 mb-4">
+								You don't have any friends yet.
+							</p>
 							<p className="text-zinc-500 text-sm">
 								Start by finding users in search or browsing playlists!
 							</p>
@@ -126,7 +130,9 @@ export default function FriendsIndex({
 										</p>
 									</div>
 									<div className="flex gap-2">
-										<span className="text-yellow-400 text-sm font-medium">Pending</span>
+										<span className="text-yellow-400 text-sm font-medium">
+											Pending
+										</span>
 										<button
 											onClick={() => handleCancelRequest(request.id)}
 											className="bg-zinc-600 hover:bg-zinc-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
