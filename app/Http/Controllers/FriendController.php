@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class FriendController extends Controller
+{
+    // Send friend request or remove if already friends
+    public function sendFriendRequest(Request $request, int $userId)
+    {
+        $targetUser = User::findOrFail($userId);
+        $currentUser = auth()->user();
+
+        if ($currentUser->id === $userId) {
+            return redirect()->back()->with('error', 'You cannot send a friend request to yourself.');
+        }
+
+        $existingRequest = DB::table('user_friends')
+            ->where(function ($query) use ($currentUser, $userId) {
+                $query->where('user_id', $currentUser->id)->where('friend_id', $userId);
+            })
+            ->orWhere(function ($query) use ($currentUser, $userId) {
+                $query->where('user_id', $userId)->where('friend_id', $currentUser->id);
+            })
+            ->first();
+
+        if ($existingRequest) {
+            if ($existingRequest->status === 'accepted') {
+                // remove friendship
+                DB::table('user_friends')
+                    ->where('id', $existingRequest->id)
+                    ->delete();
+            } elseif ($existingRequest->status === 'pending') {
+                // cancel pending request
+                DB::table('user_friends')
+                    ->where('id', $existingRequest->id)
+                    ->delete();
+            }
+        } else {
+            // send new friend request
+            DB::table('user_friends')->insert([
+                'user_id' => $currentUser->id,
+                'friend_id' => $userId,
+                'status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return redirect()->back();
+    }
+
+    public function acceptFriendRequest(Request $request, int $userId)
+    {
+        $currentUser = auth()->user();
+
+        $friendRequest = DB::table('user_friends')
+            ->where('user_id', $userId)
+            ->where('friend_id', $currentUser->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$friendRequest) {
+            return redirect()->back()->with('error', 'Friend request not found.');
+        }
+
+        DB::table('user_friends')
+            ->where('id', $friendRequest->id)
+            ->update([
+                'status' => 'accepted',
+                'friendship_started_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return redirect()->back();
+    }
+
+    public function removeFriend(Request $request, int $userId)
+    {
+        $currentUser = auth()->user();
+
+        $relationship = DB::table('user_friends')
+            ->where(function ($query) use ($currentUser, $userId) {
+                $query->where('user_id', $currentUser->id)->where('friend_id', $userId);
+            })
+            ->orWhere(function ($query) use ($currentUser, $userId) {
+                $query->where('user_id', $userId)->where('friend_id', $currentUser->id);
+            })
+            ->first();
+
+        if ($relationship) {
+            DB::table('user_friends')
+                ->where('id', $relationship->id)
+                ->delete();
+        }
+
+        return redirect()->back();
+    }
+
+    public function checkFriendStatus(int $userId)
+    {
+        $currentUser = auth()->user();
+
+        if ($currentUser->id === $userId) {
+            return response()->json(['status' => 'self']);
+        }
+
+        $relationship = DB::table('user_friends')
+            ->where(function ($query) use ($currentUser, $userId) {
+                $query->where('user_id', $currentUser->id)->where('friend_id', $userId);
+            })
+            ->orWhere(function ($query) use ($currentUser, $userId) {
+                $query->where('user_id', $userId)->where('friend_id', $currentUser->id);
+            })
+            ->first();
+
+        $status = 'none';
+        if ($relationship) {
+            $status = $relationship->status;
+
+            // If pending, check who sent it
+            if ($status === 'pending') {
+                if ($relationship->user_id === $currentUser->id) {
+                    $status = 'pending_sent';
+                } else {
+                    $status = 'pending_received';
+                }
+            }
+        }
+
+        return response()->json(['status' => $status]);
+    }
+}

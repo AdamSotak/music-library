@@ -98,6 +98,39 @@ class HandleInertiaRequests extends Middleware
             })
             : [];
 
+        $friends = Auth::check()
+            ? Auth::user()->getFriends()->map(function ($friend) {
+                return [
+                    'id' => $friend->id,
+                    'name' => $friend->name,
+                    'email' => $friend->email,
+                    'created_at' => $friend->created_at,
+                ];
+            })
+            : [];
+
+        $sentFriendRequests = Auth::check()
+            ? Auth::user()->sentFriendRequests()->get()->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'requested_at' => $user->pivot->created_at,
+                ];
+            })
+            : [];
+
+        $receivedFriendRequests = Auth::check()
+            ? Auth::user()->receivedFriendRequests()->get()->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'requested_at' => $user->pivot->created_at,
+                ];
+            })
+            : [];
+
         $user = Auth::user();
 
         return [
@@ -111,6 +144,9 @@ class HandleInertiaRequests extends Middleware
             'playlists' => $playlists,
             'savedAlbums' => $savedAlbums,
             'followedArtists' => $followedArtists,
+            'friends' => $friends,
+            'sentFriendRequests' => $sentFriendRequests,
+            'receivedFriendRequests' => $receivedFriendRequests,
         ];
     }
 }

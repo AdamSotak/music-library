@@ -342,6 +342,9 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 							<DropdownMenuItem onClick={() => router.visit("/account")}>
 								<span>Account</span>
 							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => router.visit("/friends")}>
+								<span>Friends</span>
+							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem onClick={() => router.post("/logout")}>
 								<span>Logout</span>

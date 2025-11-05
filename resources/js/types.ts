@@ -8,6 +8,9 @@ export type InertiaPageProps = {
 	playlists: Playlist[]
 	savedAlbums: SavedAlbum[]
 	followedArtists: FollowedArtist[]
+	friends: Friend[]
+	sentFriendRequests: SentFriendRequest[]
+	receivedFriendRequests: ReceivedFriendRequest[]
 }
 
 export type SavedAlbum = {
@@ -27,6 +30,27 @@ export type FollowedArtist = {
 	monthly_listeners?: number
 	is_verified?: boolean
 	followed_at: string
+}
+
+export type Friend = {
+	id: number
+	name: string
+	email: string
+	created_at: string
+}
+
+export type SentFriendRequest = {
+	id: number
+	name: string
+	email: string
+	requested_at: string
+}
+
+export type ReceivedFriendRequest = {
+	id: number
+	name: string
+	email: string
+	requested_at: string
 }
 
 export type Artist = {

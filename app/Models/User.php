@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -65,5 +66,38 @@ class User extends Authenticatable
         return $this->belongsToMany(Artist::class, 'user_artists', 'user_id', 'artist_id')
             ->withPivot('followed_at')
             ->orderByPivot('followed_at', 'desc');
+    }
+
+    // friends relationship
+    public function getFriends()
+    {
+        $friendIds = DB::table('user_friends')
+            ->where('status', 'accepted')
+            ->where(function ($query) {
+                $query->where('user_id', $this->id)
+                      ->orWhere('friend_id', $this->id);
+            })
+            ->pluck('user_id', 'friend_id')
+            ->map(function ($userId, $friendId) {
+                return $userId == $this->id ? $friendId : $userId;
+            })
+            ->unique()
+            ->values();
+
+        return User::whereIn('id', $friendIds)->get();
+    }
+
+    public function sentFriendRequests(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_friends', 'user_id', 'friend_id')
+            ->wherePivot('status', 'pending')
+            ->withPivot('created_at');
+    }
+
+    public function receivedFriendRequests(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_friends', 'friend_id', 'user_id')
+            ->wherePivot('status', 'pending')
+            ->withPivot('created_at');
     }
 }

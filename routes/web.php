@@ -5,12 +5,14 @@ use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\AudioProxyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\FriendController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TrackController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::controller(AuthController::class)->group(function () {
     Route::get('/login', 'login')->name('login');
@@ -36,6 +38,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/categories', 'show');
         Route::get('/categories/{id}', 'showById');
     });
+
+    // Friends page
+    Route::get('/friends', function () {
+        return Inertia::render('friends/index');
+    })->name('friends.index');
 
     // Canonical Spotify routing structure
     Route::prefix('collection')->group(function () {
@@ -63,6 +70,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/library/artists/{artistId}', [LibraryController::class, 'followArtist'])->name('library.followArtist');
     Route::get('/library/albums/{albumId}/check', [LibraryController::class, 'checkAlbumSaved'])->name('library.checkAlbumSaved');
     Route::get('/library/artists/{artistId}/check', [LibraryController::class, 'checkArtistFollowed'])->name('library.checkArtistFollowed');
+
+    // Friend management
+    Route::post('/friends/{userId}', [FriendController::class, 'sendFriendRequest'])->name('friends.sendRequest');
+    Route::post('/friends/{userId}/accept', [FriendController::class, 'acceptFriendRequest'])->name('friends.acceptRequest');
+    Route::post('/friends/{userId}/remove', [FriendController::class, 'removeFriend'])->name('friends.remove');
+    Route::get('/friends/{userId}/status', [FriendController::class, 'checkFriendStatus'])->name('friends.checkStatus');
 
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
     Route::get('/api/search/tracks', [SearchController::class, 'searchTracks'])->name('api.search.tracks');
