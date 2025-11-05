@@ -156,7 +156,7 @@ export default function Signup() {
 					>
 						Log in
 					</Button>
-					
+
 					<Button
 						variant={"spotifyTransparent"}
 						onClick={() => router.post("/guest-login")}

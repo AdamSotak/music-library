@@ -18,10 +18,13 @@ export default function Account() {
 
 			{user.isGuest && (
 				<div className="mt-4 p-4 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
-					<h2 className="text-lg font-semibold text-yellow-400 mb-2">Guest Account</h2>
+					<h2 className="text-lg font-semibold text-yellow-400 mb-2">
+						Guest Account
+					</h2>
 					<p className="text-sm text-zinc-300">
-						You are currently using a guest account. Your data will not be saved permanently.
-						Consider creating a regular account to save your playlists and preferences.
+						You are currently using a guest account. Your data will not be saved
+						permanently. Consider creating a regular account to save your
+						playlists and preferences.
 					</p>
 					<Button
 						className="mt-3"

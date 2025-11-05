@@ -82,7 +82,7 @@ class User extends Authenticatable
      */
     public function isRegistered(): bool
     {
-        return !$this->is_guest;
+        return ! $this->is_guest;
     }
 
     /**

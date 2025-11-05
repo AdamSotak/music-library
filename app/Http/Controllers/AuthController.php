@@ -72,10 +72,10 @@ class AuthController extends Controller
     {
         // Create a new guest user
         $guestUser = User::createGuest();
-        
+
         // Log in the guest user
         Auth::login($guestUser);
-        
+
         return redirect('/')->with('success', 'Welcome! You are now browsing as a guest.');
     }
 
