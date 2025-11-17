@@ -91,7 +91,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 				<SheetContent side="left" className="w-80 p-0 border-none sm:max-w-80">
 					<Sidebar
 						sidebarSize="expanded"
-						setSidebarSize={() => {}}
+						setSidebarSize={() => { }}
 						isMobile={true}
 						onClose={() => setIsMobileSidebarOpen(false)}
 					/>

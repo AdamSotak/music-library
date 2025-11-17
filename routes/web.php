@@ -31,6 +31,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/account', 'account');
         Route::post('/delete-account', 'destroy');
     });
+    Route::get('/tracks/{track}/barcode', [TrackController::class, 'generateBarcode'])->name('tracks.barcode');
+    Route::post('/tracks/scan', [TrackController::class, 'scanBarcode'])->name('tracks.scan');
 
     Route::controller(CategoryController::class)->group(function () {
         Route::get('/categories', 'show');
