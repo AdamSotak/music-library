@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "./ui/button"
+import Equalizer from "./equalizer"
 import { Slider } from "./ui/slider"
 import { ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react"
 import { usePlayer, type Track } from "@/hooks/usePlayer"
@@ -98,6 +99,8 @@ function DesktopPlayer({
 	playNext,
 	playPrevious,
 	formatTime,
+	audio,
+	trackKey,
 }: {
 	isPlaying: boolean
 	togglePlay: () => void
@@ -120,6 +123,8 @@ function DesktopPlayer({
 	playNext: () => void
 	playPrevious: () => void
 	formatTime: (seconds: number) => string
+	audio?: HTMLAudioElement | null
+	trackKey?: string | number | null
 }) {
 	return (
 		<div className="flex justify-between items-center w-full h-20 px-4">
@@ -349,6 +354,11 @@ function DesktopPlayer({
 			</div>
 
 			<div className="flex items-center gap-4">
+				{/* Equalizer control */}
+				<div className="relative">
+					<Equalizer audio={audio ?? null} trackKey={trackKey ?? null} />
+				</div>
+
 				<Button
 					size={"icon"}
 					variant={"spotifyTransparent"}
@@ -813,7 +823,7 @@ export default function AudioPlayer() {
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [isClosing, setIsClosing] = useState(false)
 
-	// Load and play track when currentTrack changes
+	// Load track when currentTrack changes
 	useEffect(() => {
 		if (!audioRef.current || !currentTrack) return
 
@@ -827,10 +837,8 @@ export default function AudioPlayer() {
 				console.error("Playback failed:", err)
 				setIsPlaying(false)
 			})
-		} else {
-			audioRef.current.pause()
 		}
-	}, [isPlaying, currentTrack, setIsPlaying])
+	}, [currentTrack])
 
 	// Handle play/pause state changes
 	useEffect(() => {
@@ -928,6 +936,7 @@ export default function AudioPlayer() {
 				onLoadedMetadata={handleLoadedMetadata}
 				onEnded={handleEnded}
 				aria-label="Audio player"
+				crossOrigin="anonymous"
 			>
 				<track kind="captions" />
 			</audio>
@@ -1004,6 +1013,8 @@ export default function AudioPlayer() {
 					playNext={playNext}
 					playPrevious={playPrevious}
 					formatTime={formatTime}
+					audio={audioRef.current}
+					trackKey={currentTrack?.id ?? currentTrack?.name ?? null}
 				/>
 			</div>
 		</>
