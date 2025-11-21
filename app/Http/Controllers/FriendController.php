@@ -31,12 +31,14 @@ class FriendController extends Controller
             if ($existingRequest->status === 'accepted') {
                 // remove friendship
                 DB::table('user_friends')
-                    ->where('id', $existingRequest->id)
+                    ->where('user_id', $existingRequest->user_id)
+                    ->where('friend_id', $existingRequest->friend_id)
                     ->delete();
             } elseif ($existingRequest->status === 'pending') {
                 // cancel pending request
                 DB::table('user_friends')
-                    ->where('id', $existingRequest->id)
+                    ->where('user_id', $existingRequest->user_id)
+                    ->where('friend_id', $existingRequest->friend_id)
                     ->delete();
             }
         } else {
@@ -68,7 +70,8 @@ class FriendController extends Controller
         }
 
         DB::table('user_friends')
-            ->where('id', $friendRequest->id)
+            ->where('user_id', $friendRequest->user_id)
+            ->where('friend_id', $friendRequest->friend_id)
             ->update([
                 'status' => 'accepted',
                 'friendship_started_at' => now(),
@@ -93,7 +96,8 @@ class FriendController extends Controller
 
         if ($relationship) {
             DB::table('user_friends')
-                ->where('id', $relationship->id)
+                ->where('user_id', $relationship->user_id)
+                ->where('friend_id', $relationship->friend_id)
                 ->delete();
         }
 
@@ -132,5 +136,58 @@ class FriendController extends Controller
         }
 
         return response()->json(['status' => $status]);
+    }
+
+    // Search for users
+    public function searchUsers(Request $request)
+    {
+        $request->validate([
+            'query' => 'required|string|min:2|max:255',
+        ]);
+
+        $query = $request->input('query');
+        $currentUser = auth()->user();
+
+        $users = User::where(function ($q) use ($query) {
+            $q->where('name', 'like', "%{$query}%")
+              ->orWhere('email', 'like', "%{$query}%");
+        })
+        ->where('id', '!=', $currentUser->id) // Don't show current user
+        ->limit(10)
+        ->get()
+        ->map(function ($user) use ($currentUser) {
+            // Check friend status for each user
+            $relationship = DB::table('user_friends')
+                ->where(function ($query) use ($currentUser, $user) {
+                    $query->where('user_id', $currentUser->id)->where('friend_id', $user->id);
+                })
+                ->orWhere(function ($query) use ($currentUser, $user) {
+                    $query->where('user_id', $user->id)->where('friend_id', $currentUser->id);
+                })
+                ->first();
+
+            $status = 'none';
+            if ($relationship) {
+                $status = $relationship->status;
+
+                // If pending, check who sent it
+                if ($status === 'pending') {
+                    if ($relationship->user_id === $currentUser->id) {
+                        $status = 'pending_sent';
+                    } else {
+                        $status = 'pending_received';
+                    }
+                }
+            }
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'friend_status' => $status,
+            ];
+        });
+
+        return response()->json(['users' => $users]);
     }
 }

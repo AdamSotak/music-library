@@ -76,6 +76,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/friends/{userId}/accept', [FriendController::class, 'acceptFriendRequest'])->name('friends.acceptRequest');
     Route::post('/friends/{userId}/remove', [FriendController::class, 'removeFriend'])->name('friends.remove');
     Route::get('/friends/{userId}/status', [FriendController::class, 'checkFriendStatus'])->name('friends.checkStatus');
+    Route::get('/api/friends/search', [FriendController::class, 'searchUsers'])->name('api.friends.search');
 
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
     Route::get('/api/search/tracks', [SearchController::class, 'searchTracks'])->name('api.search.tracks');
