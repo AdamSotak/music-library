@@ -159,7 +159,7 @@ export default function Equalizer({ audio, trackKey }: EqualizerProps) {
 					width="16"
 					height="16"
 					viewBox="0 0 20 20"
-					className="transition-colors duration-300 fill-gray-400 group-hover:fill-white"
+					className="transition-colors duration-300 fill-[#808080] group-hover:fill-white"
 				>
 					<rect x="2" y="8" width="3" height="4" rx="1" />
 					<rect x="8.5" y="5" width="3" height="10" rx="1" />
