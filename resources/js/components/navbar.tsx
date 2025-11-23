@@ -324,30 +324,40 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 						</svg>
 					</Button>
 
-					<DropdownMenu>
-						<DropdownMenuTrigger className="outline-none">
-							<div
-								className={`${buttonVariants({ variant: "spotifyTransparent", size: "icon" })} group rounded-full ml-1.5`}
-							>
-								<div className="min-w-10 max-w-10 min-h-10 max-h-10 rounded-full bg-zinc-900 flex items-center justify-center">
-									<div className="min-w-7 max-w-7 min-h-7 max-h-7 rounded-full bg-blue-400 flex items-center justify-center">
-										<span className="text-black font-medium text-sm">
-											{Utils.getInitialLetter(user?.name ?? "")}
-										</span>
+					{user ? (
+						<DropdownMenu>
+							<DropdownMenuTrigger className="outline-none">
+								<div
+									className={`${buttonVariants({ variant: "spotifyTransparent", size: "icon" })} group rounded-full ml-1.5`}
+								>
+									<div className="min-w-10 max-w-10 min-h-10 max-h-10 rounded-full bg-zinc-900 flex items-center justify-center">
+										<div className="min-w-7 max-w-7 min-h-7 max-h-7 rounded-full bg-blue-400 flex items-center justify-center">
+											<span className="text-black font-medium text-sm">
+												{Utils.getInitialLetter(user?.name ?? "")}
+											</span>
+										</div>
 									</div>
 								</div>
-							</div>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent className="w-44 mr-4">
-							<DropdownMenuItem onClick={() => router.visit("/account")}>
-								<span>Account</span>
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem onClick={() => router.post("/logout")}>
-								<span>Logout</span>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className="w-44 mr-4">
+								<DropdownMenuItem onClick={() => router.visit("/account")}>
+									<span>Account</span>
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem onClick={() => router.post("/logout")}>
+									<span>Logout</span>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					) : (
+						<Button
+							variant={"default"}
+							className="group rounded-full w-20 cursor-pointer"
+							onClick={() => router.visit("/login")}
+						>
+							Login
+						</Button>
+					)}
 				</div>
 			</div>
 
