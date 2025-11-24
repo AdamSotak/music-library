@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Track;
 use App\Services\MusicBarcodeService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class TrackController extends Controller
@@ -44,7 +43,7 @@ class TrackController extends Controller
 
     public function generateBarcode(Track $track)
     {
-        $barcode = $this->barcodeService->generateBarcode((string)$track->id);
+        $barcode = $this->barcodeService->generateBarcode((string) $track->id);
 
         return response()->json([
             'barcode' => $barcode,
@@ -54,44 +53,43 @@ class TrackController extends Controller
     }
 
     public function scan(Request $request)
-{
-    $request->validate([
-        'image' => 'required|image|max:20480',
-    ]);
+    {
+        $request->validate([
+            'image' => 'required|image|max:20480',
+        ]);
 
-    $numericId = $this->barcodeService->decodeBarcode($request->file('image'));
+        $numericId = $this->barcodeService->decodeBarcode($request->file('image'));
 
-    if (!$numericId) {
+        if (! $numericId) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Could not decode barcode',
+            ], 404);
+        }
+
+        $trackId = $this->numericToUuid($numericId);
+
+        if (! $trackId) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Track not found',
+            ], 404);
+        }
+
+        $track = Track::find($trackId);
+
+        if (! $track) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Track not found',
+            ], 404);
+        }
+
         return response()->json([
-            'success' => false,
-            'error' => 'Could not decode barcode',
-        ], 404);
+            'success' => true,
+            'track_id' => $track->id,
+            'name' => $track->name,
+            'url' => url('/tracks/'.$track->id),
+        ]);
     }
-
-    $trackId = $this->numericToUuid($numericId);
-
-    if (!$trackId) {
-        return response()->json([
-            'success' => false,
-            'error' => 'Track not found',
-        ], 404);
-    }
-
-    $track = Track::find($trackId);
-
-    if (!$track) {
-        return response()->json([
-            'success' => false,
-            'error' => 'Track not found',
-        ], 404);
-    }
-
-    return response()->json([
-        'success' => true,
-        'track_id' => $track->id,
-        'name' => $track->name,
-        'url' => url("/tracks/" . $track->id),
-    ]);
-}
-
 }

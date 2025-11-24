@@ -23,7 +23,6 @@ Route::controller(AuthController::class)->group(function () {
 Route::get('/tracks/{track}/barcode', [TrackController::class, 'generateBarcode'])->name('tracks.barcode');
 Route::post('/tracks/scan', [TrackController::class, 'scan'])->name('tracks.scan');
 
-
 // Protected routes
 Route::middleware('auth')->group(function () {
     Route::controller(HomeController::class)->group(function () {

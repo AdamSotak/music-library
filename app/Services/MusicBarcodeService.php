@@ -8,17 +8,20 @@ use Intervention\Image\ImageManager;
 class MusicBarcodeService
 {
     private const BAR_WIDTH = 16;
+
     private const BASE_HEIGHT = 600;
+
     private const PADDING = 120;
 
     private const TOTAL_BYTES = 22;
+
     private const TOTAL_BITS = self::TOTAL_BYTES * 8;
 
     protected $imageManager;
 
     public function __construct()
     {
-        $this->imageManager = new ImageManager(new Driver());
+        $this->imageManager = new ImageManager(new Driver);
     }
 
     public function generateBarcode(string $trackId): string
@@ -99,14 +102,14 @@ class MusicBarcodeService
         $sum = 0;
         $len = strlen($payload);
         for ($i = 0; $i < $len; $i++) {
-            $sum = ($sum + ord($payload[$i])) & 0xffff;
+            $sum = ($sum + ord($payload[$i])) & 0xFFFF;
         }
 
-        $header = chr(0xAA) . chr(0x55);
-        $checksum = chr(($sum >> 8) & 0xff) . chr($sum & 0xff);
-        $footer = chr(0x55) . chr(0xAA);
+        $header = chr(0xAA).chr(0x55);
+        $checksum = chr(($sum >> 8) & 0xFF).chr($sum & 0xFF);
+        $footer = chr(0x55).chr(0xAA);
 
-        return $header . $payload . $checksum . $footer;
+        return $header.$payload.$checksum.$footer;
     }
 
     private function bytesToBitString(string $bytes): string
@@ -116,6 +119,7 @@ class MusicBarcodeService
         for ($i = 0; $i < $len; $i++) {
             $bits .= str_pad(decbin(ord($bytes[$i])), 8, '0', STR_PAD_LEFT);
         }
+
         return $bits;
     }
 
@@ -149,7 +153,7 @@ class MusicBarcodeService
             return null;
         }
 
-        $margin = (int)floor($width * 0.05);
+        $margin = (int) floor($width * 0.05);
         if ($margin < 2) {
             $margin = 2;
         }
@@ -169,7 +173,7 @@ class MusicBarcodeService
         $brightnessValues = [];
 
         for ($i = 0; $i < $expectedBits; $i++) {
-            $cx = (int)round($margin + ($i + 0.5) * $segmentWidth);
+            $cx = (int) round($margin + ($i + 0.5) * $segmentWidth);
             if ($cx < 0) {
                 $cx = 0;
             }
@@ -180,8 +184,8 @@ class MusicBarcodeService
             $sum = 0;
             $count = 0;
 
-            $startY = (int)floor($height * 0.2);
-            $endY = (int)ceil($height * 0.8);
+            $startY = (int) floor($height * 0.2);
+            $endY = (int) ceil($height * 0.8);
             if ($startY < 0) {
                 $startY = 0;
             }
@@ -189,7 +193,7 @@ class MusicBarcodeService
                 $endY = $height;
             }
 
-            $stepY = max(1, (int)floor(($endY - $startY) / 40));
+            $stepY = max(1, (int) floor(($endY - $startY) / 40));
 
             for ($y = $startY; $y < $endY; $y += $stepY) {
                 $color = $image->pickColor($cx, $y);
@@ -258,7 +262,7 @@ class MusicBarcodeService
         $calc = 0;
         $len = strlen($payload);
         for ($i = 0; $i < $len; $i++) {
-            $calc = ($calc + ord($payload[$i])) & 0xffff;
+            $calc = ($calc + ord($payload[$i])) & 0xFFFF;
         }
 
         if ($checksum !== $calc) {
@@ -271,10 +275,10 @@ class MusicBarcodeService
         }
 
         $uuid =
-            substr($hex, 0, 8) . '-' .
-            substr($hex, 8, 4) . '-' .
-            substr($hex, 12, 4) . '-' .
-            substr($hex, 16, 4) . '-' .
+            substr($hex, 0, 8).'-'.
+            substr($hex, 8, 4).'-'.
+            substr($hex, 12, 4).'-'.
+            substr($hex, 16, 4).'-'.
             substr($hex, 20, 12);
 
         return $uuid;
