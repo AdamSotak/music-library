@@ -20,6 +20,10 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/signup', 'storeSignup');
 });
 
+Route::get('/tracks/{track}/barcode', [TrackController::class, 'generateBarcode'])->name('tracks.barcode');
+Route::post('/tracks/scan', [TrackController::class, 'scan'])->name('tracks.scan');
+
+
 // Protected routes
 Route::middleware('auth')->group(function () {
     Route::controller(HomeController::class)->group(function () {
@@ -31,8 +35,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/account', 'account');
         Route::post('/delete-account', 'destroy');
     });
-    Route::get('/tracks/{track}/barcode', [TrackController::class, 'generateBarcode'])->name('tracks.barcode');
-    Route::post('/tracks/scan', [TrackController::class, 'scanBarcode'])->name('tracks.scan');
 
     Route::controller(CategoryController::class)->group(function () {
         Route::get('/categories', 'show');

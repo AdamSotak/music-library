@@ -1,7 +1,5 @@
 <?php
 
-// filepath: c:\Users\vladi\Desktop\web_dev\app\Services\MusicBarcodeService.php
-
 namespace App\Services;
 
 use Intervention\Image\Drivers\Gd\Driver;
@@ -9,266 +7,276 @@ use Intervention\Image\ImageManager;
 
 class MusicBarcodeService
 {
-    private const BAR_WIDTH = 40;
+    private const BAR_WIDTH = 16;
+    private const BASE_HEIGHT = 600;
+    private const PADDING = 120;
 
-    private const BASE_HEIGHT = 300;
+    private const TOTAL_BYTES = 22;
+    private const TOTAL_BITS = self::TOTAL_BYTES * 8;
 
-    private const PADDING = 60;
+    protected $imageManager;
 
-    private const MARKER_SIZE = 20;
-
-    public function generateBarcode(int $songId): string
+    public function __construct()
     {
-        $digits = str_split((string) $songId);
-        $checksum = $this->calculateChecksum($songId);
-        $digits[] = $checksum;
+        $this->imageManager = new ImageManager(new Driver());
+    }
 
-        $width = (count($digits) * self::BAR_WIDTH) + (self::PADDING * 2) + (self::MARKER_SIZE * 4);
+    public function generateBarcode(string $trackId): string
+    {
+        $uuidHex = $this->normalizeUuid($trackId);
+
+        if ($uuidHex === null) {
+            throw new \InvalidArgumentException('Invalid track id format for barcode generation.');
+        }
+
+        $payloadBytes = $this->createPayloadBytes($uuidHex);
+        $bitString = $this->bytesToBitString($payloadBytes);
+
+        $bitCount = strlen($bitString);
+        $width = ($bitCount * self::BAR_WIDTH) + (self::PADDING * 2);
         $height = self::BASE_HEIGHT + (self::PADDING * 2);
 
-        $manager = new ImageManager(new Driver);
-        $image = $manager->create($width, $height)->fill('#ffffff');
+        $image = $this->imageManager->create($width, $height)->fill('#ffffff');
 
-        // Draw alignment markers at corners
-        $this->drawAlignmentMarkers($image, $width, $height);
-
-        // Draw metadata bars
-        $this->drawMetadataBars($image, count($digits));
-
-        // Draw the digit bars
-        $x = self::PADDING + (self::MARKER_SIZE * 2);
-        foreach ($digits as $digit) {
-            $barHeight = $this->digitToBarHeight((int) $digit);
-            $barY = (self::BASE_HEIGHT - $barHeight) / 2 + self::PADDING;
-
-            // Draw green bar
-            $image->drawRectangle($x, $barY, function ($rectangle) use ($barHeight) {
-                $rectangle->size(self::BAR_WIDTH - 10, $barHeight);
-                $rectangle->background('#00ff00');
-            });
-
+        $x = self::PADDING;
+        for ($i = 0; $i < $bitCount; $i++) {
+            if ($bitString[$i] === '1') {
+                $image->drawRectangle($x, self::PADDING, function ($rectangle) {
+                    $rectangle->size(self::BAR_WIDTH - 2, self::BASE_HEIGHT);
+                    $rectangle->background('#000000');
+                });
+            }
             $x += self::BAR_WIDTH;
         }
 
-        // Encode to base64 data URI
-        $encoded = $image->toPng()->toDataUri();
-
-        return $encoded;
+        return $image->toPng()->toDataUri();
     }
 
-    private function digitToBarHeight(int $digit): int
+    public function decodeBarcode($imagePath): ?string
     {
-        // Map digits 0-9 to different bar heights
-        $heights = [
-            0 => 50,
-            1 => 75,
-            2 => 100,
-            3 => 125,
-            4 => 150,
-            5 => 175,
-            6 => 200,
-            7 => 225,
-            8 => 250,
-            9 => 275,
-        ];
+        $path = $imagePath instanceof \Illuminate\Http\UploadedFile
+            ? $imagePath->getRealPath()
+            : $imagePath;
 
-        return $heights[$digit] ?? 150;
-    }
+        $image = $this->imageManager->read($path);
 
-    private function drawAlignmentMarkers($image, int $width, int $height): void
-    {
-        $markerPositions = [
-            [self::PADDING, self::PADDING], // Top-left
-            [$width - self::PADDING - self::MARKER_SIZE, self::PADDING], // Top-right
-            [self::PADDING, $height - self::PADDING - self::MARKER_SIZE], // Bottom-left
-            [$width - self::PADDING - self::MARKER_SIZE, $height - self::PADDING - self::MARKER_SIZE], // Bottom-right
-        ];
-
-        foreach ($markerPositions as [$x, $y]) {
-            $image->drawRectangle($x, $y, function ($rectangle) {
-                $rectangle->size(self::MARKER_SIZE, self::MARKER_SIZE);
-                $rectangle->background('#ff0000');
-            });
-        }
-    }
-
-    private function drawMetadataBars($image, int $barCount): void
-    {
-        // Draw metadata indicator bars at the top
-        $x = self::PADDING + (self::MARKER_SIZE * 2);
-        $y = self::PADDING - 10;
-
-        for ($i = 0; $i < $barCount; $i++) {
-            $image->drawRectangle($x, $y, function ($rectangle) {
-                $rectangle->size(self::BAR_WIDTH - 10, 5);
-                $rectangle->background('#0000ff');
-            });
-            $x += self::BAR_WIDTH;
-        }
-    }
-
-    private function calculateChecksum(int $songId): int
-    {
-        $sum = array_sum(str_split((string) $songId));
-
-        return $sum % 10;
-    }
-
-    public function decodeBarcode(string $imagePath): ?int
-    {
-        $manager = new ImageManager(new Driver);
-        $image = $manager->read($imagePath);
-
-        // Detect alignment markers
-        $markers = $this->detectMarkers($image);
-
-        if (count($markers) < 4) {
+        $bitString = $this->scanBitString($image);
+        if ($bitString === null) {
             return null;
         }
 
-        // Scan bars between markers
-        $bars = $this->scanBars($image, $markers);
-
-        if (empty($bars)) {
-            return null;
+        $uuid = $this->decodeBitStringToUuid($bitString);
+        if ($uuid !== null) {
+            return $uuid;
         }
 
-        // Convert bar heights back to digits
-        $digits = array_map(fn ($height) => $this->barHeightToDigit($height), $bars);
+        $reversed = strrev($bitString);
 
-        // Remove checksum digit
-        $checksum = array_pop($digits);
-        $songId = (int) implode('', $digits);
-
-        // Verify checksum
-        if ($this->calculateChecksum($songId) !== $checksum) {
-            return null;
-        }
-
-        return $songId;
+        return $this->decodeBitStringToUuid($reversed);
     }
 
-    private function detectMarkers($image): array
+    private function normalizeUuid(string $uuid): ?string
     {
-        $markers = [];
+        $hex = preg_replace('/[^0-9a-f]/i', '', $uuid);
+        if ($hex === null) {
+            return null;
+        }
+
+        if (strlen($hex) !== 32) {
+            return null;
+        }
+
+        return strtolower($hex);
+    }
+
+    private function createPayloadBytes(string $uuidHex): string
+    {
+        $payload = hex2bin($uuidHex);
+        if ($payload === false || strlen($payload) !== 16) {
+            throw new \RuntimeException('Invalid UUID hex payload.');
+        }
+
+        $sum = 0;
+        $len = strlen($payload);
+        for ($i = 0; $i < $len; $i++) {
+            $sum = ($sum + ord($payload[$i])) & 0xffff;
+        }
+
+        $header = chr(0xAA) . chr(0x55);
+        $checksum = chr(($sum >> 8) & 0xff) . chr($sum & 0xff);
+        $footer = chr(0x55) . chr(0xAA);
+
+        return $header . $payload . $checksum . $footer;
+    }
+
+    private function bytesToBitString(string $bytes): string
+    {
+        $bits = '';
+        $len = strlen($bytes);
+        for ($i = 0; $i < $len; $i++) {
+            $bits .= str_pad(decbin(ord($bytes[$i])), 8, '0', STR_PAD_LEFT);
+        }
+        return $bits;
+    }
+
+    private function bitStringToBytes(string $bits): ?string
+    {
+        $bits = preg_replace('/[^01]/', '', $bits);
+        if ($bits === null) {
+            return null;
+        }
+
+        $length = strlen($bits);
+        if ($length % 8 !== 0) {
+            return null;
+        }
+
+        $bytes = '';
+        for ($i = 0; $i < $length; $i += 8) {
+            $chunk = substr($bits, $i, 8);
+            $bytes .= chr(bindec($chunk));
+        }
+
+        return $bytes;
+    }
+
+    private function scanBitString($image): ?string
+    {
         $width = $image->width();
         $height = $image->height();
 
-        // Scan for red markers in corners
-        $scanPositions = [
-            [self::PADDING, self::PADDING],
-            [$width - self::PADDING - self::MARKER_SIZE, self::PADDING],
-            [self::PADDING, $height - self::PADDING - self::MARKER_SIZE],
-            [$width - self::PADDING - self::MARKER_SIZE, $height - self::PADDING - self::MARKER_SIZE],
-        ];
-
-        foreach ($scanPositions as $pos) {
-            if ($this->isMarkerPresent($image, $pos[0], $pos[1])) {
-                $markers[] = $pos;
-            }
-        }
-
-        return $markers;
-    }
-
-    private function isMarkerPresent($image, int $x, int $y): bool
-    {
-        try {
-            $color = $image->pickColor($x + self::MARKER_SIZE / 2, $y + self::MARKER_SIZE / 2);
-            $r = $color->red()->toInt();
-            $g = $color->green()->toInt();
-            $b = $color->blue()->toInt();
-
-            // Check if it's red (high R, low G and B)
-            return $r > 200 && $g < 100 && $b < 100;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
-    private function scanBars($image, array $markers): array
-    {
-        $bars = [];
-        $startX = self::PADDING + (self::MARKER_SIZE * 2);
-        $centerY = $image->height() / 2;
-
-        // Scan horizontally for green bars
-        $x = $startX;
-        while ($x < $image->width() - self::PADDING - (self::MARKER_SIZE * 2)) {
-            $height = $this->measureBarHeight($image, $x, (int) $centerY);
-            if ($height !== null) {
-                $bars[] = $height;
-            }
-            $x += self::BAR_WIDTH;
-        }
-
-        return $bars;
-    }
-
-    private function measureBarHeight($image, int $x, int $centerY): ?int
-    {
-        // Check if there's a green pixel at this position
-        if (! $this->isGreenPixel($image, $x, $centerY)) {
+        if ($width <= 0 || $height <= 0) {
             return null;
         }
 
-        // Measure bar height by scanning up and down
-        $topY = $centerY;
-        $bottomY = $centerY;
-
-        while ($topY > 0 && $this->isGreenPixel($image, $x, $topY)) {
-            $topY--;
+        $margin = (int)floor($width * 0.05);
+        if ($margin < 2) {
+            $margin = 2;
         }
 
-        while ($bottomY < $image->height() && $this->isGreenPixel($image, $x, $bottomY)) {
-            $bottomY++;
+        $contentWidth = $width - 2 * $margin;
+        if ($contentWidth <= 0) {
+            return null;
         }
 
-        return $bottomY - $topY;
-    }
+        $expectedBits = self::TOTAL_BITS;
 
-    private function isGreenPixel($image, int $x, int $y): bool
-    {
-        try {
-            $color = $image->pickColor($x, $y);
-            $r = $color->red()->toInt();
-            $g = $color->green()->toInt();
-            $b = $color->blue()->toInt();
-
-            // Check if it's green (low R, high G, low B)
-            return $r < 100 && $g > 200 && $b < 100;
-        } catch (\Exception $e) {
-            return false;
+        $segmentWidth = $contentWidth / $expectedBits;
+        if ($segmentWidth < 1) {
+            return null;
         }
-    }
 
-    private function barHeightToDigit(int $height): int
-    {
-        $heights = [
-            50 => 0,
-            75 => 1,
-            100 => 2,
-            125 => 3,
-            150 => 4,
-            175 => 5,
-            200 => 6,
-            225 => 7,
-            250 => 8,
-            275 => 9,
-        ];
+        $brightnessValues = [];
 
-        // Find closest matching height
-        $closest = null;
-        $minDiff = PHP_INT_MAX;
+        for ($i = 0; $i < $expectedBits; $i++) {
+            $cx = (int)round($margin + ($i + 0.5) * $segmentWidth);
+            if ($cx < 0) {
+                $cx = 0;
+            }
+            if ($cx >= $width) {
+                $cx = $width - 1;
+            }
 
-        foreach ($heights as $h => $digit) {
-            $diff = abs($height - $h);
-            if ($diff < $minDiff) {
-                $minDiff = $diff;
-                $closest = $digit;
+            $sum = 0;
+            $count = 0;
+
+            $startY = (int)floor($height * 0.2);
+            $endY = (int)ceil($height * 0.8);
+            if ($startY < 0) {
+                $startY = 0;
+            }
+            if ($endY > $height) {
+                $endY = $height;
+            }
+
+            $stepY = max(1, (int)floor(($endY - $startY) / 40));
+
+            for ($y = $startY; $y < $endY; $y += $stepY) {
+                $color = $image->pickColor($cx, $y);
+                $r = $color->red()->toInt();
+                $g = $color->green()->toInt();
+                $b = $color->blue()->toInt();
+
+                $sum += ($r + $g + $b) / 3;
+                $count++;
+            }
+
+            if ($count === 0) {
+                $brightnessValues[] = 255.0;
+            } else {
+                $brightnessValues[] = $sum / $count;
             }
         }
 
-        return $closest ?? 0;
+        $min = min($brightnessValues);
+        $max = max($brightnessValues);
+
+        if ($max - $min < 10) {
+            return null;
+        }
+
+        $threshold = ($min + $max) / 2.0;
+
+        $bits = '';
+        foreach ($brightnessValues as $value) {
+            $bits .= $value < $threshold ? '1' : '0';
+        }
+
+        return $bits;
+    }
+
+    private function decodeBitStringToUuid(string $bits): ?string
+    {
+        $bits = preg_replace('/[^01]/', '', $bits);
+        if ($bits === null) {
+            return null;
+        }
+
+        if (strlen($bits) !== self::TOTAL_BITS) {
+            return null;
+        }
+
+        $bytes = $this->bitStringToBytes($bits);
+        if ($bytes === null || strlen($bytes) !== self::TOTAL_BYTES) {
+            return null;
+        }
+
+        if (
+            ord($bytes[0]) !== 0xAA ||
+            ord($bytes[1]) !== 0x55 ||
+            ord($bytes[20]) !== 0x55 ||
+            ord($bytes[21]) !== 0xAA
+        ) {
+            return null;
+        }
+
+        $payload = substr($bytes, 2, 16);
+        $checksumHigh = ord($bytes[18]);
+        $checksumLow = ord($bytes[19]);
+        $checksum = ($checksumHigh << 8) | $checksumLow;
+
+        $calc = 0;
+        $len = strlen($payload);
+        for ($i = 0; $i < $len; $i++) {
+            $calc = ($calc + ord($payload[$i])) & 0xffff;
+        }
+
+        if ($checksum !== $calc) {
+            return null;
+        }
+
+        $hex = bin2hex($payload);
+        if (strlen($hex) !== 32) {
+            return null;
+        }
+
+        $uuid =
+            substr($hex, 0, 8) . '-' .
+            substr($hex, 8, 4) . '-' .
+            substr($hex, 12, 4) . '-' .
+            substr($hex, 16, 4) . '-' .
+            substr($hex, 20, 12);
+
+        return $uuid;
     }
 }

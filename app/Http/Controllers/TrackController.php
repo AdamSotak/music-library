@@ -10,16 +10,17 @@ use Inertia\Inertia;
 
 class TrackController extends Controller
 {
-    public function __construct(
-        private MusicBarcodeService $barcodeService
-    ) {}
+    protected $barcodeService;
+
+    public function __construct(MusicBarcodeService $barcodeService)
+    {
+        $this->barcodeService = $barcodeService;
+    }
 
     public function index()
     {
-        $tracks = Track::with(['artist', 'album'])->get();
-
         return Inertia::render('tracks/index', [
-            'tracks' => $tracks,
+            'tracks' => Track::with(['artist', 'album'])->get(),
         ]);
     }
 
@@ -43,98 +44,54 @@ class TrackController extends Controller
 
     public function generateBarcode(Track $track)
     {
-        try {
-            // Convert UUID to a positive integer
-            $numericId = abs(crc32($track->id));
+        $barcode = $this->barcodeService->generateBarcode((string)$track->id);
 
-            Log::info("Generating barcode for track {$track->id} with numeric ID {$numericId}");
-
-            $barcodeDataUri = $this->barcodeService->generateBarcode($numericId);
-
-            return response()->json([
-                'barcode' => $barcodeDataUri,
-                'track_id' => $track->id,
-                'track_name' => $track->name,
-                'numeric_id' => $numericId,
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Barcode generation failed for track {$track->id}: ".$e->getMessage(), [
-                'exception' => $e,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'error' => 'Failed to generate barcode',
-                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error',
-            ], 500);
-        }
-    }
-
-    public function scanBarcode(Request $request)
-    {
-        $request->validate([
-            'image' => 'required|image|max:5120',
+        return response()->json([
+            'barcode' => $barcode,
+            'track_id' => $track->id,
+            'track_name' => $track->name,
         ]);
-
-        try {
-            $imagePath = $request->file('image')->store('temp', 'local');
-            $fullPath = storage_path('app/'.$imagePath);
-
-            Log::info("Scanning barcode from image: {$fullPath}");
-
-            $numericId = $this->barcodeService->decodeBarcode($fullPath);
-
-            // Clean up the temp file
-            if (file_exists($fullPath)) {
-                unlink($fullPath);
-            }
-
-            if ($numericId === null) {
-                Log::warning('Could not decode barcode from image');
-
-                return response()->json(['error' => 'Could not decode barcode'], 400);
-            }
-
-            Log::info("Decoded barcode numeric ID: {$numericId}");
-
-            // Find the matching track
-            $tracks = Track::all();
-            $matchedTrack = null;
-
-            foreach ($tracks as $track) {
-                if (abs(crc32($track->id)) === $numericId) {
-                    $matchedTrack = $track;
-                    break;
-                }
-            }
-
-            if (! $matchedTrack) {
-                Log::warning("No track found matching numeric ID: {$numericId}");
-
-                return response()->json(['error' => 'Track not found'], 404);
-            }
-
-            Log::info("Found matching track: {$matchedTrack->id}");
-
-            return response()->json([
-                'track_id' => $matchedTrack->id,
-                'track' => $matchedTrack->load(['artist', 'album']),
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Barcode scanning failed: '.$e->getMessage(), [
-                'exception' => $e,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            // Clean up temp file on error
-            if (isset($fullPath) && file_exists($fullPath)) {
-                unlink($fullPath);
-            }
-
-            return response()->json([
-                'error' => 'Failed to scan barcode',
-                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error',
-            ], 500);
-        }
     }
+
+    public function scan(Request $request)
+{
+    $request->validate([
+        'image' => 'required|image|max:20480',
+    ]);
+
+    $numericId = $this->barcodeService->decodeBarcode($request->file('image'));
+
+    if (!$numericId) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Could not decode barcode',
+        ], 404);
+    }
+
+    $trackId = $this->numericToUuid($numericId);
+
+    if (!$trackId) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Track not found',
+        ], 404);
+    }
+
+    $track = Track::find($trackId);
+
+    if (!$track) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Track not found',
+        ], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'track_id' => $track->id,
+        'name' => $track->name,
+        'url' => url("/tracks/" . $track->id),
+    ]);
+}
+
 }

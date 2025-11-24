@@ -156,10 +156,7 @@ export default function TrackShow({ track }: TrackShowProps) {
 				)}
 
 				{/* Music Barcode Button */}
-				<MusicBarcode
-					trackId={track.id}
-					trackName={track.name}
-				/>
+				<MusicBarcode trackId={track.id} trackName={track.name} />
 
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
