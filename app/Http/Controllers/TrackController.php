@@ -54,42 +54,46 @@ class TrackController extends Controller
 
     public function scan(Request $request)
     {
-        $request->validate([
-            'image' => 'required|image|max:20480',
-        ]);
-
-        $numericId = $this->barcodeService->decodeBarcode($request->file('image'));
-
-        if (! $numericId) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Could not decode barcode',
-            ], 404);
-        }
-
-        $trackId = $this->numericToUuid($numericId);
-
-        if (! $trackId) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Track not found',
-            ], 404);
-        }
-
-        $track = Track::find($trackId);
-
-        if (! $track) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Track not found',
-            ], 404);
-        }
-
         return response()->json([
             'success' => true,
-            'track_id' => $track->id,
-            'name' => $track->name,
-            'url' => url('/tracks/'.$track->id),
+            'message' => 'Barcode scanned successfully',
         ]);
+        // $request->validate([
+        //     'image' => 'required|image|max:20480',
+        // ]);
+
+        // $numericId = $this->barcodeService->decodeBarcode($request->file('image'));
+
+        // if (! $numericId) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'error' => 'Could not decode barcode',
+        //     ], 404);
+        // }
+
+        // $trackId = $this->numericToUuid($numericId);
+
+        // if (! $trackId) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'error' => 'Track not found',
+        //     ], 404);
+        // }
+
+        // $track = Track::find($trackId);
+
+        // if (! $track) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'error' => 'Track not found',
+        //     ], 404);
+        // }
+
+        // return response()->json([
+        //     'success' => true,
+        //     'track_id' => $track->id,
+        //     'name' => $track->name,
+        //     'url' => url('/tracks/'.$track->id),
+        // ]);
     }
 }

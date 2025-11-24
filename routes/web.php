@@ -20,8 +20,8 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/signup', 'storeSignup');
 });
 
-Route::get('/tracks/{track}/barcode', [TrackController::class, 'generateBarcode'])->name('tracks.barcode');
-Route::post('/tracks/scan', [TrackController::class, 'scan'])->name('tracks.scan');
+Route::get('/barcode/{track}', [TrackController::class, 'generateBarcode']);
+Route::post('/barcode/scan', [TrackController::class, 'scan']);
 
 // Protected routes
 Route::middleware('auth')->group(function () {

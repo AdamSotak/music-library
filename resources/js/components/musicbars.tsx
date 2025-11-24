@@ -20,7 +20,7 @@ export default function MusicBarcode({
 		setLoading(true)
 		setError(null)
 		try {
-			const response = await fetch(`/tracks/${trackId}/barcode`)
+			const response = await fetch(`/barcode/${trackId}`)
 			const data = await response.json()
 
 			if (response.ok) {

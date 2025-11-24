@@ -1,7 +1,6 @@
 import { useRef, useState, useEffect } from "react"
 import { Button } from "./ui/button"
 import { router } from "@inertiajs/react"
-import axios from "axios"
 
 export default function BarcodeScanner() {
 	const videoRef = useRef<HTMLVideoElement>(null)
@@ -77,13 +76,21 @@ export default function BarcodeScanner() {
 			const formData = new FormData()
 			formData.append("image", blob, "barcode.png")
 
-			const response = await axios.post("/tracks/scan", formData, {
+			// Get CSRF token from meta tag
+			const csrfToken = document
+				.querySelector('meta[name="csrf-token"]')
+				?.getAttribute("content")
+
+			const response = await fetch("/barcode/scan", {
+				method: "POST",
+				body: formData,
 				headers: {
-					"Content-Type": "multipart/form-data",
+					"X-CSRF-TOKEN": csrfToken || "",
+					// Don't set Content-Type - let browser set it with boundary
 				},
 			})
 
-			const data = response.data
+			const data = await response.json()
 			console.log(`Scan response (${orientation}):`, data)
 			return data
 		}
