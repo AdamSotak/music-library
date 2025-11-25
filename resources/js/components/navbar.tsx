@@ -23,7 +23,8 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 	const [searchQuery, setSearchQuery] = useState("")
 	const searchInputRef = useRef<HTMLInputElement>(null)
 	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-	const { user, receivedFriendRequests } = usePage().props as unknown as InertiaPageProps
+	const { user, receivedFriendRequests } = usePage()
+		.props as unknown as InertiaPageProps
 
 	const isHome = window.location.pathname === "/"
 	const isCategoriesOpen = window.location.pathname === "/categories"

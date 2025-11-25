@@ -3,7 +3,14 @@ import Shelf from "@/components/home/shelf"
 import { cn } from "@/lib/utils"
 import { usePlayer } from "@/hooks/usePlayer"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
-import type { Album, Artist, FriendRecommendation, InertiaPageProps, ShelfItem, Track } from "@/types"
+import type {
+	Album,
+	Artist,
+	FriendRecommendation,
+	InertiaPageProps,
+	ShelfItem,
+	Track,
+} from "@/types"
 import { router, usePage } from "@inertiajs/react"
 import { useEffect, useMemo, useState } from "react"
 
@@ -14,7 +21,12 @@ interface IndexProps {
 	friendRecommendation: FriendRecommendation | null
 }
 
-export default function Index({ albums, artists, tracks, friendRecommendation }: IndexProps) {
+export default function Index({
+	albums,
+	artists,
+	tracks,
+	friendRecommendation,
+}: IndexProps) {
 	const { user } = usePage().props as unknown as InertiaPageProps
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const trackQueue = useMemo(() => toPlayerQueue(tracks), [tracks])
@@ -60,8 +72,9 @@ export default function Index({ albums, artists, tracks, friendRecommendation }:
 
 	// Friend tracks need their own queue and handler
 	const friendTrackQueue = useMemo(
-		() => friendRecommendation ? toPlayerQueue(friendRecommendation.tracks) : [],
-		[friendRecommendation]
+		() =>
+			friendRecommendation ? toPlayerQueue(friendRecommendation.tracks) : [],
+		[friendRecommendation],
 	)
 
 	const friendTrackShelfItems = useMemo(

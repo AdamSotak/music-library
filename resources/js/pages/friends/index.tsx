@@ -48,11 +48,13 @@ export default function FriendsIndex({
 
 		setIsSearching(true)
 		try {
-			const response = await fetch(`/api/friends/search?query=${encodeURIComponent(query)}`)
+			const response = await fetch(
+				`/api/friends/search?query=${encodeURIComponent(query)}`,
+			)
 			const data = await response.json()
 			setSearchResults(data.users || [])
 		} catch (error) {
-			console.error('Search failed:', error)
+			console.error("Search failed:", error)
 			setSearchResults([])
 		} finally {
 			setIsSearching(false)
@@ -71,7 +73,9 @@ export default function FriendsIndex({
 
 				{/* Search for Users */}
 				<div className="mb-8">
-					<h2 className="text-white text-xl font-semibold mb-4">Find Friends</h2>
+					<h2 className="text-white text-xl font-semibold mb-4">
+						Find Friends
+					</h2>
 					<div className="relative">
 						<div className="flex items-center bg-zinc-800 rounded-lg px-4 py-3">
 							<svg
@@ -112,7 +116,7 @@ export default function FriendsIndex({
 											<p className="text-zinc-400 text-sm">{user.email}</p>
 										</div>
 										<div className="flex items-center gap-2">
-											{user.friend_status === 'none' && (
+											{user.friend_status === "none" && (
 												<button
 													onClick={() => handleSendFriendRequest(user.id)}
 													className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
@@ -120,16 +124,23 @@ export default function FriendsIndex({
 													Add Friend
 												</button>
 											)}
-											{user.friend_status === 'pending_sent' && (
-												<span className="text-yellow-400 text-sm font-medium">Request Sent</span>
+											{user.friend_status === "pending_sent" && (
+												<span className="text-yellow-400 text-sm font-medium">
+													Request Sent
+												</span>
 											)}
-											{user.friend_status === 'pending_received' && (
-												<span className="text-green-400 text-sm font-medium">Request Received</span>
+											{user.friend_status === "pending_received" && (
+												<span className="text-green-400 text-sm font-medium">
+													Request Received
+												</span>
 											)}
-											{user.friend_status === 'accepted' && (
-												<span className="text-green-500 text-sm font-medium">Friends</span>
+											{user.friend_status === "accepted" && (
+												<span className="text-green-500 text-sm font-medium">
+													Friends
+												</span>
 											)}
-											{(user.friend_status === 'accepted' || user.friend_status === 'pending_sent') && (
+											{(user.friend_status === "accepted" ||
+												user.friend_status === "pending_sent") && (
 												<button
 													onClick={() => handleRemoveFriend(user.id)}
 													className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
