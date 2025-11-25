@@ -177,7 +177,7 @@ export default function Index({
 				/>
 				{friendRecommendation && (
 					<Shelf
-						title={`${friendRecommendation.friend_name} listening to`}
+						title={`${friendRecommendation.friend_name} is listening to`}
 						topTitle="Friend"
 						items={friendTrackShelfItems}
 						onItemSelected={(item) => router.visit(`/tracks/${item.id}`)}

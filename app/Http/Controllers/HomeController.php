@@ -42,25 +42,27 @@ class HomeController extends Controller
             'image' => $artist->image_url,
         ]);
 
-        // Get a random friend and their liked songs
+        // Get a random friend and their liked songs (optimized single query)
         $friendRecommendation = null;
         $currentUser = Auth::user();
         $friends = $currentUser->getFriends();
 
         if ($friends->isNotEmpty()) {
-            // Pick a random friend
-            $randomFriend = $friends->random();
+            $friendIds = $friends->pluck('id');
 
-            // Get the friend's "Liked Songs" playlist (is_default = true)
-            $likedSongsPlaylist = Playlist::where('user_id', $randomFriend->id)
+            // Single query: Get all friends' playlists that have tracks, then pick one randomly
+            $playlistWithTracks = Playlist::whereIn('user_id', $friendIds)
                 ->where('is_default', true)
+                ->whereHas('tracks') // Only playlists that have tracks
+                ->with('user:id,name')
+                ->inRandomOrder()
                 ->first();
 
-            if ($likedSongsPlaylist) {
-                // Get random tracks from the liked songs playlist (max 10)
+            if ($playlistWithTracks) {
+                // Get random tracks from the selected friend's liked songs playlist
                 $friendTracks = Track::with(['artist', 'album'])
                     ->join('playlist_tracks', 'tracks.id', '=', 'playlist_tracks.track_id')
-                    ->where('playlist_tracks.playlist_id', $likedSongsPlaylist->id)
+                    ->where('playlist_tracks.playlist_id', $playlistWithTracks->id)
                     ->select('tracks.*')
                     ->inRandomOrder()
                     ->limit(10)
@@ -77,13 +79,11 @@ class HomeController extends Controller
                         'audio' => $track->audio_url,
                     ]);
 
-                if ($friendTracks->isNotEmpty()) {
-                    $friendRecommendation = [
-                        'friend_name' => $randomFriend->name,
-                        'friend_id' => $randomFriend->id,
-                        'tracks' => $friendTracks,
-                    ];
-                }
+                $friendRecommendation = [
+                    'friend_name' => $playlistWithTracks->user->name,
+                    'friend_id' => $playlistWithTracks->user->id,
+                    'tracks' => $friendTracks,
+                ];
             }
         }
 
