@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "./ui/button"
 import { Slider } from "./ui/slider"
-import { ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react"
+import { ChevronDown, ChevronUp, Settings } from "lucide-react"
 import { usePlayer, type Track } from "@/hooks/usePlayer"
 import { router } from "@inertiajs/react"
+import { AudioEffects } from "./audio-effects"
 
 // Mobile compact player component
 function MobilePlayer({
@@ -98,6 +99,8 @@ function DesktopPlayer({
 	playNext,
 	playPrevious,
 	formatTime,
+	showEffects,
+	setShowEffects,
 }: {
 	isPlaying: boolean
 	togglePlay: () => void
@@ -120,6 +123,8 @@ function DesktopPlayer({
 	playNext: () => void
 	playPrevious: () => void
 	formatTime: (seconds: number) => string
+	showEffects: boolean
+	setShowEffects: (value: boolean) => void
 }) {
 	return (
 		<div className="flex justify-between items-center w-full h-20 px-4">
@@ -371,17 +376,13 @@ function DesktopPlayer({
 					size={"icon"}
 					variant={"spotifyTransparent"}
 					className="group w-4 h-4"
+					onClick={() => setShowEffects(!showEffects)}
 				>
-					<svg
-						data-encore-id="icon"
-						role="img"
-						aria-hidden="true"
-						viewBox="0 0 16 16"
-						fill="gray"
-						className="max-w-4 max-h-4 transition-colors duration-300 group-hover:fill-white"
-					>
-						<path d="M13.426 2.574a2.831 2.831 0 0 0-4.797 1.55l3.247 3.247a2.831 2.831 0 0 0 1.55-4.797M10.5 8.118l-2.619-2.62L4.74 9.075 2.065 12.12a1.287 1.287 0 0 0 1.816 1.816l3.06-2.688 3.56-3.129zM7.12 4.094a4.331 4.331 0 1 1 4.786 4.786l-3.974 3.493-3.06 2.689a2.787 2.787 0 0 1-3.933-3.933l2.676-3.045z"></path>
-					</svg>
+					<Settings 
+						className={`max-w-4 max-h-4 transition-colors duration-300 group-hover:fill-white ${
+							showEffects ? 'fill-spotify-green' : 'fill-gray-500'
+						}`}
+					/>
 				</Button>
 
 				<Button
@@ -548,6 +549,9 @@ function ExpandedPlayer({
 	playNext,
 	playPrevious,
 	formatTime,
+	showEffects,
+	setShowEffects,
+	handleProcessedAudio,
 }: {
 	isPlaying: boolean
 	togglePlay: () => void
@@ -571,6 +575,9 @@ function ExpandedPlayer({
 	playNext: () => void
 	playPrevious: () => void
 	formatTime: (seconds: number) => string
+	showEffects: boolean
+	setShowEffects: (value: boolean) => void
+	handleProcessedAudio: (buffer: AudioBuffer) => void
 }) {
 	return (
 		<div className="flex flex-col h-full w-full text-white p-4 safe-area-inset overflow-y-auto">
@@ -585,8 +592,13 @@ function ExpandedPlayer({
 					<ChevronDown className="w-6 h-6" />
 				</Button>
 				<span className="text-sm font-medium">Now Playing</span>
-				<Button size="icon" variant="spotifyTransparent" className="w-10 h-10">
-					<MoreHorizontal className="w-6 h-6" />
+				<Button 
+					size="icon" 
+					variant="spotifyTransparent" 
+					className="w-10 h-10"
+					onClick={() => setShowEffects(!showEffects)}
+				>
+					<Settings className={`w-6 h-6 ${showEffects ? 'text-spotify-green' : ''}`} />
 				</Button>
 			</div>
 
@@ -795,12 +807,26 @@ function ExpandedPlayer({
 					onValueChange={(value) => setVolume(value[0])}
 				/>
 			</div>
+
+			{/* Audio Effects Panel */}
+			{showEffects && (
+				<div className="px-4 pb-4">
+					<AudioEffects
+						currentTrack={currentTrack}
+						onProcessedAudio={handleProcessedAudio}
+						className="w-full"
+					/>
+				</div>
+			)}
 		</div>
 	)
 }
 
 export default function AudioPlayer() {
 	const audioRef = useRef<HTMLAudioElement>(null)
+	const audioContextRef = useRef<AudioContext | null>(null)
+	const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null)
+	const gainNodeRef = useRef<GainNode | null>(null)
 	const { currentTrack, isPlaying, setIsPlaying, playNext, playPrevious } =
 		usePlayer()
 	const [currentTime, setCurrentTime] = useState(0)
@@ -812,29 +838,32 @@ export default function AudioPlayer() {
 	)
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [isClosing, setIsClosing] = useState(false)
+	const [processedBuffer, setProcessedBuffer] = useState<AudioBuffer | null>(null)
+	const [usingProcessedAudio, setUsingProcessedAudio] = useState(false)
+	const [showEffects, setShowEffects] = useState(false)
 
-	// Load and play track when currentTrack changes
+	// Load track when currentTrack changes
 	useEffect(() => {
 		if (!audioRef.current || !currentTrack) return
 
 		const url = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
 
+		// Stop any currently playing processed audio when switching tracks
+		if (sourceNodeRef.current) {
+			sourceNodeRef.current.stop()
+			sourceNodeRef.current.disconnect()
+			sourceNodeRef.current = null
+		}
+		setUsingProcessedAudio(false)
+		setProcessedBuffer(null)
+
 		audioRef.current.src = url
 		audioRef.current.load()
-
-		if (isPlaying) {
-			audioRef.current.play().catch((err) => {
-				console.error("Playback failed:", err)
-				setIsPlaying(false)
-			})
-		} else {
-			audioRef.current.pause()
-		}
-	}, [isPlaying, currentTrack, setIsPlaying])
+	}, [currentTrack])
 
 	// Handle play/pause state changes
 	useEffect(() => {
-		if (!audioRef.current || !currentTrack) return
+		if (!audioRef.current || !currentTrack || usingProcessedAudio) return
 
 		if (isPlaying) {
 			audioRef.current.play().catch((err) => {
@@ -844,7 +873,7 @@ export default function AudioPlayer() {
 		} else {
 			audioRef.current.pause()
 		}
-	}, [isPlaying, currentTrack, setIsPlaying])
+	}, [isPlaying, currentTrack, usingProcessedAudio, setIsPlaying])
 
 	// Update volume
 	useEffect(() => {
@@ -866,6 +895,9 @@ export default function AudioPlayer() {
 	}
 
 	const handleEnded = () => {
+		// Only handle ended for regular audio, not processed audio
+		if (usingProcessedAudio) return
+		
 		if (repeatMode === "track") {
 			audioRef.current?.play()
 		} else if (repeatMode === "playlist" || repeatMode === "off") {
@@ -899,6 +931,136 @@ export default function AudioPlayer() {
 			setIsClosing(false)
 		}, 300) // Match animation duration
 	}, [])
+
+	// Initialize Web Audio API context
+	const initializeWebAudio = useCallback(async () => {
+		if (!audioContextRef.current) {
+			audioContextRef.current = new (window.AudioContext || (window as unknown as typeof AudioContext))()
+		}
+		
+		if (audioContextRef.current.state === 'suspended') {
+			await audioContextRef.current.resume()
+		}
+
+		if (!gainNodeRef.current && audioContextRef.current) {
+			gainNodeRef.current = audioContextRef.current.createGain()
+			gainNodeRef.current.connect(audioContextRef.current.destination)
+		}
+	}, [])
+
+	// Play processed audio buffer using Web Audio API
+	const playProcessedAudio = useCallback(async (buffer: AudioBuffer) => {
+		try {
+			await initializeWebAudio()
+			
+			if (!audioContextRef.current || !gainNodeRef.current) return
+
+			// Stop any currently playing processed audio
+			if (sourceNodeRef.current) {
+				sourceNodeRef.current.stop()
+				sourceNodeRef.current.disconnect()
+			}
+
+			// Create new source node
+			sourceNodeRef.current = audioContextRef.current.createBufferSource()
+			sourceNodeRef.current.buffer = buffer
+			sourceNodeRef.current.connect(gainNodeRef.current)
+
+			// Set up event handlers
+			sourceNodeRef.current.onended = () => {
+				sourceNodeRef.current = null
+				setUsingProcessedAudio(false)
+				if (repeatMode === "track") {
+					// Reset for replay
+					setCurrentTime(0)
+					// Don't automatically replay - let user decide
+				} else {
+					playNext()
+				}
+			}
+
+			// Set volume
+			gainNodeRef.current.gain.value = volume / 100
+
+			// Start playback
+			sourceNodeRef.current.start()
+			setUsingProcessedAudio(true)
+			setDuration(buffer.duration)
+			setCurrentTime(0)
+
+			// Stop the regular audio element if it's playing
+			if (audioRef.current) {
+				audioRef.current.pause()
+			}
+
+			// Start time tracking for processed audio
+			// Simple time tracking for Web Audio API playback
+			const trackingInterval = setInterval(() => {
+				if (sourceNodeRef.current && usingProcessedAudio && isPlaying) {
+					setCurrentTime(prev => {
+						const newTime = prev + 0.1
+						if (buffer && newTime >= buffer.duration) {
+							clearInterval(trackingInterval)
+							return buffer.duration
+						}
+						return newTime
+					})
+				} else {
+					clearInterval(trackingInterval)
+				}
+			}, 100)
+		} catch (error) {
+			console.error("Error playing processed audio:", error)
+		}
+	}, [initializeWebAudio, volume, repeatMode, playNext])
+
+	// Time tracking is now handled inline within playProcessedAudio
+
+	// Handle processed audio from effects component
+	const handleProcessedAudio = useCallback((buffer: AudioBuffer) => {
+		setProcessedBuffer(buffer)
+		if (isPlaying) {
+			playProcessedAudio(buffer)
+		}
+	}, [isPlaying, playProcessedAudio])
+
+	// Switch back to original audio (for future use)
+	// const playOriginalAudio = useCallback(() => {
+	// 	if (sourceNodeRef.current) {
+	// 		sourceNodeRef.current.stop()
+	// 		sourceNodeRef.current.disconnect()
+	// 		sourceNodeRef.current = null
+	// 	}
+	// 	setUsingProcessedAudio(false)
+	// 	setProcessedBuffer(null)
+	// 	
+	// 	// Resume normal audio playback
+	// 	if (audioRef.current && currentTrack) {
+	// 		if (isPlaying) {
+	// 			audioRef.current.play()
+	// 		}
+	// 	}
+	// }, [currentTrack, isPlaying])
+
+	// Update volume for Web Audio API
+	useEffect(() => {
+		if (gainNodeRef.current && usingProcessedAudio) {
+			gainNodeRef.current.gain.value = volume / 100
+		}
+	}, [volume, usingProcessedAudio])
+
+	// Handle play/pause for processed audio
+	useEffect(() => {
+		if (usingProcessedAudio && processedBuffer && isPlaying) {
+			if (!sourceNodeRef.current) {
+				playProcessedAudio(processedBuffer)
+			}
+		} else if (usingProcessedAudio && !isPlaying && sourceNodeRef.current) {
+			sourceNodeRef.current.stop()
+			sourceNodeRef.current.disconnect()
+			sourceNodeRef.current = null
+		}
+	}, [isPlaying, usingProcessedAudio, processedBuffer, playProcessedAudio])
 
 	// Handle escape key to close modal
 	useEffect(() => {
@@ -972,6 +1134,9 @@ export default function AudioPlayer() {
 						playNext={playNext}
 						playPrevious={playPrevious}
 						formatTime={formatTime}
+						showEffects={showEffects}
+						setShowEffects={setShowEffects}
+						handleProcessedAudio={handleProcessedAudio}
 					/>
 				</div>
 			)}
@@ -1004,7 +1169,20 @@ export default function AudioPlayer() {
 					playNext={playNext}
 					playPrevious={playPrevious}
 					formatTime={formatTime}
+					showEffects={showEffects}
+					setShowEffects={setShowEffects}
 				/>
+				
+				{/* Desktop Audio Effects Panel */}
+				{showEffects && (
+					<div className="mt-4 mx-4">
+						<AudioEffects
+							currentTrack={currentTrack}
+							onProcessedAudio={handleProcessedAudio}
+							className="max-w-md mx-auto"
+						/>
+					</div>
+				)}
 			</div>
 		</>
 	)
