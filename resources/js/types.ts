@@ -114,3 +114,9 @@ export type ShelfItem = {
 	image?: string
 	track?: Track
 }
+
+export type FriendRecommendation = {
+	friend_name: string
+	friend_id: number
+	tracks: Track[]
+}

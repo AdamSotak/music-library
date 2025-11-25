@@ -150,43 +150,43 @@ class FriendController extends Controller
 
         $users = User::where(function ($q) use ($query) {
             $q->where('name', 'like', "%{$query}%")
-              ->orWhere('email', 'like', "%{$query}%");
+                ->orWhere('email', 'like', "%{$query}%");
         })
-        ->where('id', '!=', $currentUser->id) // Don't show current user
-        ->limit(10)
-        ->get()
-        ->map(function ($user) use ($currentUser) {
-            // Check friend status for each user
-            $relationship = DB::table('user_friends')
-                ->where(function ($query) use ($currentUser, $user) {
-                    $query->where('user_id', $currentUser->id)->where('friend_id', $user->id);
-                })
-                ->orWhere(function ($query) use ($currentUser, $user) {
-                    $query->where('user_id', $user->id)->where('friend_id', $currentUser->id);
-                })
-                ->first();
+            ->where('id', '!=', $currentUser->id) // Don't show current user
+            ->limit(10)
+            ->get()
+            ->map(function ($user) use ($currentUser) {
+                // Check friend status for each user
+                $relationship = DB::table('user_friends')
+                    ->where(function ($query) use ($currentUser, $user) {
+                        $query->where('user_id', $currentUser->id)->where('friend_id', $user->id);
+                    })
+                    ->orWhere(function ($query) use ($currentUser, $user) {
+                        $query->where('user_id', $user->id)->where('friend_id', $currentUser->id);
+                    })
+                    ->first();
 
-            $status = 'none';
-            if ($relationship) {
-                $status = $relationship->status;
+                $status = 'none';
+                if ($relationship) {
+                    $status = $relationship->status;
 
-                // If pending, check who sent it
-                if ($status === 'pending') {
-                    if ($relationship->user_id === $currentUser->id) {
-                        $status = 'pending_sent';
-                    } else {
-                        $status = 'pending_received';
+                    // If pending, check who sent it
+                    if ($status === 'pending') {
+                        if ($relationship->user_id === $currentUser->id) {
+                            $status = 'pending_sent';
+                        } else {
+                            $status = 'pending_received';
+                        }
                     }
                 }
-            }
 
-            return [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'friend_status' => $status,
-            ];
-        });
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'friend_status' => $status,
+                ];
+            });
 
         return response()->json(['users' => $users]);
     }

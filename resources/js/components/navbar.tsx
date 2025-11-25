@@ -23,10 +23,11 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 	const [searchQuery, setSearchQuery] = useState("")
 	const searchInputRef = useRef<HTMLInputElement>(null)
 	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-	const { user } = usePage().props as unknown as InertiaPageProps
+	const { user, receivedFriendRequests } = usePage().props as unknown as InertiaPageProps
 
 	const isHome = window.location.pathname === "/"
 	const isCategoriesOpen = window.location.pathname === "/categories"
+	const friendRequestCount = receivedFriendRequests?.length || 0
 
 	const handleSearchChange = (value: string) => {
 		setSearchQuery(value)
@@ -343,7 +344,14 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 								<span>Account</span>
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => router.visit("/friends")}>
-								<span>Friends</span>
+								<div className="flex items-center justify-between w-full">
+									<span>Friends</span>
+									{friendRequestCount > 0 && (
+										<span className="ml-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+											{friendRequestCount}
+										</span>
+									)}
+								</div>
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem onClick={() => router.post("/logout")}>
