@@ -27,18 +27,25 @@ class HomeController extends Controller
                 'audio' => $track->audio_url,
             ]);
 
-        $albums = Album::all()->shuffle()->map(fn ($album) => [
-            'id' => $album->id,
-            'name' => $album->name,
-            'artist' => $album->artist->name,
-            'cover' => $album->image_url,
-        ]);
+        $albums = Album::with('artist')
+            ->inRandomOrder()
+            ->limit(30)
+            ->get()
+            ->map(fn ($album) => [
+                'id' => $album->id,
+                'name' => $album->name,
+                'artist' => $album->artist->name,
+                'cover' => $album->image_url,
+            ]);
 
-        $artists = Artist::all()->shuffle()->map(fn ($artist) => [
-            'id' => $artist->id,
-            'name' => $artist->name,
-            'image' => $artist->image_url,
-        ]);
+        $artists = Artist::inRandomOrder()
+            ->limit(30)
+            ->get()
+            ->map(fn ($artist) => [
+                'id' => $artist->id,
+                'name' => $artist->name,
+                'image' => $artist->image_url,
+            ]);
 
         return Inertia::render('index', [
             'albums' => $albums,

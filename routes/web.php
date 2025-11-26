@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\PlaylistController;
+use App\Http\Controllers\RadioController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TrackController;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,12 @@ Route::controller(HomeController::class)->group(function () {
 Route::controller(CategoryController::class)->group(function () {
     Route::get('/categories', 'show');
     Route::get('/categories/{id}', 'showById');
+});
+
+Route::controller(RadioController::class)->group(function () {
+    Route::get('/radio', 'show')->name('radio.show');
+    Route::post('/api/radio/start', 'start')->name('api.radio.start');
+    Route::post('/api/radio/next', 'next')->name('api.radio.next');
 });
 
 // Canonical Spotify routing structure

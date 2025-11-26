@@ -9,6 +9,14 @@ import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
 import { router, usePage } from "@inertiajs/react"
 import { useMemo, useState, useEffect, type MouseEvent } from "react"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { RadioIcon } from "@/utils/icons"
+import { TrackContextMenu } from "@/components/track-context-menu"
 
 interface AlbumShowProps {
 	album: Album
@@ -110,6 +118,11 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 	)
 	const hours = Math.floor(totalDuration / 3600)
 	const minutes = Math.floor((totalDuration % 3600) / 60)
+
+	const goToRadio = (seedType: "album" | "artist") => {
+		const targetId = seedType === "album" ? album.id : album.artist_id
+		router.visit(`/radio?seed_type=${seedType}&seed_id=${targetId}`)
+	}
 
 	return (
 		<div
@@ -233,16 +246,34 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 					</svg>
 				</Button>
 				<Button size="icon" variant="spotifyTransparent" className="group">
-					<svg
-						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
-						aria-hidden="true"
-						fill="gray"
-						viewBox="0 0 24 24"
-					>
-						<circle cx="5" cy="12" r="2" />
-						<circle cx="12" cy="12" r="2" />
-						<circle cx="19" cy="12" r="2" />
-					</svg>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<button type="button" className="outline-none">
+								<svg
+									className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
+									aria-hidden="true"
+									fill="gray"
+									viewBox="0 0 24 24"
+								>
+									<circle cx="5" cy="12" r="2" />
+									<circle cx="12" cy="12" r="2" />
+									<circle cx="19" cy="12" r="2" />
+								</svg>
+							</button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="w-48">
+							<DropdownMenuItem
+								onSelect={(event) => {
+									event.preventDefault()
+									goToRadio("album")
+								}}
+								className="flex items-center gap-2"
+							>
+								<RadioIcon className="w-4 h-4 text-zinc-400" />
+								Go to album radio
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</Button>
 			</div>
 
@@ -270,17 +301,22 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 					const isCurrentTrack =
 						currentTrack?.id.toString() === track.id.toString()
 					return (
-						<div
+						<TrackContextMenu
 							key={track.id}
-							className={`
+							trackId={track.id}
+							artistId={track.artist_id}
+							albumId={track.album_id}
+						>
+							<div
+								className={`
 								flex flex-col md:grid md:grid-cols-[16px_1fr_minmax(120px,1fr)] 
 								md:items-center
 								gap-2 md:gap-4 md:px-4 py-2 md:py-0 md:h-14 
 								rounded-md group cursor-pointer
 								${isCurrentTrack ? "bg-white/10" : "hover:bg-white/10"}
 							`}
-							onClick={(e) => handlePlayTrack(track, index, e)}
-						>
+								onClick={(e) => handlePlayTrack(track, index, e)}
+							>
 							{/* Desktop track number / play button */}
 							<div className="hidden md:flex text-center text-sm group-hover:hidden justify-center">
 								{isCurrentTrack && isPlaying ? (
@@ -386,11 +422,11 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 										</Button>
 									)}
 								</div>
-							</div>
+								</div>
 
-							{/* Desktop actions */}
-							<div className="hidden md:flex items-center justify-end gap-4">
-								{likedTrackIds.has(track.id) ? (
+								{/* Desktop actions */}
+								<div className="hidden md:flex items-center justify-end gap-4">
+									{likedTrackIds.has(track.id) ? (
 									<AddToPlaylistDropdown trackId={track.id}>
 										<Button
 											size="icon"
@@ -427,24 +463,42 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 								<span className="text-zinc-400 text-sm">
 									{formatDuration(track.duration)}
 								</span>
-								<Button
-									size="icon"
-									variant="spotifyTransparent"
-									className="group"
-								>
-									<svg
-										className="w-4 h-4 transition-colors duration-300 group-hover:fill-white"
-										fill="gray"
-										aria-hidden="true"
-										viewBox="0 0 24 24"
-									>
-										<circle cx="5" cy="12" r="2" />
-										<circle cx="12" cy="12" r="2" />
-										<circle cx="19" cy="12" r="2" />
-									</svg>
-								</Button>
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button
+											size="icon"
+											variant="spotifyTransparent"
+											className="group"
+											onClick={(e) => e.stopPropagation()}
+										>
+											<svg
+												className="w-4 h-4 transition-colors duration-300 group-hover:fill-white"
+												fill="gray"
+												aria-hidden="true"
+												viewBox="0 0 24 24"
+											>
+												<circle cx="5" cy="12" r="2" />
+												<circle cx="12" cy="12" r="2" />
+												<circle cx="19" cy="12" r="2" />
+											</svg>
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end" className="w-48">
+										<DropdownMenuItem
+											onSelect={(event) => {
+												event.preventDefault()
+												router.visit(`/radio?seed_type=track&seed_id=${track.id}`)
+											}}
+											className="flex items-center gap-2"
+										>
+											<RadioIcon className="w-4 h-4 text-zinc-400" />
+											Go to track radio
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
 							</div>
-						</div>
+							</div>
+						</TrackContextMenu>
 					)
 				})}
 			</div>

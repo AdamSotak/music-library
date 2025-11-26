@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\TrackEmbedding;
 
 class Track extends Model
 {
@@ -21,6 +23,7 @@ class Track extends Model
         'duration',
         'audio_url',
         'category_slug',
+        'deezer_genre_id',
     ];
 
     public function artist(): BelongsTo
@@ -42,5 +45,10 @@ class Track extends Model
     {
         return $this->belongsToMany(Playlist::class, 'playlist_tracks', 'track_id', 'playlist_id')
             ->withTimestamps();
+    }
+
+    public function embedding(): HasOne
+    {
+        return $this->hasOne(TrackEmbedding::class, 'track_id', 'id');
     }
 }

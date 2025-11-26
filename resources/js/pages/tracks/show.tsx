@@ -7,6 +7,13 @@ import type { Track, InertiaPageProps } from "@/types"
 import { router, usePage } from "@inertiajs/react"
 import { useMemo, useState, useEffect, type MouseEvent } from "react"
 import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { RadioIcon } from "@/utils/icons"
 
 interface TrackShowProps {
 	track: Track
@@ -57,6 +64,17 @@ export default function TrackShow({ track }: TrackShowProps) {
 		const mins = Math.floor(seconds / 60)
 		const secs = seconds % 60
 		return `${mins}:${secs.toString().padStart(2, "0")}`
+	}
+
+	const goToRadio = (seedType: "track" | "album" | "artist") => {
+		const targetId =
+			seedType === "track"
+				? track.id
+				: seedType === "artist"
+					? track.artist_id
+					: track.album_id
+		if (!targetId) return
+		router.visit(`/radio?seed_type=${seedType}&seed_id=${targetId}`)
 	}
 
 	return (
@@ -156,16 +174,34 @@ export default function TrackShow({ track }: TrackShowProps) {
 					</Button>
 				)}
 				<Button size="icon" variant="spotifyTransparent" className="group">
-					<svg
-						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
-						fill="gray"
-						viewBox="0 0 24 24"
-					>
-						<circle cx="5" cy="12" r="2" />
-						<circle cx="12" cy="12" r="2" />
-						<circle cx="19" cy="12" r="2" />
-					</svg>
-				</Button>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<button type="button" className="outline-none">
+								<svg
+									className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
+									fill="gray"
+									viewBox="0 0 24 24"
+								>
+									<circle cx="5" cy="12" r="2" />
+									<circle cx="12" cy="12" r="2" />
+									<circle cx="19" cy="12" r="2" />
+								</svg>
+							</button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end" className="w-48">
+								<DropdownMenuItem
+									onSelect={(event) => {
+										event.preventDefault()
+										goToRadio("track")
+									}}
+									className="flex items-center gap-2"
+								>
+									<RadioIcon className="w-4 h-4 text-zinc-400" />
+									Go to track radio
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</Button>
 			</div>
 
 			{/* Lyrics Section */}
