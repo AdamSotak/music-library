@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/tracks/{id}', [TrackController::class, 'show'])->name('tracks.show');
 
     Route::post('/playlist', [PlaylistController::class, 'store'])->name('playlists.store');
+    Route::get('/playlist/{id}', [PlaylistController::class, 'show'])->name('playlists.show');
     Route::put('/playlist/{id}', [PlaylistController::class, 'update'])->name('playlists.update');
     Route::delete('/playlist/{id}', [PlaylistController::class, 'destroy'])->name('playlists.destroy');
     Route::post('/playlist/{id}/tracks', [PlaylistController::class, 'addTracks'])->name('playlists.addTracks');

@@ -126,7 +126,7 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 
 			<div className="pt-10">
 				<Shelf
-					title={user?.name.split(" ")[0]}
+					title={user ? user.name.split(" ")[0] : "You"}
 					topTitle="Made For"
 					items={trackShelfItems}
 					onItemSelected={(item) => router.visit(`/tracks/${item.id}`)}
