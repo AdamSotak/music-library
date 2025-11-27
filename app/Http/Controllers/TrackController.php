@@ -4,12 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Track;
 use App\Services\MusicBarcodeService;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TrackController extends Controller
 {
-    protected $barcodeService;
+    protected MusicBarcodeService $barcodeService;
 
     public function __construct(MusicBarcodeService $barcodeService)
     {
@@ -41,6 +40,11 @@ class TrackController extends Controller
         ]);
     }
 
+    public function scan()
+    {
+        return Inertia::render('scan');
+    }
+
     public function generateBarcode(Track $track)
     {
         $barcode = $this->barcodeService->generateBarcode((string) $track->id);
@@ -50,50 +54,5 @@ class TrackController extends Controller
             'track_id' => $track->id,
             'track_name' => $track->name,
         ]);
-    }
-
-    public function scan(Request $request)
-    {
-        return response()->json([
-            'success' => true,
-            'message' => 'Barcode scanned successfully',
-        ]);
-        // $request->validate([
-        //     'image' => 'required|image|max:20480',
-        // ]);
-
-        // $numericId = $this->barcodeService->decodeBarcode($request->file('image'));
-
-        // if (! $numericId) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'error' => 'Could not decode barcode',
-        //     ], 404);
-        // }
-
-        // $trackId = $this->numericToUuid($numericId);
-
-        // if (! $trackId) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'error' => 'Track not found',
-        //     ], 404);
-        // }
-
-        // $track = Track::find($trackId);
-
-        // if (! $track) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'error' => 'Track not found',
-        //     ], 404);
-        // }
-
-        // return response()->json([
-        //     'success' => true,
-        //     'track_id' => $track->id,
-        //     'name' => $track->name,
-        //     'url' => url('/tracks/'.$track->id),
-        // ]);
     }
 }

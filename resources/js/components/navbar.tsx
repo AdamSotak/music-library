@@ -12,7 +12,7 @@ import {
 } from "./ui/dropdown-menu"
 import { Utils } from "@/utils"
 import type { InertiaPageProps } from "@/types"
-import BarcodeScanner from "./camerascanner"
+//import BarcodeScanner from "./camerascanner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { QrCode } from "lucide-react"
 
@@ -286,14 +286,14 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 
 				<div className="flex items-center gap-1.5">
 					{/* Scanner Button */}
-					<Button
+					{/* <Button
 						size={"icon"}
 						variant={"spotifyTransparent"}
 						className="group rounded-full"
 						onClick={() => setScannerOpen(true)}
 					>
 						<QrCode className="min-w-6 min-h-6 text-gray-400 transition-colors duration-300 group-hover:text-white" />
-					</Button>
+					</Button> */}
 
 					<Button
 						size={"icon"}
@@ -484,14 +484,14 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 			)}
 
 			{/* Scanner Dialog */}
-			<Dialog open={scannerOpen} onOpenChange={setScannerOpen}>
+			{/* <Dialog open={scannerOpen} onOpenChange={setScannerOpen}>
 				<DialogContent className="max-w-2xl bg-zinc-900 border-white/10">
 					<DialogHeader>
 						<DialogTitle className="text-white">Scan Music Code</DialogTitle>
 					</DialogHeader>
 					<BarcodeScanner />
 				</DialogContent>
-			</Dialog>
+			</Dialog> */}
 		</>
 	)
 }
