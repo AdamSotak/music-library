@@ -552,6 +552,9 @@ function ExpandedPlayer({
 	showEffects,
 	setShowEffects,
 	handleProcessedAudio,
+	handleProcessingStart,
+	autoApplyEffects,
+	setAutoApplyEffects,
 }: {
 	isPlaying: boolean
 	togglePlay: () => void
@@ -577,7 +580,10 @@ function ExpandedPlayer({
 	formatTime: (seconds: number) => string
 	showEffects: boolean
 	setShowEffects: (value: boolean) => void
-	handleProcessedAudio: (buffer: AudioBuffer) => void
+	handleProcessedAudio: (buffer: AudioBuffer, tempo?: number, pitch?: number) => void
+	handleProcessingStart: () => void
+	autoApplyEffects: boolean
+	setAutoApplyEffects: (value: boolean) => void
 }) {
 	return (
 		<div className="flex flex-col h-full w-full text-white p-4 safe-area-inset overflow-y-auto">
@@ -815,8 +821,10 @@ function ExpandedPlayer({
 				<div className="px-4 pb-4">
 					<AudioEffects
 						currentTrack={currentTrack}
-						onProcessedAudio={handleProcessedAudio}
+						onProcessedAudio={(buffer, tempo, pitch) => handleProcessedAudio(buffer, tempo, pitch)}
 						onProcessingStart={handleProcessingStart}
+						autoApplyEffects={autoApplyEffects}
+						onToggleAutoApply={() => setAutoApplyEffects(!autoApplyEffects)}
 						className="w-full"
 					/>
 				</div>
@@ -846,6 +854,7 @@ export default function AudioPlayer() {
 	)
 	const [usingProcessedAudio, setUsingProcessedAudio] = useState(false)
 	const [showEffects, setShowEffects] = useState(false)
+	const [autoApplyEffects, setAutoApplyEffects] = useState(false)
 
 	// Load track when currentTrack changes
 	useEffect(() => {
@@ -855,8 +864,12 @@ export default function AudioPlayer() {
 
 		// Stop any currently playing processed audio when switching tracks
 		if (sourceNodeRef.current) {
-			sourceNodeRef.current.stop()
-			sourceNodeRef.current.disconnect()
+			try {
+				sourceNodeRef.current.stop()
+				sourceNodeRef.current.disconnect()
+			} catch (_e) {
+				// Ignore if already stopped
+			}
 			sourceNodeRef.current = null
 		}
 		setUsingProcessedAudio(false)
@@ -985,13 +998,13 @@ export default function AudioPlayer() {
 				sourceNodeRef.current.buffer = buffer
 				sourceNodeRef.current.connect(gainNodeRef.current)
 
-			// Set up event handlers
-			sourceNodeRef.current.onended = () => {
-				sourceNodeRef.current = null
-				setUsingProcessedAudio(false)
-				setIsPlaying(false)
-				// Don't auto-play next track when processed audio ends
-			}				// Set volume
+				// Set up event handlers
+				sourceNodeRef.current.onended = () => {
+					sourceNodeRef.current = null
+					setUsingProcessedAudio(false)
+					setIsPlaying(false)
+					// Don't auto-play next track when processed audio ends
+				} // Set volume
 				gainNodeRef.current.gain.value = volume / 100
 
 				// Start playback
@@ -1056,7 +1069,7 @@ export default function AudioPlayer() {
 
 	// Handle processed audio from effects component
 	const handleProcessedAudio = useCallback(
-		async (buffer: AudioBuffer) => {
+		async (buffer: AudioBuffer, _tempo?: number, _pitch?: number) => {
 			// Stop any existing audio sources before playing processed audio
 			if (sourceNodeRef.current) {
 				try {
@@ -1190,15 +1203,16 @@ export default function AudioPlayer() {
 						currentTrack={currentTrack}
 						playNext={playNext}
 						playPrevious={playPrevious}
-						formatTime={formatTime}
-						showEffects={showEffects}
-						setShowEffects={setShowEffects}
-						handleProcessedAudio={handleProcessedAudio}
-					/>
-				</div>
-			)}
-
-			{/* Mobile layout (hidden on md and up) */}
+					formatTime={formatTime}
+					showEffects={showEffects}
+					setShowEffects={setShowEffects}
+					handleProcessedAudio={handleProcessedAudio}
+					handleProcessingStart={handleProcessingStart}
+					autoApplyEffects={autoApplyEffects}
+					setAutoApplyEffects={setAutoApplyEffects}
+				/>
+			</div>
+		)}			{/* Mobile layout (hidden on md and up) */}
 			<div className="lg:hidden w-full mt-1 bg-zinc-900/95 backdrop-blur-sm border-t border-white/10">
 				<MobilePlayer
 					isPlaying={isPlaying}
@@ -1235,8 +1249,10 @@ export default function AudioPlayer() {
 					<div className="mt-4 mx-4">
 						<AudioEffects
 							currentTrack={currentTrack}
-							onProcessedAudio={handleProcessedAudio}
+							onProcessedAudio={(buffer, tempo, pitch) => handleProcessedAudio(buffer, tempo, pitch)}
 							onProcessingStart={handleProcessingStart}
+							autoApplyEffects={autoApplyEffects}
+							onToggleAutoApply={() => setAutoApplyEffects(!autoApplyEffects)}
 							className="max-w-md mx-auto"
 						/>
 					</div>

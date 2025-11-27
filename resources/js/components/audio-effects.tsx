@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Slider } from "./ui/slider"
 import { useAudioEffects } from "@/hooks/useAudioEffects"
@@ -6,8 +6,10 @@ import type { Track } from "@/hooks/usePlayer"
 
 interface AudioEffectsProps {
 	currentTrack: Track | null
-	onProcessedAudio: (buffer: AudioBuffer) => void
+	onProcessedAudio: (buffer: AudioBuffer, tempo?: number, pitch?: number) => void
 	onProcessingStart?: () => void
+	autoApplyEffects?: boolean
+	onToggleAutoApply?: () => void
 	className?: string
 }
 
@@ -15,6 +17,8 @@ export function AudioEffects({
 	currentTrack,
 	onProcessedAudio,
 	onProcessingStart,
+	autoApplyEffects = false,
+	onToggleAutoApply,
 	className,
 }: AudioEffectsProps) {
 	const {
@@ -31,6 +35,32 @@ export function AudioEffects({
 	const [tempTempo, setTempTempo] = useState(tempo)
 	const [tempPitch, setTempPitch] = useState(pitch)
 	const [isLocalProcessing, setIsLocalProcessing] = useState(false)
+	const previousTrackRef = useRef<Track | null>(null)
+
+	// Auto-apply effects when track changes and auto-apply is enabled
+	useEffect(() => {
+		// Only auto-apply if:
+		// 1. Auto-apply is enabled
+		// 2. Effects have been modified (tempo or pitch != default)
+		// 3. Track has actually changed (not first mount)
+		// 4. Not currently processing
+		if (
+			autoApplyEffects &&
+			currentTrack &&
+			previousTrackRef.current &&
+			previousTrackRef.current.id !== currentTrack.id &&
+			(tempTempo !== 1.0 || tempPitch !== 1.0) &&
+			!isProcessing &&
+			!isLocalProcessing
+		) {
+			// Auto-apply with a small delay to let the track load
+			setTimeout(() => {
+				handleApplyEffects()
+			}, 300)
+		}
+		
+		previousTrackRef.current = currentTrack
+	}, [currentTrack, autoApplyEffects])
 
 	// Convert pitch from linear scale to semitones for display
 	const pitchToSemitones = (pitch: number) => Math.log2(pitch) * 12
@@ -72,8 +102,8 @@ export function AudioEffects({
 				tempPitch,
 			)
 
-			// Notify parent component with processed audio
-			onProcessedAudio(processedBuffer)
+			// Notify parent component with processed audio and settings
+			onProcessedAudio(processedBuffer, tempTempo, tempPitch)
 		} catch (error) {
 			console.error("Failed to apply audio effects:", error)
 		} finally {
@@ -101,8 +131,21 @@ export function AudioEffects({
 		<div
 			className={`p-4 bg-zinc-800/50 rounded-lg space-y-4 ${className || ""}`}
 		>
-			<div className="flex items-center justify-between">
-				<h3 className="text-sm font-medium text-white">Audio Effects</h3>
+		<div className="flex items-center justify-between">
+			<h3 className="text-sm font-medium text-white">Audio Effects</h3>
+			<div className="flex gap-2">
+				{onToggleAutoApply && (
+					<Button
+						size="sm"
+						variant={autoApplyEffects ? "default" : "outline"}
+						onClick={onToggleAutoApply}
+						disabled={isProcessing || isLocalProcessing}
+						className={`text-xs ${autoApplyEffects ? "bg-spotify-green hover:bg-spotify-green/80 text-black" : "text-white border-white/20 hover:bg-white/10"}`}
+						title={autoApplyEffects ? "Auto-apply enabled" : "Auto-apply disabled"}
+					>
+						Auto
+					</Button>
+				)}
 				<Button
 					size="sm"
 					variant="outline"
@@ -113,8 +156,7 @@ export function AudioEffects({
 					Reset
 				</Button>
 			</div>
-
-			{/* Tempo Slider */}
+		</div>			{/* Tempo Slider */}
 			<div className="space-y-2">
 				<div className="flex items-center justify-between">
 					<span className="text-sm text-white/70">Tempo</span>
