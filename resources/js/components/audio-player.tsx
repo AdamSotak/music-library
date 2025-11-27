@@ -378,9 +378,9 @@ function DesktopPlayer({
 					className="group w-4 h-4"
 					onClick={() => setShowEffects(!showEffects)}
 				>
-					<Settings 
+					<Settings
 						className={`max-w-4 max-h-4 transition-colors duration-300 group-hover:fill-white ${
-							showEffects ? 'fill-spotify-green' : 'fill-gray-500'
+							showEffects ? "fill-spotify-green" : "fill-gray-500"
 						}`}
 					/>
 				</Button>
@@ -592,13 +592,15 @@ function ExpandedPlayer({
 					<ChevronDown className="w-6 h-6" />
 				</Button>
 				<span className="text-sm font-medium">Now Playing</span>
-				<Button 
-					size="icon" 
-					variant="spotifyTransparent" 
+				<Button
+					size="icon"
+					variant="spotifyTransparent"
 					className="w-10 h-10"
 					onClick={() => setShowEffects(!showEffects)}
 				>
-					<Settings className={`w-6 h-6 ${showEffects ? 'text-spotify-green' : ''}`} />
+					<Settings
+						className={`w-6 h-6 ${showEffects ? "text-spotify-green" : ""}`}
+					/>
 				</Button>
 			</div>
 
@@ -814,6 +816,7 @@ function ExpandedPlayer({
 					<AudioEffects
 						currentTrack={currentTrack}
 						onProcessedAudio={handleProcessedAudio}
+						onProcessingStart={handleProcessingStart}
 						className="w-full"
 					/>
 				</div>
@@ -838,7 +841,9 @@ export default function AudioPlayer() {
 	)
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [isClosing, setIsClosing] = useState(false)
-	const [processedBuffer, setProcessedBuffer] = useState<AudioBuffer | null>(null)
+	const [processedBuffer, setProcessedBuffer] = useState<AudioBuffer | null>(
+		null,
+	)
 	const [usingProcessedAudio, setUsingProcessedAudio] = useState(false)
 	const [showEffects, setShowEffects] = useState(false)
 
@@ -897,7 +902,7 @@ export default function AudioPlayer() {
 	const handleEnded = () => {
 		// Only handle ended for regular audio, not processed audio
 		if (usingProcessedAudio) return
-		
+
 		if (repeatMode === "track") {
 			audioRef.current?.play()
 		} else if (repeatMode === "playlist" || repeatMode === "off") {
@@ -935,10 +940,12 @@ export default function AudioPlayer() {
 	// Initialize Web Audio API context
 	const initializeWebAudio = useCallback(async () => {
 		if (!audioContextRef.current) {
-			audioContextRef.current = new (window.AudioContext || (window as unknown as typeof AudioContext))()
+			audioContextRef.current = new (
+				window.AudioContext || (window as unknown as typeof AudioContext)
+			)()
 		}
-		
-		if (audioContextRef.current.state === 'suspended') {
+
+		if (audioContextRef.current.state === "suspended") {
 			await audioContextRef.current.resume()
 		}
 
@@ -949,80 +956,137 @@ export default function AudioPlayer() {
 	}, [])
 
 	// Play processed audio buffer using Web Audio API
-	const playProcessedAudio = useCallback(async (buffer: AudioBuffer) => {
-		try {
-			await initializeWebAudio()
-			
-			if (!audioContextRef.current || !gainNodeRef.current) return
+	const playProcessedAudio = useCallback(
+		async (buffer: AudioBuffer) => {
+			try {
+				await initializeWebAudio()
 
-			// Stop any currently playing processed audio
-			if (sourceNodeRef.current) {
-				sourceNodeRef.current.stop()
-				sourceNodeRef.current.disconnect()
-			}
+				if (!audioContextRef.current || !gainNodeRef.current) return
 
-			// Create new source node
-			sourceNodeRef.current = audioContextRef.current.createBufferSource()
-			sourceNodeRef.current.buffer = buffer
-			sourceNodeRef.current.connect(gainNodeRef.current)
-
-			// Set up event handlers
-			sourceNodeRef.current.onended = () => {
-				sourceNodeRef.current = null
-				setUsingProcessedAudio(false)
-				if (repeatMode === "track") {
-					// Reset for replay
-					setCurrentTime(0)
-					// Don't automatically replay - let user decide
-				} else {
-					playNext()
+				// Stop HTML5 audio element first
+				if (audioRef.current) {
+					audioRef.current.pause()
+					audioRef.current.currentTime = 0
 				}
-			}
 
-			// Set volume
-			gainNodeRef.current.gain.value = volume / 100
-
-			// Start playback
-			sourceNodeRef.current.start()
-			setUsingProcessedAudio(true)
-			setDuration(buffer.duration)
-			setCurrentTime(0)
-
-			// Stop the regular audio element if it's playing
-			if (audioRef.current) {
-				audioRef.current.pause()
-			}
-
-			// Start time tracking for processed audio
-			// Simple time tracking for Web Audio API playback
-			const trackingInterval = setInterval(() => {
-				if (sourceNodeRef.current && usingProcessedAudio && isPlaying) {
-					setCurrentTime(prev => {
-						const newTime = prev + 0.1
-						if (buffer && newTime >= buffer.duration) {
-							clearInterval(trackingInterval)
-							return buffer.duration
-						}
-						return newTime
-					})
-				} else {
-					clearInterval(trackingInterval)
+				// Stop any currently playing processed audio
+				if (sourceNodeRef.current) {
+					try {
+						sourceNodeRef.current.stop()
+						sourceNodeRef.current.disconnect()
+					} catch (_e) {
+						// Ignore if already stopped
+					}
+					sourceNodeRef.current = null
 				}
-			}, 100)
-		} catch (error) {
-			console.error("Error playing processed audio:", error)
-		}
-	}, [initializeWebAudio, volume, repeatMode, playNext])
+
+				// Create new source node
+				sourceNodeRef.current = audioContextRef.current.createBufferSource()
+				sourceNodeRef.current.buffer = buffer
+				sourceNodeRef.current.connect(gainNodeRef.current)
+
+				// Set up event handlers
+				sourceNodeRef.current.onended = () => {
+					sourceNodeRef.current = null
+					setUsingProcessedAudio(false)
+					if (repeatMode === "track") {
+						// Reset for replay
+						setCurrentTime(0)
+						// Don't automatically replay - let user decide
+					} else {
+						playNext()
+					}
+				}
+
+				// Set volume
+				gainNodeRef.current.gain.value = volume / 100
+
+				// Start playback
+				sourceNodeRef.current.start()
+				setUsingProcessedAudio(true)
+				setDuration(buffer.duration)
+				setCurrentTime(0)
+
+				// Stop the regular audio element if it's playing
+				if (audioRef.current) {
+					audioRef.current.pause()
+				}
+
+				// Start time tracking for processed audio
+				// Simple time tracking for Web Audio API playback
+				const trackingInterval = setInterval(() => {
+					if (sourceNodeRef.current && usingProcessedAudio && isPlaying) {
+						setCurrentTime((prev) => {
+							const newTime = prev + 0.1
+							if (buffer && newTime >= buffer.duration) {
+								clearInterval(trackingInterval)
+								return buffer.duration
+							}
+							return newTime
+						})
+					} else {
+						clearInterval(trackingInterval)
+					}
+				}, 100)
+			} catch (error) {
+				console.error("Error playing processed audio:", error)
+			}
+		},
+		[initializeWebAudio, volume, repeatMode, playNext],
+	)
 
 	// Time tracking is now handled inline within playProcessedAudio
 
-	// Handle processed audio from effects component
-	const handleProcessedAudio = useCallback((buffer: AudioBuffer) => {
-		setProcessedBuffer(buffer)
-		if (isPlaying) {
-			playProcessedAudio(buffer)
+	// Handle processing start - stop all audio immediately
+	const handleProcessingStart = useCallback(() => {
+		// Stop Web Audio API playback if active
+		if (sourceNodeRef.current) {
+			try {
+				sourceNodeRef.current.stop()
+				sourceNodeRef.current.disconnect()
+			} catch (_e) {
+				// Ignore if already stopped
+			}
+			sourceNodeRef.current = null
 		}
-	}, [isPlaying, playProcessedAudio])
+
+		// Stop HTML5 audio playback
+		if (audioRef.current) {
+			audioRef.current.pause()
+			audioRef.current.currentTime = 0
+		}
+
+		// Clear processed audio state
+		setUsingProcessedAudio(false)
+		setIsPlaying(false)
+	}, [setIsPlaying])
+
+	// Handle processed audio from effects component
+	const handleProcessedAudio = useCallback(
+		async (buffer: AudioBuffer) => {
+			// Stop any existing audio sources before playing processed audio
+			if (sourceNodeRef.current) {
+				try {
+					sourceNodeRef.current.stop()
+					sourceNodeRef.current.disconnect()
+				} catch (_e) {
+					// Ignore if already stopped
+				}
+				sourceNodeRef.current = null
+			}
+
+			if (audioRef.current) {
+				audioRef.current.pause()
+				audioRef.current.currentTime = 0
+			}
+
+			// Store and play the processed buffer
+			setProcessedBuffer(buffer)
+			await playProcessedAudio(buffer)
+			setIsPlaying(true)
+		},
+		[playProcessedAudio, setIsPlaying],
+	)
 
 	// Switch back to original audio (for future use)
 	// const playOriginalAudio = useCallback(() => {
@@ -1033,7 +1097,7 @@ export default function AudioPlayer() {
 	// 	}
 	// 	setUsingProcessedAudio(false)
 	// 	setProcessedBuffer(null)
-	// 	
+	//
 	// 	// Resume normal audio playback
 	// 	if (audioRef.current && currentTrack) {
 	// 		if (isPlaying) {
@@ -1172,13 +1236,14 @@ export default function AudioPlayer() {
 					showEffects={showEffects}
 					setShowEffects={setShowEffects}
 				/>
-				
+
 				{/* Desktop Audio Effects Panel */}
 				{showEffects && (
 					<div className="mt-4 mx-4">
 						<AudioEffects
 							currentTrack={currentTrack}
 							onProcessedAudio={handleProcessedAudio}
+							onProcessingStart={handleProcessingStart}
 							className="max-w-md mx-auto"
 						/>
 					</div>

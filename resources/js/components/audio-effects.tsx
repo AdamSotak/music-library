@@ -7,10 +7,16 @@ import type { Track } from "@/hooks/usePlayer"
 interface AudioEffectsProps {
 	currentTrack: Track | null
 	onProcessedAudio: (buffer: AudioBuffer) => void
+	onProcessingStart?: () => void
 	className?: string
 }
 
-export function AudioEffects({ currentTrack, onProcessedAudio, className }: AudioEffectsProps) {
+export function AudioEffects({
+	currentTrack,
+	onProcessedAudio,
+	onProcessingStart,
+	className,
+}: AudioEffectsProps) {
 	const {
 		tempo,
 		pitch,
@@ -27,7 +33,7 @@ export function AudioEffects({ currentTrack, onProcessedAudio, className }: Audi
 
 	// Convert pitch from linear scale to semitones for display
 	const pitchToSemitones = (pitch: number) => Math.log2(pitch) * 12
-	const semitonesToPitch = (semitones: number) => Math.pow(2, semitones / 12)
+	const semitonesToPitch = (semitones: number) => 2 ** (semitones / 12)
 
 	const handleTempoChange = (value: number[]) => {
 		setTempTempo(value[0])
@@ -40,18 +46,24 @@ export function AudioEffects({ currentTrack, onProcessedAudio, className }: Audi
 	}
 
 	const handleApplyEffects = async () => {
-		if (!currentTrack) return
+		if (!currentTrack || isProcessing) return
 
 		try {
-			// Update the actual effect values
+			// Pause playback immediately before processing
+			onProcessingStart?.()
+
+			// Update the actual effect values FIRST before processing
 			setTempo(tempTempo)
 			setPitch(tempPitch)
+
+			// Wait a tick to ensure state is updated
+			await new Promise(resolve => setTimeout(resolve, 0))
 
 			// Load and process the audio
 			const audioUrl = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
 			const audioBuffer = await loadAudioFile(audioUrl)
-			const processedBuffer = await processAudio(audioBuffer)
-			
+			const processedBuffer = await processAudio(audioBuffer, tempTempo, tempPitch)
+
 			// Notify parent component with processed audio
 			onProcessedAudio(processedBuffer)
 		} catch (error) {
@@ -75,7 +87,9 @@ export function AudioEffects({ currentTrack, onProcessedAudio, className }: Audi
 	if (!currentTrack) return null
 
 	return (
-		<div className={`p-4 bg-zinc-800/50 rounded-lg space-y-4 ${className || ""}`}>
+		<div
+			className={`p-4 bg-zinc-800/50 rounded-lg space-y-4 ${className || ""}`}
+		>
 			<div className="flex items-center justify-between">
 				<h3 className="text-sm font-medium text-white">Audio Effects</h3>
 				<Button
