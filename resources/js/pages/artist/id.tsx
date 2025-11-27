@@ -107,18 +107,15 @@ export default function ArtistPage({
 		if (!likedSongsPlaylist) return
 		const id = trackId.toString()
 		if (likedTrackIds.has(id)) {
-			router.delete(
-				`/playlist/${likedSongsPlaylist.id}/tracks/${id}`,
-				{
-					preserveScroll: true,
-					onSuccess: () =>
-						setLikedTrackIds((prev) => {
-							const next = new Set(prev)
-							next.delete(id)
-							return next
-						}),
-				},
-			)
+			router.delete(`/playlist/${likedSongsPlaylist.id}/tracks/${id}`, {
+				preserveScroll: true,
+				onSuccess: () =>
+					setLikedTrackIds((prev) => {
+						const next = new Set(prev)
+						next.delete(id)
+						return next
+					}),
+			})
 		} else {
 			router.post(
 				`/playlist/${likedSongsPlaylist.id}/tracks`,
@@ -253,7 +250,9 @@ export default function ArtistPage({
 									albumId={track.album_id}
 									isLiked={likedTrackIds.has(track.id)}
 									onToggleLike={handleToggleLiked}
-									onAddToPlaylist={(id) => setAddToPlaylistModalOpen(true, [id])}
+									onAddToPlaylist={(id) =>
+										setAddToPlaylistModalOpen(true, [id])
+									}
 								>
 									<div
 										className="grid grid-cols-[auto_1fr_auto] items-center px-1 sm:px-2 py-2 rounded group hover:bg-white/10 cursor-pointer"
@@ -402,7 +401,7 @@ export default function ArtistPage({
 					</div>
 					<div className="-ml-2 sm:-ml-4">
 						<Shelf
-items={(() => {
+							items={(() => {
 								const combined = [
 									...(albums.map((album) => ({
 										id: album.id,

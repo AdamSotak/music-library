@@ -70,18 +70,15 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 		if (!likedSongsPlaylist) return
 		const id = trackId.toString()
 		if (likedTrackIds.has(id)) {
-			router.delete(
-				`/playlist/${likedSongsPlaylist.id}/tracks/${id}`,
-				{
-					preserveScroll: true,
-					onSuccess: () =>
-						setLikedTrackIds((prev) => {
-							const next = new Set(prev)
-							next.delete(id)
-							return next
-						}),
-				},
-			)
+			router.delete(`/playlist/${likedSongsPlaylist.id}/tracks/${id}`, {
+				preserveScroll: true,
+				onSuccess: () =>
+					setLikedTrackIds((prev) => {
+						const next = new Set(prev)
+						next.delete(id)
+						return next
+					}),
+			})
 		} else {
 			router.post(
 				`/playlist/${likedSongsPlaylist.id}/tracks`,

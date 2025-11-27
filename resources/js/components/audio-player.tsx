@@ -871,7 +871,7 @@ export default function AudioPlayer() {
 			return
 		}
 
-		const before = usePlayer.getState()
+		const _before = usePlayer.getState()
 		if (repeatMode === "playlist" || repeatMode === "off") {
 			playNext()
 		}

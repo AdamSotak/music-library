@@ -36,8 +36,8 @@ export default function Card({
 	onItemSelected,
 	onPlay,
 }: CardProps) {
-	const { savedAlbums, followedArtists, user } =
-		usePage().props as unknown as InertiaPageProps
+	const { savedAlbums, followedArtists, user } = usePage()
+		.props as unknown as InertiaPageProps
 	const likedTrackIds = useLikedTracksStore((state) => state.likedIds)
 	const savedAlbumIds = useMemo(
 		() => new Set(savedAlbums?.map((album) => album.id.toString())),
@@ -172,11 +172,11 @@ export default function Card({
 					}}
 					className="flex items-center gap-2"
 				>
-						{item.type === "artist" ? (
-							<User className="w-4 h-4 text-zinc-400" />
-						) : (
-							<Disc3 className="w-4 h-4 text-zinc-400" />
-						)}
+					{item.type === "artist" ? (
+						<User className="w-4 h-4 text-zinc-400" />
+					) : (
+						<Disc3 className="w-4 h-4 text-zinc-400" />
+					)}
 					{item.type === "artist" ? "Go to artist" : "Open album"}
 				</ContextMenuItem>
 				<ContextMenuItem

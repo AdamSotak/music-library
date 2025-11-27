@@ -13,6 +13,7 @@ class RecommendationService
 
     public function __construct(
         private MetadataScorer $metadataScorer = new MetadataScorer,
+        private GenreGraph $genreGraph = new GenreGraph,
     ) {}
 
     /**
@@ -31,52 +32,49 @@ class RecommendationService
             $excluded[] = $seed->track?->id;
         }
 
-        $query = Track::with(['artist', 'album', 'embedding'])
-            ->whereNotNull('audio_url')
-            ->whereNotIn('id', array_filter($excluded));
-
-        // Prefer same category when available to keep the pool smaller and more relevant.
-        if ($this->shouldFilterByCategory($seed->categorySlug())) {
-            $query->where('category_slug', $seed->categorySlug());
-        }
-
-        // Cap pool size to keep radio responsive on large catalogs.
-        $pool = $query->inRandomOrder()->limit(600)->get();
-
-        // Fallback: if the filtered pool is too small, widen to all tracks (still capped).
-        if ($pool->count() < $ctx->limit) {
-            $fallback = Track::with(['artist', 'album', 'embedding'])
-                ->whereNotNull('audio_url')
-                ->whereNotIn('id', array_filter($excluded))
-                ->inRandomOrder();
-
-            if ($this->shouldFilterByCategory($seed->categorySlug())) {
-                $fallback->where('category_slug', $seed->categorySlug());
-            }
-
-            $pool = $fallback->limit(800)->get();
-        }
+        $pool = $this->buildCandidatePool($seed, array_filter($excluded), $ctx->limit);
 
         $scored = $pool->map(function (Track $track) use ($seed, $ctx) {
             $metaScore = $this->metadataScorer->score($track, $seed, $ctx->seedType);
             $embedScore = $this->embeddingScore($seed, $track);
-            $score = $embedScore !== null
-                ? (0.6 * $metaScore) + (0.4 * $embedScore)
-                : $metaScore;
 
             return [
                 'track' => $track,
+                'meta' => $metaScore,
+                'embed' => $embedScore,
+            ];
+        });
+
+        $metaNorm = $this->normalizeScores($scored->pluck('meta')->all());
+        $embedNorm = $this->normalizeScores(
+            $scored->pluck('embed')->map(fn ($v) => $v === null ? null : $v)->all(),
+        );
+
+        $combined = $scored->values()->map(function ($item, $idx) use ($metaNorm, $embedNorm) {
+            $meta = $metaNorm[$idx] ?? 0.0;
+            $embed = $embedNorm[$idx] ?? 0.0;
+            $score = (0.6 * $meta) + (0.4 * $embed);
+
+            return [
+                'track' => $item['track'],
                 'score' => $score,
             ];
         });
 
-        $sorted = $scored->sortByDesc('score')->values();
+        $sorted = $combined->sortByDesc('score')->values();
 
         $final = collect();
         $recentArtists = [];
         $artistCounts = [];
+        $uniqueArtists = $pool->pluck('artist_id')->filter()->unique()->count();
         $maxSequential = $ctx->seedType === 'artist' ? 1 : 2;
-        $maxPerArtist = $ctx->seedType === 'artist' ? 3 : null;
+        $maxPerArtist = 5;
+
+        // If pool is effectively single-artist, don't over-constrain diversity.
+        if ($uniqueArtists <= 1) {
+            $maxSequential = 0;
+            $maxPerArtist = null;
+        }
 
         foreach ($sorted as $item) {
             /** @var Track $track */
@@ -143,6 +141,114 @@ class RecommendationService
         return new SeedProfile(artist: $artist);
     }
 
+    private function buildCandidatePool(SeedProfile $seed, array $excluded, int $limit): Collection
+    {
+        $baseQuery = fn () => Track::with(['artist', 'album', 'embedding'])
+            ->whereNotNull('audio_url')
+            ->whereNotIn('id', $excluded);
+
+        $seedCategory = $this->resolveSeedCategory($seed);
+        $seedGenre = $seed->genreId() ?? $seedCategory;
+        $pool = collect();
+
+        // Tier 1: same artist
+        if ($seed->artistId()) {
+            $tier1 = $baseQuery()
+                ->where('artist_id', $seed->artistId())
+                ->limit(300)
+                ->get();
+            $pool = $pool->merge($tier1);
+        }
+
+        // Tier 2: same category/genre slug (when not generic)
+        if ($this->shouldFilterByCategory($seedCategory)) {
+            $tier2 = $baseQuery()
+                ->where('category_slug', $seedCategory)
+                ->limit(300)
+                ->get();
+            $pool = $pool->merge($tier2);
+        }
+
+        // Tier 3: neighbour genres
+        if ($seedGenre) {
+            $similarGenres = $this->similarGenres($seedGenre, 0.2);
+            if (count($similarGenres)) {
+                $tier3 = $baseQuery()
+                    ->whereIn('category_slug', $similarGenres)
+                    ->limit(300)
+                    ->get();
+                $pool = $pool->merge($tier3);
+            }
+        }
+
+        // Fallback: general pool capped to keep responsiveness
+        if ($pool->isEmpty()) {
+            $pool = $baseQuery()
+                ->inRandomOrder()
+                ->limit(800)
+                ->get();
+        } else {
+            // Deduplicate and cap total size
+            $pool = $pool->unique('id');
+            if ($pool->count() < $limit) {
+                $extra = $baseQuery()
+                    ->inRandomOrder()
+                    ->limit(400)
+                    ->get();
+                $pool = $pool->merge($extra)->unique('id');
+            }
+        }
+
+        return $pool;
+    }
+
+    private function similarGenres(string $seedGenre, float $threshold): array
+    {
+        $genres = [];
+        foreach ($this->genreGraph->keys() as $g) {
+            if ($this->genreGraph->similarity($seedGenre, $g) >= $threshold) {
+                $genres[] = $g;
+            }
+        }
+
+        return $genres;
+    }
+
+    private function resolveSeedCategory(SeedProfile $seed): ?string
+    {
+        // 1) Use track category if it's not generic.
+        $slug = $seed->categorySlug();
+        if ($this->shouldFilterByCategory($slug)) {
+            return $slug;
+        }
+
+        // 2) Use album.genre if present and not generic.
+        $albumGenre = $seed->track?->album?->genre ?? $seed->album?->genre;
+        if ($this->shouldFilterByCategory($albumGenre)) {
+            return $albumGenre;
+        }
+
+        // 3) Fallback: first non-generic category for this artist.
+        $artistId = $seed->artistId();
+        if ($artistId) {
+            $candidateSlug = Track::where('artist_id', $artistId)
+                ->whereNotNull('category_slug')
+                ->get()
+                ->pluck('category_slug')
+                ->filter(function ($s) {
+                    $s = strtolower((string) $s);
+                    return $s && ! in_array($s, $this->genericCategories, true);
+                })
+                ->first();
+
+            if ($candidateSlug) {
+                return $candidateSlug;
+            }
+        }
+
+        return null;
+    }
+
     private function shouldFilterByCategory(?string $slug): bool
     {
         if (! $slug) {
@@ -179,5 +285,37 @@ class RecommendationService
         }
 
         return $dot / $denom;
+    }
+
+    /**
+     * Min-max normalize scores to 0-1 range. Nulls become 0.
+     *
+     * @param array<int, float|null> $values
+     * @return array<int, float>
+     */
+    private function normalizeScores(array $values): array
+    {
+        $numeric = array_values(array_filter($values, fn ($v) => $v !== null));
+        if (empty($numeric)) {
+            return array_fill(0, count($values), 0.0);
+        }
+
+        $min = min($numeric);
+        $max = max($numeric);
+        $range = $max - $min;
+        if ($range <= 0) {
+            return array_fill(0, count($values), 0.5);
+        }
+
+        $normalized = [];
+        foreach ($values as $idx => $val) {
+            if ($val === null) {
+                $normalized[$idx] = 0.0;
+                continue;
+            }
+            $normalized[$idx] = ($val - $min) / $range;
+        }
+
+        return $normalized;
     }
 }

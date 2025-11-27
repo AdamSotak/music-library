@@ -36,13 +36,8 @@ interface SearchTrack {
 }
 
 export default function PlaylistShow({ playlist }: PlaylistShowProps) {
-	const {
-		currentTrack,
-		isPlaying,
-		setCurrentTrack,
-		setIsPlaying,
-		addToQueue,
-	} = usePlayer()
+	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying, addToQueue } =
+		usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
 	const { setOpen: setEditPlaylistOpen } = Modals.useEditPlaylistDetailsModal()
 	const { playlists } = usePage().props as unknown as InertiaPageProps
@@ -284,11 +279,11 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							</svg>
 						</Button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent
-						align="end"
-						sideOffset={8}
-						className="w-64 bg-[#282828] text-white border-none"
-					>
+						<DropdownMenuContent
+							align="end"
+							sideOffset={8}
+							className="w-64 bg-[#282828] text-white border-none"
+						>
 						<DropdownMenuItem
 							onSelect={(event) => {
 								event.preventDefault()
@@ -307,7 +302,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							className="gap-2 text-sm"
 						>
 							<Radio className="w-4 h-4" />
-							Start Radio
+							Go to playlist radio
 						</DropdownMenuItem>
 						<DropdownMenuSeparator className="bg-white/10" />
 						<DropdownMenuItem
@@ -393,39 +388,8 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 									`}
 										onClick={(e) => handlePlayTrack(track, index, e)}
 									>
-									{/* Desktop track number / play button */}
-									<div className="hidden md:flex text-center text-sm group-hover:hidden justify-center">
-										{isCurrentTrack && isPlaying ? (
-											<WaveformIndicator />
-										) : (
-											<span
-												className={
-													isCurrentTrack ? "text-green-500" : "text-zinc-400"
-												}
-											>
-												{index + 1}
-											</span>
-										)}
-									</div>
-									<button
-										onClick={(e) => handlePlayTrack(track, index, e)}
-										className="hidden md:group-hover:flex justify-center"
-										type="button"
-									>
-										<svg
-											className="w-4 h-4 text-white"
-											fill="currentColor"
-											viewBox="0 0 24 24"
-											aria-hidden="true"
-										>
-											<path d="M8 5v14l11-7z" />
-										</svg>
-									</button>
-
-									{/* Track info - responsive layout */}
-									<div className="flex items-center gap-3 md:min-w-0">
-										{/* Mobile track number */}
-										<div className="md:hidden text-center text-xs w-6 flex-shrink-0">
+										{/* Desktop track number / play button */}
+										<div className="hidden md:flex text-center text-sm group-hover:hidden justify-center">
 											{isCurrentTrack && isPlaying ? (
 												<WaveformIndicator />
 											) : (
@@ -438,39 +402,133 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 												</span>
 											)}
 										</div>
-										<img
-											src={
-												track.album_cover ||
-												`https://via.placeholder.com/40?text=${encodeURIComponent(track.album || "Track")}`
-											}
-											alt={track.album || track.name}
-											className="w-10 h-10 md:w-10 md:h-10 flex-shrink-0 rounded"
-										/>
-										<div className="min-w-0 flex-1">
-											<div
-												className={`text-sm md:text-base truncate ${isCurrentTrack ? "text-green-500" : "text-white"}`}
+										<button
+											onClick={(e) => handlePlayTrack(track, index, e)}
+											className="hidden md:group-hover:flex justify-center"
+											type="button"
+										>
+											<svg
+												className="w-4 h-4 text-white"
+												fill="currentColor"
+												viewBox="0 0 24 24"
+												aria-hidden="true"
 											>
-												{track.name}
+												<path d="M8 5v14l11-7z" />
+											</svg>
+										</button>
+
+										{/* Track info - responsive layout */}
+										<div className="flex items-center gap-3 md:min-w-0">
+											{/* Mobile track number */}
+											<div className="md:hidden text-center text-xs w-6 flex-shrink-0">
+												{isCurrentTrack && isPlaying ? (
+													<WaveformIndicator />
+												) : (
+													<span
+														className={
+															isCurrentTrack
+																? "text-green-500"
+																: "text-zinc-400"
+														}
+													>
+														{index + 1}
+													</span>
+												)}
 											</div>
-											<div
-												className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate"
-												onClick={(e) => {
-													e.stopPropagation()
-													router.visit(`/artist/${track.artist_id}`)
-												}}
-											>
-												{track.artist}
+											<img
+												src={
+													track.album_cover ||
+													`https://via.placeholder.com/40?text=${encodeURIComponent(track.album || "Track")}`
+												}
+												alt={track.album || track.name}
+												className="w-10 h-10 md:w-10 md:h-10 flex-shrink-0 rounded"
+											/>
+											<div className="min-w-0 flex-1">
+												<div
+													className={`text-sm md:text-base truncate ${isCurrentTrack ? "text-green-500" : "text-white"}`}
+												>
+													{track.name}
+												</div>
+												<div
+													className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate"
+													onClick={(e) => {
+														e.stopPropagation()
+														router.visit(`/artist/${track.artist_id}`)
+													}}
+												>
+													{track.artist}
+												</div>
+											</div>
+											{/* Mobile duration and remove button */}
+											<div className="md:hidden flex items-center gap-2 flex-shrink-0">
+												<span className="text-zinc-400 text-xs">
+													{formatDuration(track.duration)}
+												</span>
+												<Button
+													size="icon"
+													variant="spotifyTransparent"
+													className="group h-8 w-8"
+													onClick={(e) =>
+														handleRemoveTrack(track.id, track.name, e)
+													}
+												>
+													<svg
+														className="min-w-4 min-h-4 transition-colors duration-300 group-hover:stroke-white"
+														fill="none"
+														stroke="gray"
+														viewBox="0 0 24 24"
+														aria-hidden="true"
+													>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M6 18L18 6M6 6l12 12"
+														/>
+													</svg>
+												</Button>
 											</div>
 										</div>
-										{/* Mobile duration and remove button */}
-										<div className="md:hidden flex items-center gap-2 flex-shrink-0">
-											<span className="text-zinc-400 text-xs">
+
+										{/* Desktop-only columns */}
+										<div
+											className="hidden md:block text-zinc-400 text-sm hover:text-white hover:underline cursor-pointer truncate"
+											onClick={(e) => {
+												e.stopPropagation()
+												if (track.album_id) {
+													router.visit(`/albums/${track.album_id}`)
+												}
+											}}
+										>
+											{track.album}
+										</div>
+										<div className="hidden md:block text-zinc-400 text-sm">
+											12 hours ago
+										</div>
+										<div className="hidden md:flex items-center justify-end gap-4">
+											<AddToPlaylistDropdown trackId={track.id}>
+												<Button
+													size="icon"
+													variant="spotifyTransparent"
+													className="group"
+												>
+													<svg
+														className="w-4 h-4 transition-colors duration-300"
+														fill="#1ed760"
+														aria-hidden="true"
+														viewBox="0 0 16 16"
+													>
+														<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
+													</svg>
+												</Button>
+											</AddToPlaylistDropdown>
+											<span className="text-zinc-400 text-sm">
 												{formatDuration(track.duration)}
 											</span>
 											<Button
 												size="icon"
 												variant="spotifyTransparent"
-												className="group h-8 w-8"
+												className="group"
 												onClick={(e) =>
 													handleRemoveTrack(track.id, track.name, e)
 												}
@@ -491,67 +549,6 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 												</svg>
 											</Button>
 										</div>
-									</div>
-
-									{/* Desktop-only columns */}
-									<div
-										className="hidden md:block text-zinc-400 text-sm hover:text-white hover:underline cursor-pointer truncate"
-										onClick={(e) => {
-											e.stopPropagation()
-											if (track.album_id) {
-												router.visit(`/albums/${track.album_id}`)
-											}
-										}}
-									>
-										{track.album}
-									</div>
-									<div className="hidden md:block text-zinc-400 text-sm">
-										12 hours ago
-									</div>
-									<div className="hidden md:flex items-center justify-end gap-4">
-										<AddToPlaylistDropdown trackId={track.id}>
-											<Button
-												size="icon"
-												variant="spotifyTransparent"
-												className="group"
-											>
-												<svg
-													className="w-4 h-4 transition-colors duration-300"
-													fill="#1ed760"
-													aria-hidden="true"
-													viewBox="0 0 16 16"
-												>
-													<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
-												</svg>
-											</Button>
-										</AddToPlaylistDropdown>
-										<span className="text-zinc-400 text-sm">
-											{formatDuration(track.duration)}
-										</span>
-										<Button
-											size="icon"
-											variant="spotifyTransparent"
-											className="group"
-											onClick={(e) =>
-												handleRemoveTrack(track.id, track.name, e)
-											}
-										>
-											<svg
-												className="min-w-4 min-h-4 transition-colors duration-300 group-hover:stroke-white"
-												fill="none"
-												stroke="gray"
-												viewBox="0 0 24 24"
-												aria-hidden="true"
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M6 18L18 6M6 6l12 12"
-												/>
-											</svg>
-										</Button>
-									</div>
 									</div>
 								</TrackContextMenu>
 							)

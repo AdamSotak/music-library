@@ -4,9 +4,10 @@ Lightweight embedding generator for tracks.
 Features (metadata only, no heavy dependencies):
 - duration (z-score)
 - release year (z-score)
-- category slug (hashed bucket)
-- Deezer genre id (hashed bucket)
 - artist popularity / monthly listeners (z-score)
+- optional bpm (z-score) if column exists
+
+Categories / genres are NOT embedded (no hashing); keep them discrete for gating.
 
 Stores unit-normalized vector in track_embeddings table as JSON.
 Safe to run repeatedly; it upserts embeddings.
@@ -16,26 +17,29 @@ import json
 import os
 import sqlite3
 import math
-from collections import defaultdict
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 
 def fetch_tracks(cur) -> List[tuple]:
+    cur.execute("PRAGMA table_info(tracks)")
+    cols = [row[1] for row in cur.fetchall()]
+    has_bpm = "bpm" in cols
+
     cur.execute(
-        """
+        f"""
         SELECT t.id,
                t.duration,
-               t.category_slug,
-               t.deezer_genre_id,
                a.release_date,
                ar.monthly_listeners
+               {', t.bpm' if has_bpm else ''}
         FROM tracks t
         LEFT JOIN albums a ON a.id = t.album_id
         LEFT JOIN artists ar ON ar.id = t.artist_id
         WHERE t.audio_url IS NOT NULL
         """
     )
-    return cur.fetchall()
+    rows = cur.fetchall()
+    return rows, has_bpm
 
 
 def zscore(values: List[float]) -> Tuple[dict, float, float]:
@@ -55,21 +59,6 @@ def year_from_date(date_str: str) -> int:
         return int(str(date_str)[:4])
     except Exception:
         return 2000
-
-
-def hash_bucket(value, buckets: int = 32) -> float:
-    if value is None:
-        return 0.0
-    text = str(value)
-    if not text:
-        return 0.0
-    return (abs(hash(text)) % buckets) / (buckets - 1 or 1)
-
-
-def slug_bucket(slug: Optional[str]) -> float:
-    if not slug or slug.lower() in {"unknown", "misc", "other"}:
-        return 0.0
-    return hash_bucket(slug.lower(), 48)
 
 
 def normalize(vec: List[float]) -> List[float]:
@@ -96,27 +85,31 @@ def main():
     conn = sqlite3.connect(args.db)
     cur = conn.cursor()
 
-    rows = fetch_tracks(cur)
+    rows, has_bpm = fetch_tracks(cur)
     if not rows:
         print("No tracks found.")
         return
 
     durations = [r[1] or 0 for r in rows]
-    years = [year_from_date(r[4]) for r in rows]
-    popularity = [r[5] or 0 for r in rows]
+    years = [year_from_date(r[2]) for r in rows]
+    popularity = [r[3] or 0 for r in rows]
+    bpm_vals = [r[4] or 0 for r in rows] if has_bpm else None
 
     duration_z, _, _ = zscore(durations)
     year_z, _, _ = zscore(years)
     popularity_z, _, _ = zscore(popularity)
+    bpm_z = zscore(bpm_vals)[0] if bpm_vals is not None else None
 
-    for idx, (track_id, duration, category, deezer_genre_id, release_date, monthly_listeners) in enumerate(rows):
+    for idx, row in enumerate(rows):
+        track_id, duration, release_date, monthly_listeners, *rest = row
         vec = [
             duration_z.get(idx, 0.0),
             year_z.get(idx, 0.0),
-            slug_bucket(category),
-            hash_bucket(deezer_genre_id or ""),
             popularity_z.get(idx, 0.0),
         ]
+        if bpm_z is not None:
+            vec.append(bpm_z.get(idx, 0.0))
+
         vector = normalize(vec)
         upsert_embedding(cur, track_id, vector)
 

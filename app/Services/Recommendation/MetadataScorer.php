@@ -9,9 +9,10 @@ class MetadataScorer
     private array $genericCategories = ['pop', 'unknown', 'misc', 'other'];
 
     public function __construct(
+        private GenreGraph $genreGraph = new GenreGraph,
         private float $artistWeight = 0.5,
         private float $albumWeight = 0.2,
-        private float $categoryWeight = 0.2,
+        private float $genreWeight = 0.25,
         private float $yearWeight = 0.1,
         private float $durationWeight = 0.05,
     ) {}
@@ -21,7 +22,7 @@ class MetadataScorer
         $score = $this->randomJitter();
 
         $artistWeight = $seedType === 'artist'
-            ? $this->artistWeight * 0.3
+            ? $this->artistWeight * 0.35
             : $this->artistWeight;
 
         if ($seed->artistId() && $candidate->artist_id === $seed->artistId()) {
@@ -32,8 +33,13 @@ class MetadataScorer
             $score += $this->albumWeight;
         }
 
-        if ($this->shouldUseCategory($seed->categorySlug()) && $candidate->category_slug === $seed->categorySlug()) {
-            $score += $this->categoryWeight;
+        $genreSim = $this->genreGraph->similarity(
+            $this->genreKey($seed),
+            $candidate->category_slug ?? $candidate->deezer_genre_id,
+        );
+
+        if ($genreSim > 0) {
+            $score += $this->genreWeight * $genreSim;
         }
 
         $yearScore = $this->yearSimilarity($candidate, $seed);
@@ -101,12 +107,13 @@ class MetadataScorer
         return mt_rand(0, 1000) / 1000000; // 0 - 0.001
     }
 
-    private function shouldUseCategory(?string $slug): bool
+    private function genreKey(SeedProfile $seed): ?string
     {
-        if (! $slug) {
-            return false;
+        $slug = $seed->categorySlug();
+        if ($slug && ! in_array(strtolower($slug), $this->genericCategories, true)) {
+            return $slug;
         }
 
-        return ! in_array(strtolower($slug), $this->genericCategories, true);
+        return $seed->genreId();
     }
 }

@@ -39,6 +39,7 @@ export default function RadioShow({
 	const [displayTracks, setDisplayTracks] = useState<Track[]>(tracks)
 	const queue = useMemo(() => toPlayerQueue(displayTracks), [displayTracks])
 	const [isFetchingMore, setIsFetchingMore] = useState(false)
+	const [hasMore, setHasMore] = useState(true)
 	const csrfToken =
 		typeof document !== "undefined"
 			? (
@@ -81,6 +82,7 @@ export default function RadioShow({
 				const existing = new Set(prev.map((t) => t.id))
 				const filtered = incoming.filter((track) => !existing.has(track.id))
 				if (!filtered.length) {
+					setHasMore(false)
 					return prev
 				}
 				const appended = [...prev, ...filtered]
@@ -102,7 +104,7 @@ export default function RadioShow({
 	)
 
 	const fetchMore = useCallback(async () => {
-		if (isFetchingMore) return
+		if (isFetchingMore || !hasMore) return
 		try {
 			setIsFetchingMore(true)
 			const excludeIds = displayTracks.map((track) => track.id)
@@ -127,6 +129,8 @@ export default function RadioShow({
 			const data = await res.json()
 			if (data?.tracks?.length) {
 				appendTracks(data.tracks)
+			} else {
+				setHasMore(false)
 			}
 		} finally {
 			setIsFetchingMore(false)
@@ -135,6 +139,7 @@ export default function RadioShow({
 		appendTracks,
 		csrfToken,
 		displayTracks,
+		hasMore,
 		isFetchingMore,
 		seed_id,
 		seed_type,
@@ -147,7 +152,7 @@ export default function RadioShow({
 	}
 
 	useEffect(() => {
-		if (!currentTrack || !queue.length) return
+		if (!currentTrack || !queue.length || !hasMore) return
 		const currentIndex = queue.findIndex(
 			(track) => track.id.toString() === currentTrack.id.toString(),
 		)
@@ -156,7 +161,7 @@ export default function RadioShow({
 		if (remaining <= 4) {
 			fetchMore()
 		}
-	}, [currentTrack, queue, fetchMore])
+	}, [currentTrack, queue, hasMore, fetchMore])
 
 	useEffect(() => {
 		const handler = () => fetchMore()
@@ -221,9 +226,9 @@ export default function RadioShow({
 						size="sm"
 						className="bg-white text-black font-semibold rounded-full px-5"
 						onClick={fetchMore}
-						disabled={isFetchingMore}
+						disabled={isFetchingMore || !hasMore}
 					>
-						{isFetchingMore ? "Loading..." : "Get more"}
+						{isFetchingMore ? "Loading..." : hasMore ? "Get more" : "No more"}
 					</Button>
 				</div>
 			</div>

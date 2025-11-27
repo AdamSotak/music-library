@@ -253,7 +253,7 @@ def ensure_album(cur, album: dict, artist_id: str, genre_slug: str) -> str:
     album_id = str(album.get("id") or uuid.uuid4())
     cur.execute(
         """
-        INSERT INTO albums (id, name, artist_id, image_url, release_date, genre, created_at, updated_at)
+        INSERT OR IGNORE INTO albums (id, name, artist_id, image_url, release_date, genre, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (

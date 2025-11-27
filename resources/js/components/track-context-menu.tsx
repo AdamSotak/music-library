@@ -143,7 +143,9 @@ export function TrackContextMenu({
 							: "Save to your Liked Songs"}
 					</ContextMenuItem>
 				)}
-				{(userPlaylists.length > 0 || canToggleLike) && <ContextMenuSeparator />}
+				{(userPlaylists.length > 0 || canToggleLike) && (
+					<ContextMenuSeparator />
+				)}
 				<ContextMenuItem
 					onSelect={(event) => {
 						event.preventDefault()
@@ -209,12 +211,12 @@ export function TrackContextMenu({
 						</ContextMenuItem>
 					</ContextMenuSubContent>
 				</ContextMenuSub>
-			<ContextMenuSeparator />
-			<ContextMenuItem disabled className="flex items-center gap-2">
-				<ExternalLink className="w-4 h-4" />
-				Open in Desktop app
-			</ContextMenuItem>
-		</ContextMenuContent>
-	</ContextMenu>
-)
+				<ContextMenuSeparator />
+				<ContextMenuItem disabled className="flex items-center gap-2">
+					<ExternalLink className="w-4 h-4" />
+					Open in Desktop app
+				</ContextMenuItem>
+			</ContextMenuContent>
+		</ContextMenu>
+	)
 }
