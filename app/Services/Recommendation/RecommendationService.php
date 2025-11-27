@@ -12,9 +12,8 @@ class RecommendationService
     private array $genericCategories = ['pop', 'unknown', 'misc', 'other'];
 
     public function __construct(
-        private MetadataScorer $metadataScorer = new MetadataScorer(),
-    ) {
-    }
+        private MetadataScorer $metadataScorer = new MetadataScorer,
+    ) {}
 
     /**
      * @return Collection<int, Track>

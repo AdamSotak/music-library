@@ -174,9 +174,9 @@ export default function TrackShow({ track }: TrackShowProps) {
 					</Button>
 				)}
 				<Button size="icon" variant="spotifyTransparent" className="group">
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<button type="button" className="outline-none">
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<button type="button" className="outline-none">
 								<svg
 									className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
 									fill="gray"
@@ -187,21 +187,21 @@ export default function TrackShow({ track }: TrackShowProps) {
 									<circle cx="19" cy="12" r="2" />
 								</svg>
 							</button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-48">
-								<DropdownMenuItem
-									onSelect={(event) => {
-										event.preventDefault()
-										goToRadio("track")
-									}}
-									className="flex items-center gap-2"
-								>
-									<RadioIcon className="w-4 h-4 text-zinc-400" />
-									Go to track radio
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="w-48">
+							<DropdownMenuItem
+								onSelect={(event) => {
+									event.preventDefault()
+									goToRadio("track")
+								}}
+								className="flex items-center gap-2"
+							>
+								<RadioIcon className="w-4 h-4 text-zinc-400" />
+								Go to track radio
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</Button>
 			</div>
 
 			{/* Lyrics Section */}

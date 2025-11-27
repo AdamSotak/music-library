@@ -8,9 +8,18 @@ import axios from "axios"
 import { WaveformIndicator } from "@/components/waveform-indicator"
 import { Button } from "@/components/ui/button"
 import PlayButton from "@/components/home/play-button"
-import { Music } from "lucide-react"
+import { ListPlus, Music, Radio, Edit3, Trash2, Share2 } from "lucide-react"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
+import { TrackContextMenu } from "@/components/track-context-menu"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useLikedTracksStore } from "@/hooks/useLikedTracks"
 
 interface PlaylistShowProps {
 	playlist: Playlist
@@ -27,11 +36,17 @@ interface SearchTrack {
 }
 
 export default function PlaylistShow({ playlist }: PlaylistShowProps) {
-	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
+	const {
+		currentTrack,
+		isPlaying,
+		setCurrentTrack,
+		setIsPlaying,
+		addToQueue,
+	} = usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
+	const { setOpen: setEditPlaylistOpen } = Modals.useEditPlaylistDetailsModal()
 	const { playlists } = usePage().props as unknown as InertiaPageProps
-	const likedSongsPlaylist = playlists.find((p) => p.is_default)
-	const [_likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
+	const likedTrackIds = useLikedTracksStore((state) => state.likedIds)
 	const { rgba } = useImageColor(
 		playlist.is_default
 			? "/images/liked-songs.jpg"
@@ -45,13 +60,6 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		() => toPlayerQueue(playlist.tracks),
 		[playlist.tracks],
 	)
-
-	useEffect(() => {
-		if (likedSongsPlaylist) {
-			const liked = new Set(likedSongsPlaylist.tracks.map((t) => t.id))
-			setLikedTrackIds(liked)
-		}
-	}, [likedSongsPlaylist])
 
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
@@ -103,22 +111,39 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		)
 	}
 
-	const _handleAddTrackToPlaylist = (
-		trackId: string,
-		event: MouseEvent<HTMLButtonElement>,
-	) => {
-		event.stopPropagation()
+	const handleAddPlaylistToQueue = () => {
+		if (!playlist.tracks.length) return
+		addToQueue(toPlayerQueue(playlist.tracks))
+	}
 
-		// First click: Add to Liked Songs
-		if (likedSongsPlaylist) {
-			router.post(
-				`/playlist/${likedSongsPlaylist.id}/tracks`,
-				{ track_ids: [trackId] },
-				{
+	const handlePlaylistRadio = () => {
+		const seedTrack = playlist.tracks[0]
+		if (!seedTrack) return
+		router.visit(`/radio?seed_type=track&seed_id=${seedTrack.id}`)
+	}
+
+	const handleEditDetails = () => {
+		setEditPlaylistOpen(true, playlist)
+	}
+
+	const handleDeletePlaylist = () => {
+		if (playlist.is_default) return
+		setConfirmModalOpen(
+			true,
+			"Delete playlist",
+			`Delete "${playlist.name}" permanently?`,
+			"Delete",
+			() => {
+				router.delete(`/playlist/${playlist.id}`, {
 					preserveScroll: true,
-				},
-			)
-		}
+				})
+			},
+		)
+	}
+
+	const handleSharePlaylist = () => {
+		if (typeof window === "undefined") return
+		navigator.clipboard?.writeText(window.location.href)
 	}
 
 	// Search for tracks
@@ -244,18 +269,82 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							: undefined
 					}
 				/>
-				<Button size="icon" variant="spotifyTransparent" className="group">
-					<svg
-						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
-						fill="gray"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
+				<DropdownMenu modal={false}>
+					<DropdownMenuTrigger asChild>
+						<Button size="icon" variant="spotifyTransparent" className="group">
+							<svg
+								className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
+								fill="gray"
+								viewBox="0 0 24 24"
+								aria-hidden="true"
+							>
+								<circle cx="5" cy="12" r="2" />
+								<circle cx="12" cy="12" r="2" />
+								<circle cx="19" cy="12" r="2" />
+							</svg>
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent
+						align="end"
+						sideOffset={8}
+						className="w-64 bg-[#282828] text-white border-none"
 					>
-						<circle cx="5" cy="12" r="2" />
-						<circle cx="12" cy="12" r="2" />
-						<circle cx="19" cy="12" r="2" />
-					</svg>
-				</Button>
+						<DropdownMenuItem
+							onSelect={(event) => {
+								event.preventDefault()
+								handleAddPlaylistToQueue()
+							}}
+							className="gap-2 text-sm"
+						>
+							<ListPlus className="w-4 h-4" />
+							Add to queue
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							onSelect={(event) => {
+								event.preventDefault()
+								handlePlaylistRadio()
+							}}
+							className="gap-2 text-sm"
+						>
+							<Radio className="w-4 h-4" />
+							Start Radio
+						</DropdownMenuItem>
+						<DropdownMenuSeparator className="bg-white/10" />
+						<DropdownMenuItem
+							onSelect={(event) => {
+								event.preventDefault()
+								handleEditDetails()
+							}}
+							className="gap-2 text-sm"
+						>
+							<Edit3 className="w-4 h-4" />
+							Edit details
+						</DropdownMenuItem>
+						{!playlist.is_default && (
+							<DropdownMenuItem
+								onSelect={(event) => {
+									event.preventDefault()
+									handleDeletePlaylist()
+								}}
+								className="gap-2 text-sm text-red-400"
+							>
+								<Trash2 className="w-4 h-4" />
+								Delete
+							</DropdownMenuItem>
+						)}
+						<DropdownMenuSeparator className="bg-white/10" />
+						<DropdownMenuItem
+							onSelect={(event) => {
+								event.preventDefault()
+								handleSharePlaylist()
+							}}
+							className="gap-2 text-sm"
+						>
+							<Share2 className="w-4 h-4" />
+							Share
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</div>
 
 			{/* Track List or Search */}
@@ -286,17 +375,24 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							const isCurrentTrack =
 								currentTrack?.id.toString() === track.id.toString()
 							return (
-								<div
+								<TrackContextMenu
 									key={track.id}
-									className={`
+									trackId={track.id.toString()}
+									trackName={track.name}
+									artistId={track.artist_id}
+									albumId={track.album_id}
+									isLiked={likedTrackIds.has(track.id.toString())}
+								>
+									<div
+										className={`
 										flex flex-col md:grid md:grid-cols-[16px_6fr_4fr_3fr_minmax(120px,1fr)] 
                                         md:items-center
 										gap-2 md:gap-4 md:px-4 py-2 md:py-0 md:h-14 
 										rounded-md group cursor-pointer
 										${isCurrentTrack ? "bg-white/10" : "hover:bg-white/10"}
 									`}
-									onClick={(e) => handlePlayTrack(track, index, e)}
-								>
+										onClick={(e) => handlePlayTrack(track, index, e)}
+									>
 									{/* Desktop track number / play button */}
 									<div className="hidden md:flex text-center text-sm group-hover:hidden justify-center">
 										{isCurrentTrack && isPlaying ? (
@@ -456,7 +552,8 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 											</svg>
 										</Button>
 									</div>
-								</div>
+									</div>
+								</TrackContextMenu>
 							)
 						})}
 

@@ -12,8 +12,7 @@ class SeedProfile
         public ?Track $track = null,
         public ?Album $album = null,
         public ?Artist $artist = null,
-    ) {
-    }
+    ) {}
 
     public function artistId(): ?string
     {

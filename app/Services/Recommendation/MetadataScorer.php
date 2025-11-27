@@ -14,8 +14,7 @@ class MetadataScorer
         private float $categoryWeight = 0.2,
         private float $yearWeight = 0.1,
         private float $durationWeight = 0.05,
-    ) {
-    }
+    ) {}
 
     public function score(Track $candidate, SeedProfile $seed, string $seedType = 'track'): float
     {

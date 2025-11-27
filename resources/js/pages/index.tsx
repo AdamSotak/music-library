@@ -139,6 +139,7 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 						title: album.name,
 						subtitle: album.artist,
 						type: "album",
+						artistId: album.artist_id,
 						image: album.cover,
 					}))}
 					onItemSelected={(item) => router.visit(`/albums/${item.id}`)}
@@ -151,6 +152,7 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 						title: album.name,
 						subtitle: album.artist,
 						type: "album",
+						artistId: album.artist_id,
 						image: album.cover,
 					}))}
 					onItemSelected={(item) => router.visit(`/albums/${item.id}`)}

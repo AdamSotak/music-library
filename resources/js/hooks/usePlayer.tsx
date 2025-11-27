@@ -21,6 +21,7 @@ interface PlayerState {
 	setIsPlaying: (isPlaying: boolean) => void
 	playNext: () => void
 	playPrevious: () => void
+	addToQueue: (tracks: Track[], options?: { playNext?: boolean }) => void
 	clearQueue: () => void
 }
 
@@ -61,6 +62,49 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 			})
 		}
 	},
+
+	addToQueue: (tracks, options = {}) =>
+		set((state) => {
+			if (!tracks.length) {
+				return {}
+			}
+
+			const deduped = tracks.filter(
+				(track) => !state.queue.some((queued) => queued.id === track.id),
+			)
+
+			if (!deduped.length) {
+				return {}
+			}
+
+			const nextQueue =
+				options.playNext && state.currentIndex >= 0
+					? [
+							...state.queue.slice(0, state.currentIndex + 1),
+							...deduped,
+							...state.queue.slice(state.currentIndex + 1),
+						]
+					: [...state.queue, ...deduped]
+
+			let nextCurrentTrack = state.currentTrack
+			let nextIndex = state.currentIndex
+
+			if (!nextCurrentTrack && nextQueue.length) {
+				nextCurrentTrack = nextQueue[0]
+				nextIndex = 0
+			} else if (nextCurrentTrack) {
+				const resolvedIndex = nextQueue.findIndex(
+					(track) => track.id === nextCurrentTrack?.id,
+				)
+				nextIndex = resolvedIndex >= 0 ? resolvedIndex : nextIndex
+			}
+
+			return {
+				queue: nextQueue,
+				currentTrack: nextCurrentTrack,
+				currentIndex: nextIndex,
+			}
+		}),
 
 	clearQueue: () =>
 		set({

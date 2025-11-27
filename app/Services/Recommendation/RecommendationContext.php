@@ -10,8 +10,7 @@ class RecommendationContext
         /** @var array<int, string> */
         public array $excludeTrackIds = [],
         public int $limit = 30,
-    ) {
-    }
+    ) {}
 
     public static function fromArray(array $data): self
     {

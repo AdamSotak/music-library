@@ -12,9 +12,7 @@ use Inertia\Inertia;
 
 class RadioController extends Controller
 {
-    public function __construct(private RecommendationService $recommender)
-    {
-    }
+    public function __construct(private RecommendationService $recommender) {}
 
     public function show(Request $request)
     {

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { RadioIcon } from "@/utils/icons"
 import { TrackContextMenu } from "@/components/track-context-menu"
+import { Modals } from "@/hooks/useModals"
 
 interface ArtistPageProps {
 	artist: Artist
@@ -29,6 +30,7 @@ export default function ArtistPage({
 	albums,
 	tracks,
 }: ArtistPageProps) {
+	const { setOpen: setAddToPlaylistModalOpen } = Modals.useAddToPlaylistModal()
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const playerQueue = useMemo(() => toPlayerQueue(tracks), [tracks])
 	const { followedArtists, playlists } = usePage()
@@ -98,20 +100,46 @@ export default function ArtistPage({
 		event: MouseEvent<HTMLButtonElement>,
 	) => {
 		event.stopPropagation()
+		setAddToPlaylistModalOpen(true, [trackId])
+	}
 
-		// First click: Add to Liked Songs
-		if (likedSongsPlaylist) {
-			router.post(
-				`/playlist/${likedSongsPlaylist.id}/tracks`,
-				{ track_ids: [trackId] },
+	const handleToggleLiked = (trackId: string) => {
+		if (!likedSongsPlaylist) return
+		const id = trackId.toString()
+		if (likedTrackIds.has(id)) {
+			router.delete(
+				`/playlist/${likedSongsPlaylist.id}/tracks/${id}`,
 				{
 					preserveScroll: true,
+					onSuccess: () =>
+						setLikedTrackIds((prev) => {
+							const next = new Set(prev)
+							next.delete(id)
+							return next
+						}),
+				},
+			)
+		} else {
+			router.post(
+				`/playlist/${likedSongsPlaylist.id}/tracks`,
+				{ track_ids: [id] },
+				{
+					preserveScroll: true,
+					onSuccess: () =>
+						setLikedTrackIds((prev) => {
+							const next = new Set(prev)
+							next.add(id)
+							return next
+						}),
 				},
 			)
 		}
 	}
 
-	const goToRadio = (seedType: "artist" | "track" | "album", seedId?: string) => {
+	const goToRadio = (
+		seedType: "artist" | "track" | "album",
+		seedId?: string,
+	) => {
 		const target = seedId ?? artist.id
 		router.visit(`/radio?seed_type=${seedType}&seed_id=${target}`)
 	}
@@ -220,8 +248,12 @@ export default function ArtistPage({
 								<TrackContextMenu
 									key={track.id}
 									trackId={track.id}
+									trackName={track.name}
 									artistId={track.artist_id}
 									albumId={track.album_id}
+									isLiked={likedTrackIds.has(track.id)}
+									onToggleLike={handleToggleLiked}
+									onAddToPlaylist={(id) => setAddToPlaylistModalOpen(true, [id])}
 								>
 									<div
 										className="grid grid-cols-[auto_1fr_auto] items-center px-1 sm:px-2 py-2 rounded group hover:bg-white/10 cursor-pointer"
@@ -370,7 +402,7 @@ export default function ArtistPage({
 					</div>
 					<div className="-ml-2 sm:-ml-4">
 						<Shelf
-							items={(() => {
+items={(() => {
 								const combined = [
 									...(albums.map((album) => ({
 										id: album.id,
@@ -378,13 +410,15 @@ export default function ArtistPage({
 										subtitle: `${album.year || ""} • Album`,
 										type: "album",
 										image: album.cover,
+										artistId: album.artist_id ?? artist.id,
 									})) as ShelfItem[]),
 									...(tracks.map((track) => ({
 										id: track.id,
 										title: track.name,
-										subtitle: `2024 • Single`,
+										subtitle: `${track.album || "Single"}`,
 										type: "track",
 										image: track.album_cover,
+										track,
 									})) as ShelfItem[]),
 								]
 								// Shuffle the combined array

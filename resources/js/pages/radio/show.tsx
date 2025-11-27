@@ -4,7 +4,13 @@ import { usePlayer } from "@/hooks/usePlayer"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 import type { Track } from "@/types"
 import { TrackContextMenu } from "@/components/track-context-menu"
-import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react"
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+	type MouseEvent,
+} from "react"
 import { RadioIcon } from "@/utils/icons"
 import { cn } from "@/lib/utils"
 
@@ -35,8 +41,11 @@ export default function RadioShow({
 	const [isFetchingMore, setIsFetchingMore] = useState(false)
 	const csrfToken =
 		typeof document !== "undefined"
-			? (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null)
-					?.content
+			? (
+					document.querySelector(
+						'meta[name="csrf-token"]',
+					) as HTMLMetaElement | null
+				)?.content
 			: undefined
 
 	useEffect(() => {
@@ -80,7 +89,11 @@ export default function RadioShow({
 					const activeId = currentTrack?.id ?? merged[0].id
 					const activeIndex = merged.findIndex((t) => t.id === activeId)
 					const nextActive = merged[activeIndex >= 0 ? activeIndex : 0]
-					setCurrentTrack(nextActive, merged, activeIndex >= 0 ? activeIndex : 0)
+					setCurrentTrack(
+						nextActive,
+						merged,
+						activeIndex >= 0 ? activeIndex : 0,
+					)
 				}
 				return appended
 			})
@@ -88,10 +101,11 @@ export default function RadioShow({
 		[currentTrack, setCurrentTrack],
 	)
 
-	const fetchMore = async () => {
-		if (isFetchingMore || !queue.length) return
+	const fetchMore = useCallback(async () => {
+		if (isFetchingMore) return
 		try {
 			setIsFetchingMore(true)
+			const excludeIds = displayTracks.map((track) => track.id)
 			const res = await fetch("/api/radio/next", {
 				method: "POST",
 				headers: {
@@ -103,7 +117,7 @@ export default function RadioShow({
 					seed_type,
 					seed_id,
 					limit: 15,
-					exclude: queue.map((t) => t.id),
+					exclude: excludeIds,
 				}),
 			})
 			if (!res.ok) {
@@ -117,13 +131,44 @@ export default function RadioShow({
 		} finally {
 			setIsFetchingMore(false)
 		}
-	}
+	}, [
+		appendTracks,
+		csrfToken,
+		displayTracks,
+		isFetchingMore,
+		seed_id,
+		seed_type,
+	])
 
 	const titleMap: Record<SeedType, string> = {
 		track: "Track Radio",
 		album: "Album Radio",
 		artist: "Artist Radio",
 	}
+
+	useEffect(() => {
+		if (!currentTrack || !queue.length) return
+		const currentIndex = queue.findIndex(
+			(track) => track.id.toString() === currentTrack.id.toString(),
+		)
+		if (currentIndex === -1) return
+		const remaining = queue.length - currentIndex - 1
+		if (remaining <= 4) {
+			fetchMore()
+		}
+	}, [currentTrack, queue, fetchMore])
+
+	useEffect(() => {
+		const handler = () => fetchMore()
+		if (typeof window !== "undefined") {
+			window.addEventListener("player:end-of-queue", handler)
+		}
+		return () => {
+			if (typeof window !== "undefined") {
+				window.removeEventListener("player:end-of-queue", handler)
+			}
+		}
+	}, [fetchMore])
 
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-[#161616] via-[#0b0b0b] to-black text-white">
@@ -160,9 +205,13 @@ export default function RadioShow({
 				<div className="flex items-center gap-3">
 					<PlayButton
 						hoverable={false}
-						onClick={() => displayTracks[0] && handlePlayTrack(displayTracks[0], 0)}
+						onClick={() =>
+							displayTracks[0] && handlePlayTrack(displayTracks[0], 0)
+						}
 						className={
-							displayTracks[0] && currentTrack?.id === displayTracks[0].id && isPlaying
+							displayTracks[0] &&
+							currentTrack?.id === displayTracks[0].id &&
+							isPlaying
 								? "bg-white"
 								: undefined
 						}
@@ -196,6 +245,7 @@ export default function RadioShow({
 						<TrackContextMenu
 							key={`${track.id}-${index}`}
 							trackId={track.id}
+							trackName={track.name}
 							artistId={track.artist_id}
 							albumId={track.album_id}
 						>
@@ -206,41 +256,41 @@ export default function RadioShow({
 								)}
 								onClick={(e) => handlePlayTrack(track, index, e)}
 							>
-									<div className="text-zinc-400 text-sm md:text-left flex items-center gap-2">
-										<span className="w-6 text-right">{index + 1}</span>
-										{isCurrent && isPlaying && (
-											<span className="text-green-400 font-semibold text-xs uppercase tracking-wide">
-												Now Playing
-											</span>
-										)}
-									</div>
-									<div className="flex items-center gap-3 min-w-0">
-										{track.album_cover && (
-											<img
-												src={track.album_cover}
-												alt={track.name}
-												className="w-12 h-12 rounded object-cover flex-shrink-0"
-											/>
-										)}
-										<div className="min-w-0">
-											<div
-												className={`truncate font-medium ${
-													isCurrent ? "text-green-400" : "text-white"
-												}`}
-											>
-												{track.name}
-											</div>
-											<div className="text-zinc-400 text-sm truncate">
-												{track.artist}
-											</div>
+								<div className="text-zinc-400 text-sm md:text-left flex items-center gap-2">
+									<span className="w-6 text-right">{index + 1}</span>
+									{isCurrent && isPlaying && (
+										<span className="text-green-400 font-semibold text-xs uppercase tracking-wide">
+											Now Playing
+										</span>
+									)}
+								</div>
+								<div className="flex items-center gap-3 min-w-0">
+									{track.album_cover && (
+										<img
+											src={track.album_cover}
+											alt={track.name}
+											className="w-12 h-12 rounded object-cover flex-shrink-0"
+										/>
+									)}
+									<div className="min-w-0">
+										<div
+											className={`truncate font-medium ${
+												isCurrent ? "text-green-400" : "text-white"
+											}`}
+										>
+											{track.name}
+										</div>
+										<div className="text-zinc-400 text-sm truncate">
+											{track.artist}
 										</div>
 									</div>
-							<div className="hidden md:block text-sm text-zinc-400 truncate">
-								{track.album ?? "—"}
-							</div>
-							<div className="hidden md:flex justify-end text-zinc-400 text-sm">
-								{formatDuration(track.duration)}
-							</div>
+								</div>
+								<div className="hidden md:block text-sm text-zinc-400 truncate">
+									{track.album ?? "—"}
+								</div>
+								<div className="hidden md:flex justify-end text-zinc-400 text-sm">
+									{formatDuration(track.duration)}
+								</div>
 							</div>
 						</TrackContextMenu>
 					)

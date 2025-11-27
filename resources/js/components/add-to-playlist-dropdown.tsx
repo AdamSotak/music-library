@@ -98,53 +98,53 @@ export const AddToPlaylistDropdown = ({
 
 	return (
 		<DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
-			<DropdownMenuTrigger asChild>
-				<span onClick={(e) => e.stopPropagation()}>{renderTrigger}</span>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent
-				align="start"
-				side="right"
-				sideOffset={4}
-				alignOffset={-4}
-				className="w-[232px] bg-[#282828] border-none text-white p-0 max-h-[384px] overflow-hidden flex flex-col rounded shadow-2xl"
-			>
-				{/* Title */}
-				<div className="px-2 pt-1 pb-2">
-					<h3 className="text-white font-normal text-[11px] px-2 py-1.5">
-						Add to playlist
-					</h3>
-				</div>
+		<DropdownMenuTrigger asChild>
+			<span onClick={(e) => e.stopPropagation()}>{renderTrigger}</span>
+		</DropdownMenuTrigger>
+		<DropdownMenuContent
+			align="start"
+			side="right"
+			sideOffset={4}
+			alignOffset={-4}
+			className="w-[240px] bg-[#181818] border border-white/10 text-white p-0 max-h-[384px] overflow-hidden flex flex-col rounded-lg shadow-2xl"
+		>
+			{/* Title */}
+			<div className="px-2 pt-1 pb-2 border-b border-white/5">
+				<h3 className="text-white font-normal text-[12px] px-2 py-1.5 tracking-wide">
+					Add to playlist
+				</h3>
+			</div>
 
-				{/* Search Input */}
-				<div className="px-2 pb-2">
-					<div className="relative">
-						<svg
-							viewBox="0 0 16 16"
-							fill="#a7a7a7"
-							className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"
+			{/* Search Input */}
+			<div className="px-2 pb-2">
+				<div className="relative">
+					<svg
+						viewBox="0 0 16 16"
+						fill="#a7a7a7"
+						className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"
 						>
 							<path d="M7 1.75a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5zM.25 7a6.75 6.75 0 1 1 12.096 4.12l3.184 3.185a.75.75 0 1 1-1.06 1.06L11.304 12.18A6.75 6.75 0 0 1 .25 7z" />
 						</svg>
 						<input
-							type="text"
-							placeholder="Find a playlist"
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className="w-full bg-[#3e3e3e] text-white text-[13px] placeholder-[#a7a7a7] pl-9 pr-3 py-1.5 rounded-sm focus:outline-none focus:ring-2 focus:ring-white/20"
-						/>
-					</div>
+						type="text"
+						placeholder="Find a playlist"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						className="w-full bg-[#303030] text-white text-[13px] placeholder-[#a7a7a7] pl-9 pr-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-white/20"
+					/>
 				</div>
+			</div>
 
-				{/* New Playlist Button */}
-				<div className="px-2 pb-1">
-					<Button
-						onClick={handleCreateNewPlaylist}
-						className="w-full bg-transparent hover:bg-white/10 text-white text-[13px] justify-start border-0 rounded h-8 font-normal px-3 transition-colors"
-					>
-						<svg
-							viewBox="0 0 16 16"
-							fill="currentColor"
-							className="w-4 h-4 mr-3"
+			{/* New Playlist Button */}
+			<div className="px-2 pb-1">
+				<Button
+					onClick={handleCreateNewPlaylist}
+					className="w-full bg-[#303030] hover:bg-white/15 text-white text-[13px] justify-start border border-white/10 rounded h-9 font-medium px-3 transition-colors"
+				>
+					<svg
+						viewBox="0 0 16 16"
+						fill="currentColor"
+						className="w-4 h-4 mr-3"
 						>
 							<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75" />
 						</svg>
@@ -155,9 +155,9 @@ export const AddToPlaylistDropdown = ({
 				<DropdownMenuSeparator className="bg-[#ffffff1a] my-1 h-px" />
 
 				{/* Playlists List */}
-				<div className="overflow-y-auto flex-1 px-1 py-1">
+				<div className="overflow-y-auto flex-1 px-1 py-1 space-y-1">
 					{filteredPlaylists && filteredPlaylists.length > 0 ? (
-						<div className="space-y-0">
+						<div className="space-y-1">
 							{filteredPlaylists.map((playlist) => {
 								const playlistId = String(playlist.id)
 								const isMember = memberships.has(playlistId)
@@ -169,10 +169,8 @@ export const AddToPlaylistDropdown = ({
 											event.preventDefault()
 											handleTogglePlaylist(playlistId, isMember)
 										}}
-										className={`flex items-center gap-3 px-2 py-2 rounded-sm cursor-pointer focus:bg-white/10 data-[highlighted]:bg-white/10 ${
-											isMember
-												? "bg-white/10 hover:bg-white/10"
-												: "hover:bg-white/10"
+										className={`flex items-center gap-3 px-2.5 py-2 rounded cursor-pointer data-[highlighted]:bg-white/10 ${
+											isMember ? "bg-white/10" : "hover:bg-white/5"
 										}`}
 									>
 										{playlist.image ? (

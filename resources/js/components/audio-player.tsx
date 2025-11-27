@@ -868,8 +868,19 @@ export default function AudioPlayer() {
 	const handleEnded = () => {
 		if (repeatMode === "track") {
 			audioRef.current?.play()
-		} else if (repeatMode === "playlist" || repeatMode === "off") {
+			return
+		}
+
+		const before = usePlayer.getState()
+		if (repeatMode === "playlist" || repeatMode === "off") {
 			playNext()
+		}
+		const after = usePlayer.getState()
+		const isAtEnd = after.currentIndex >= after.queue.length - 1
+		if (isAtEnd) {
+			if (typeof window !== "undefined") {
+				window.dispatchEvent(new Event("player:end-of-queue"))
+			}
 		}
 	}
 

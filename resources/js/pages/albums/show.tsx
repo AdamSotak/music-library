@@ -63,21 +63,39 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 		event: MouseEvent<HTMLButtonElement>,
 	) => {
 		event.stopPropagation()
+		setAddToPlaylistModalOpen(true, [trackId])
+	}
 
-		// If track is already in Liked Songs, open the modal
-		if (likedTrackIds.has(trackId)) {
-			setAddToPlaylistModalOpen(true, [trackId])
+	const handleToggleLiked = (trackId: string) => {
+		if (!likedSongsPlaylist) return
+		const id = trackId.toString()
+		if (likedTrackIds.has(id)) {
+			router.delete(
+				`/playlist/${likedSongsPlaylist.id}/tracks/${id}`,
+				{
+					preserveScroll: true,
+					onSuccess: () =>
+						setLikedTrackIds((prev) => {
+							const next = new Set(prev)
+							next.delete(id)
+							return next
+						}),
+				},
+			)
 		} else {
-			// First click: Add to Liked Songs
-			if (likedSongsPlaylist) {
-				router.post(
-					`/playlist/${likedSongsPlaylist.id}/tracks`,
-					{ track_ids: [trackId] },
-					{
-						preserveScroll: true,
-					},
-				)
-			}
+			router.post(
+				`/playlist/${likedSongsPlaylist.id}/tracks`,
+				{ track_ids: [id] },
+				{
+					preserveScroll: true,
+					onSuccess: () =>
+						setLikedTrackIds((prev) => {
+							const next = new Set(prev)
+							next.add(id)
+							return next
+						}),
+				},
+			)
 		}
 	}
 
@@ -304,8 +322,12 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 						<TrackContextMenu
 							key={track.id}
 							trackId={track.id}
+							trackName={track.name}
 							artistId={track.artist_id}
 							albumId={track.album_id}
+							isLiked={likedTrackIds.has(track.id)}
+							onToggleLike={handleToggleLiked}
+							onAddToPlaylist={(id) => setAddToPlaylistModalOpen(true, [id])}
 						>
 							<div
 								className={`
@@ -317,39 +339,8 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 							`}
 								onClick={(e) => handlePlayTrack(track, index, e)}
 							>
-							{/* Desktop track number / play button */}
-							<div className="hidden md:flex text-center text-sm group-hover:hidden justify-center">
-								{isCurrentTrack && isPlaying ? (
-									<WaveformIndicator />
-								) : (
-									<span
-										className={
-											isCurrentTrack ? "text-green-500" : "text-zinc-400"
-										}
-									>
-										{index + 1}
-									</span>
-								)}
-							</div>
-							<button
-								onClick={(e) => handlePlayTrack(track, index, e)}
-								className="hidden md:group-hover:flex justify-center cursor-pointer"
-								type="button"
-							>
-								<svg
-									className="w-4 h-4 text-white"
-									fill="currentColor"
-									viewBox="0 0 24 24"
-									aria-hidden="true"
-								>
-									<path d="M8 5v14l11-7z" />
-								</svg>
-							</button>
-
-							{/* Track info - responsive layout */}
-							<div className="flex items-center gap-3 md:min-w-0">
-								{/* Mobile track number */}
-								<div className="md:hidden text-center text-xs w-6 flex-shrink-0">
+								{/* Desktop track number / play button */}
+								<div className="hidden md:flex text-center text-sm group-hover:hidden justify-center">
 									{isCurrentTrack && isPlaying ? (
 										<WaveformIndicator />
 									) : (
@@ -362,37 +353,107 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 										</span>
 									)}
 								</div>
-								<div className="min-w-0 flex-1">
-									<div
-										className={`text-sm md:text-base truncate hover:underline cursor-pointer ${isCurrentTrack ? "text-green-500" : "text-white"}`}
-										onClick={(e) => {
-											e.stopPropagation()
-											router.visit(`/tracks/${track.id}`)
-										}}
+								<button
+									onClick={(e) => handlePlayTrack(track, index, e)}
+									className="hidden md:group-hover:flex justify-center cursor-pointer"
+									type="button"
+								>
+									<svg
+										className="w-4 h-4 text-white"
+										fill="currentColor"
+										viewBox="0 0 24 24"
+										aria-hidden="true"
 									>
-										{track.name}
+										<path d="M8 5v14l11-7z" />
+									</svg>
+								</button>
+
+								{/* Track info - responsive layout */}
+								<div className="flex items-center gap-3 md:min-w-0">
+									{/* Mobile track number */}
+									<div className="md:hidden text-center text-xs w-6 flex-shrink-0">
+										{isCurrentTrack && isPlaying ? (
+											<WaveformIndicator />
+										) : (
+											<span
+												className={
+													isCurrentTrack ? "text-green-500" : "text-zinc-400"
+												}
+											>
+												{index + 1}
+											</span>
+										)}
 									</div>
-									<div
-										className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate w-fit"
-										onClick={(e) => {
-											e.stopPropagation()
-											router.visit(`/artist/${track.artist_id}`)
-										}}
-									>
-										{track.artist}
+									<div className="min-w-0 flex-1">
+										<div
+											className={`text-sm md:text-base truncate hover:underline cursor-pointer ${isCurrentTrack ? "text-green-500" : "text-white"}`}
+											onClick={(e) => {
+												e.stopPropagation()
+												router.visit(`/tracks/${track.id}`)
+											}}
+										>
+											{track.name}
+										</div>
+										<div
+											className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate w-fit"
+											onClick={(e) => {
+												e.stopPropagation()
+												router.visit(`/artist/${track.artist_id}`)
+											}}
+										>
+											{track.artist}
+										</div>
+									</div>
+									{/* Mobile duration */}
+									<div className="md:hidden flex items-center gap-2 flex-shrink-0">
+										<span className="text-zinc-400 text-xs">
+											{formatDuration(track.duration)}
+										</span>
+										{likedTrackIds.has(track.id) ? (
+											<AddToPlaylistDropdown trackId={track.id}>
+												<Button
+													size="icon"
+													variant="spotifyTransparent"
+													className="group h-8 w-8"
+												>
+													<svg
+														className="w-4 h-4 transition-colors duration-300"
+														fill="#1ed760"
+														aria-hidden="true"
+														viewBox="0 0 16 16"
+													>
+														<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
+													</svg>
+												</Button>
+											</AddToPlaylistDropdown>
+										) : (
+											<Button
+												size="icon"
+												variant="spotifyTransparent"
+												className="group h-8 w-8"
+												onClick={(e) => handleAddTrackToPlaylist(track.id, e)}
+											>
+												<svg
+													className="w-4 h-4 transition-colors duration-300 group-hover:fill-white"
+													fill="gray"
+													aria-hidden="true"
+													viewBox="0 0 16 16"
+												>
+													<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75"></path>
+												</svg>
+											</Button>
+										)}
 									</div>
 								</div>
-								{/* Mobile duration */}
-								<div className="md:hidden flex items-center gap-2 flex-shrink-0">
-									<span className="text-zinc-400 text-xs">
-										{formatDuration(track.duration)}
-									</span>
+
+								{/* Desktop actions */}
+								<div className="hidden md:flex items-center justify-end gap-4">
 									{likedTrackIds.has(track.id) ? (
 										<AddToPlaylistDropdown trackId={track.id}>
 											<Button
 												size="icon"
 												variant="spotifyTransparent"
-												className="group h-8 w-8"
+												className="group"
 											>
 												<svg
 													className="w-4 h-4 transition-colors duration-300"
@@ -408,7 +469,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 										<Button
 											size="icon"
 											variant="spotifyTransparent"
-											className="group h-8 w-8"
+											className="group"
 											onClick={(e) => handleAddTrackToPlaylist(track.id, e)}
 										>
 											<svg
@@ -421,82 +482,45 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 											</svg>
 										</Button>
 									)}
-								</div>
-								</div>
-
-								{/* Desktop actions */}
-								<div className="hidden md:flex items-center justify-end gap-4">
-									{likedTrackIds.has(track.id) ? (
-									<AddToPlaylistDropdown trackId={track.id}>
-										<Button
-											size="icon"
-											variant="spotifyTransparent"
-											className="group"
-										>
-											<svg
-												className="w-4 h-4 transition-colors duration-300"
-												fill="#1ed760"
-												aria-hidden="true"
-												viewBox="0 0 16 16"
+									<span className="text-zinc-400 text-sm">
+										{formatDuration(track.duration)}
+									</span>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button
+												size="icon"
+												variant="spotifyTransparent"
+												className="group"
+												onClick={(e) => e.stopPropagation()}
 											>
-												<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
-											</svg>
-										</Button>
-									</AddToPlaylistDropdown>
-								) : (
-									<Button
-										size="icon"
-										variant="spotifyTransparent"
-										className="group"
-										onClick={(e) => handleAddTrackToPlaylist(track.id, e)}
-									>
-										<svg
-											className="w-4 h-4 transition-colors duration-300 group-hover:fill-white"
-											fill="gray"
-											aria-hidden="true"
-											viewBox="0 0 16 16"
-										>
-											<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75"></path>
-										</svg>
-									</Button>
-								)}
-								<span className="text-zinc-400 text-sm">
-									{formatDuration(track.duration)}
-								</span>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button
-											size="icon"
-											variant="spotifyTransparent"
-											className="group"
-											onClick={(e) => e.stopPropagation()}
-										>
-											<svg
-												className="w-4 h-4 transition-colors duration-300 group-hover:fill-white"
-												fill="gray"
-												aria-hidden="true"
-												viewBox="0 0 24 24"
+												<svg
+													className="w-4 h-4 transition-colors duration-300 group-hover:fill-white"
+													fill="gray"
+													aria-hidden="true"
+													viewBox="0 0 24 24"
+												>
+													<circle cx="5" cy="12" r="2" />
+													<circle cx="12" cy="12" r="2" />
+													<circle cx="19" cy="12" r="2" />
+												</svg>
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end" className="w-48">
+											<DropdownMenuItem
+												onSelect={(event) => {
+													event.preventDefault()
+													router.visit(
+														`/radio?seed_type=track&seed_id=${track.id}`,
+													)
+												}}
+												className="flex items-center gap-2"
 											>
-												<circle cx="5" cy="12" r="2" />
-												<circle cx="12" cy="12" r="2" />
-												<circle cx="19" cy="12" r="2" />
-											</svg>
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end" className="w-48">
-										<DropdownMenuItem
-											onSelect={(event) => {
-												event.preventDefault()
-												router.visit(`/radio?seed_type=track&seed_id=${track.id}`)
-											}}
-											className="flex items-center gap-2"
-										>
-											<RadioIcon className="w-4 h-4 text-zinc-400" />
-											Go to track radio
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</div>
+												<RadioIcon className="w-4 h-4 text-zinc-400" />
+												Go to track radio
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</div>
 							</div>
 						</TrackContextMenu>
 					)

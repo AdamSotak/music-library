@@ -88,5 +88,6 @@ export type ShelfItem = {
 	subtitle?: string
 	type?: "album" | "track" | "artist"
 	image?: string
+	artistId?: string
 	track?: Track
 }

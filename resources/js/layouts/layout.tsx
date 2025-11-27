@@ -6,13 +6,26 @@ import { useEffect, useRef, useState } from "react"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import AudioPlayer from "@/components/audio-player"
 import { usePage } from "@inertiajs/react"
+import type { InertiaPageProps } from "@/types"
+import { useLikedTracksStore } from "@/hooks/useLikedTracks"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-	const pathname = usePage().url
+	const page = usePage()
+	const pathname = page.url
+	const { playlists } = page.props as unknown as InertiaPageProps
 	const mainContentRef = useRef<HTMLDivElement>(null)
 	type SidebarSize = "collapsed" | "default" | "expanded"
 	const [sidebarSize, setSidebarSize] = useState<SidebarSize>("default")
 	const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+	const initializeLikedTracks = useLikedTracksStore((state) => state.initialize)
+
+	useEffect(() => {
+		if (!playlists) return
+		const likedPlaylist = playlists.find((playlist) => playlist.is_default)
+		const likedTrackIds =
+			likedPlaylist?.tracks?.map((track) => track.id.toString()) ?? []
+		initializeLikedTracks(likedPlaylist?.id?.toString() ?? null, likedTrackIds)
+	}, [initializeLikedTracks, playlists])
 
 	useEffect(() => {
 		if (typeof window === "undefined") return

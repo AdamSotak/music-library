@@ -205,7 +205,9 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 												{formatDuration(track.duration)}
 											</div>
 											<button
-												onClick={(e) => handleAddToPlaylist(Number(track.id), e)}
+												onClick={(e) =>
+													handleAddToPlaylist(Number(track.id), e)
+												}
 												className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-white transition-all p-2"
 												title="Add to playlist"
 											>

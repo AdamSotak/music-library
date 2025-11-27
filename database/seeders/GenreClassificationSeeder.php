@@ -9,6 +9,7 @@ class GenreClassificationSeeder extends Seeder
 {
     public function run(): void
     {
+        // DEPRECATED: legacy Jamendo-era genre classifier. Not used by current Deezer flow.
         $this->command->info('Classifying tracks by genre...');
 
         $service = new GenreClassificationService;
