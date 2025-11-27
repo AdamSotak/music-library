@@ -12,9 +12,6 @@ import {
 } from "./ui/dropdown-menu"
 import { Utils } from "@/utils"
 import type { InertiaPageProps } from "@/types"
-//import BarcodeScanner from "./camerascanner"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
-import { QrCode } from "lucide-react"
 
 interface NavbarProps {
 	onMobileMenuToggle?: () => void
@@ -24,7 +21,7 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 	const [isSearchOpen, setIsSearchOpen] = useState(false)
 	const [isAnimating, setIsAnimating] = useState(false)
 	const [searchQuery, setSearchQuery] = useState("")
-	const [scannerOpen, setScannerOpen] = useState(false)
+	const [_scannerOpen, _setScannerOpen] = useState(false)
 	const searchInputRef = useRef<HTMLInputElement>(null)
 	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const { user } = usePage().props as unknown as InertiaPageProps
