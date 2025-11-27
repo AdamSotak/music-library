@@ -200,21 +200,21 @@ export function useAudioEffects() {
 					channelData.set(processedData)
 				}
 
-			setEffects((prev) => ({
-				...prev,
-				processedBuffer: outputBuffer,
-				isProcessing: false,
-			}))
+				setEffects((prev) => ({
+					...prev,
+					processedBuffer: outputBuffer,
+					isProcessing: false,
+				}))
 
-			return outputBuffer
-		} catch (error) {
-			console.error("Error processing audio:", error)
-			setEffects((prev) => ({ ...prev, isProcessing: false }))
-			throw error
-		}
-	},
-	[initializeAudio],
-)	// Load and decode audio file
+				return outputBuffer
+			} catch (error) {
+				console.error("Error processing audio:", error)
+				setEffects((prev) => ({ ...prev, isProcessing: false }))
+				throw error
+			}
+		},
+		[initializeAudio],
+	) // Load and decode audio file
 	const loadAudioFile = useCallback(
 		async (audioUrl: string): Promise<AudioBuffer> => {
 			if (!audioContextRef.current) {

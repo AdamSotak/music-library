@@ -985,20 +985,13 @@ export default function AudioPlayer() {
 				sourceNodeRef.current.buffer = buffer
 				sourceNodeRef.current.connect(gainNodeRef.current)
 
-				// Set up event handlers
-				sourceNodeRef.current.onended = () => {
-					sourceNodeRef.current = null
-					setUsingProcessedAudio(false)
-					if (repeatMode === "track") {
-						// Reset for replay
-						setCurrentTime(0)
-						// Don't automatically replay - let user decide
-					} else {
-						playNext()
-					}
-				}
-
-				// Set volume
+			// Set up event handlers
+			sourceNodeRef.current.onended = () => {
+				sourceNodeRef.current = null
+				setUsingProcessedAudio(false)
+				setIsPlaying(false)
+				// Don't auto-play next track when processed audio ends
+			}				// Set volume
 				gainNodeRef.current.gain.value = volume / 100
 
 				// Start playback

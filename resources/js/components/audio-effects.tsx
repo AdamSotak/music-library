@@ -30,6 +30,7 @@ export function AudioEffects({
 
 	const [tempTempo, setTempTempo] = useState(tempo)
 	const [tempPitch, setTempPitch] = useState(pitch)
+	const [isLocalProcessing, setIsLocalProcessing] = useState(false)
 
 	// Convert pitch from linear scale to semitones for display
 	const pitchToSemitones = (pitch: number) => Math.log2(pitch) * 12
@@ -46,7 +47,10 @@ export function AudioEffects({
 	}
 
 	const handleApplyEffects = async () => {
-		if (!currentTrack || isProcessing) return
+		if (!currentTrack || isProcessing || isLocalProcessing) return
+
+		// Set local processing state IMMEDIATELY to disable button
+		setIsLocalProcessing(true)
 
 		try {
 			// Pause playback immediately before processing
@@ -57,17 +61,24 @@ export function AudioEffects({
 			setPitch(tempPitch)
 
 			// Wait a tick to ensure state is updated
-			await new Promise(resolve => setTimeout(resolve, 0))
+			await new Promise((resolve) => setTimeout(resolve, 0))
 
 			// Load and process the audio
 			const audioUrl = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
 			const audioBuffer = await loadAudioFile(audioUrl)
-			const processedBuffer = await processAudio(audioBuffer, tempTempo, tempPitch)
+			const processedBuffer = await processAudio(
+				audioBuffer,
+				tempTempo,
+				tempPitch,
+			)
 
 			// Notify parent component with processed audio
 			onProcessedAudio(processedBuffer)
 		} catch (error) {
 			console.error("Failed to apply audio effects:", error)
+		} finally {
+			// Always reset local processing state
+			setIsLocalProcessing(false)
 		}
 	}
 
@@ -96,7 +107,7 @@ export function AudioEffects({
 					size="sm"
 					variant="outline"
 					onClick={handleReset}
-					disabled={isProcessing}
+					disabled={isProcessing || isLocalProcessing}
 					className="text-xs text-white border-white/20 hover:bg-white/10"
 				>
 					Reset
@@ -118,7 +129,7 @@ export function AudioEffects({
 					step={0.01}
 					value={[tempTempo]}
 					onValueChange={handleTempoChange}
-					disabled={isProcessing}
+					disabled={isProcessing || isLocalProcessing}
 				/>
 			</div>
 
@@ -137,7 +148,7 @@ export function AudioEffects({
 					step={0.1}
 					value={[pitchToSemitones(tempPitch)]}
 					onValueChange={handlePitchChange}
-					disabled={isProcessing}
+					disabled={isProcessing || isLocalProcessing}
 				/>
 			</div>
 
@@ -145,9 +156,9 @@ export function AudioEffects({
 			<Button
 				className="w-full bg-spotify-green hover:bg-spotify-green/80 text-black font-medium"
 				onClick={handleApplyEffects}
-				disabled={isProcessing || !currentTrack}
+				disabled={isProcessing || isLocalProcessing || !currentTrack}
 			>
-				{isProcessing ? "Processing..." : "Apply Effects"}
+				{isProcessing || isLocalProcessing ? "Processing..." : "Apply Effects"}
 			</Button>
 
 			{/* Info Text */}
