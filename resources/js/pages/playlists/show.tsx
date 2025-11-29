@@ -279,11 +279,11 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							</svg>
 						</Button>
 					</DropdownMenuTrigger>
-						<DropdownMenuContent
-							align="end"
-							sideOffset={8}
-							className="w-64 bg-[#282828] text-white border-none"
-						>
+					<DropdownMenuContent
+						align="end"
+						sideOffset={8}
+						className="w-64 bg-[#282828] text-white border-none"
+					>
 						<DropdownMenuItem
 							onSelect={(event) => {
 								event.preventDefault()

@@ -237,6 +237,7 @@ class RecommendationService
                 ->pluck('category_slug')
                 ->filter(function ($s) {
                     $s = strtolower((string) $s);
+
                     return $s && ! in_array($s, $this->genericCategories, true);
                 })
                 ->first();
@@ -290,7 +291,7 @@ class RecommendationService
     /**
      * Min-max normalize scores to 0-1 range. Nulls become 0.
      *
-     * @param array<int, float|null> $values
+     * @param  array<int, float|null>  $values
      * @return array<int, float>
      */
     private function normalizeScores(array $values): array
@@ -311,6 +312,7 @@ class RecommendationService
         foreach ($values as $idx => $val) {
             if ($val === null) {
                 $normalized[$idx] = 0.0;
+
                 continue;
             }
             $normalized[$idx] = ($val - $min) / $range;

@@ -1,26 +1,43 @@
 """
-Lightweight embedding generator for tracks.
+Lightweight embedding generator (no external ML deps).
 
-Features (metadata only, no heavy dependencies):
-- duration (z-score)
-- release year (z-score)
-- artist popularity / monthly listeners (z-score)
-- optional bpm (z-score) if column exists
+What it encodes:
+– Text surface: track name + artist + album + genre slug (hashed TF counts, fixed dim)
+– Numeric: duration_z, year_z, popularity_z, optional bpm_z
 
-Categories / genres are NOT embedded (no hashing); keep them discrete for gating.
+Genres are kept discrete for gating; this embedding focuses on similarity beyond crude tags.
 
-Stores unit-normalized vector in track_embeddings table as JSON.
-Safe to run repeatedly; it upserts embeddings.
+Stores unit-normalized vector in track_embeddings as JSON. Safe to rerun (upsert).
 """
 import argparse
 import json
 import os
 import sqlite3
 import math
-from typing import List, Tuple
+import re
+from typing import List, Tuple, Optional
 
 
-def fetch_tracks(cur) -> List[tuple]:
+GENRE_ID_TO_SLUG = {
+    "132": "pop",
+    "116": "hip-hop",
+    "152": "metal",
+    "85": "rock",
+    "98": "folk-and-acoustic",
+    "173": "classical",
+    "169": "jazz",
+    "113": "dance-electronic",
+    "165": "soul",
+    "4642": "latin",
+    "75": "reggae",
+    "1324": "country",
+    "84": "punk",
+}
+
+GENERIC = {"unknown", "misc", "other", ""}
+
+
+def fetch_tracks(cur) -> Tuple[List[tuple], bool]:
     cur.execute("PRAGMA table_info(tracks)")
     cols = [row[1] for row in cur.fetchall()]
     has_bpm = "bpm" in cols
@@ -28,8 +45,14 @@ def fetch_tracks(cur) -> List[tuple]:
     cur.execute(
         f"""
         SELECT t.id,
+               t.name,
                t.duration,
+               t.category_slug,
+               t.deezer_genre_id,
+               a.name as album_name,
                a.release_date,
+               a.genre as album_genre,
+               ar.name as artist_name,
                ar.monthly_listeners
                {', t.bpm' if has_bpm else ''}
         FROM tracks t
@@ -52,7 +75,7 @@ def zscore(values: List[float]) -> Tuple[dict, float, float]:
     return normed, mean, std
 
 
-def year_from_date(date_str: str) -> int:
+def year_from_date(date_str: Optional[str]) -> int:
     if not date_str:
         return 2000
     try:
@@ -64,6 +87,35 @@ def year_from_date(date_str: str) -> int:
 def normalize(vec: List[float]) -> List[float]:
     norm = math.sqrt(sum(v * v for v in vec)) or 1.0
     return [v / norm for v in vec]
+
+
+TOKEN_RE = re.compile(r"[a-zA-Z0-9]+")
+
+
+def tokenize(text: str) -> List[str]:
+    return TOKEN_RE.findall(text.lower())
+
+
+def hash_tokens(tokens: List[str], dim: int) -> List[float]:
+    vec = [0.0] * dim
+    if dim <= 0:
+        return vec
+    for tok in tokens:
+        h = abs(hash(tok)) % dim
+        vec[h] += 1.0
+    return vec
+
+
+def resolve_slug(category_slug: Optional[str], deezer_genre_id: Optional[str], album_genre: Optional[str]) -> Optional[str]:
+    candidates = [category_slug, album_genre]
+    for cand in candidates:
+        if cand:
+            c = str(cand).strip().lower()
+            if c and c not in GENERIC:
+                return c
+    if deezer_genre_id:
+        return GENRE_ID_TO_SLUG.get(str(deezer_genre_id).strip(), None)
+    return None
 
 
 def upsert_embedding(cur, track_id: str, vector: List[float]):
@@ -78,8 +130,11 @@ def upsert_embedding(cur, track_id: str, vector: List[float]):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compute simple metadata embeddings for tracks.")
+    parser = argparse.ArgumentParser(description="Compute improved embeddings (hashed text + numeric).")
     parser.add_argument("--db", default=os.path.join(os.path.dirname(__file__), "..", "database", "database.sqlite"))
+    parser.add_argument("--text-dim", type=int, default=256, help="Hashed text dimension.")
+    parser.add_argument("--text-weight", type=float, default=1.0, help="Scalar to weight text block.")
+    parser.add_argument("--num-weight", type=float, default=0.3, help="Scalar to weight numeric block.")
     args = parser.parse_args()
 
     conn = sqlite3.connect(args.db)
@@ -90,31 +145,56 @@ def main():
         print("No tracks found.")
         return
 
-    durations = [r[1] or 0 for r in rows]
-    years = [year_from_date(r[2]) for r in rows]
-    popularity = [r[3] or 0 for r in rows]
-    bpm_vals = [r[4] or 0 for r in rows] if has_bpm else None
+    durations = [r[2] or 0 for r in rows]
+    years = [year_from_date(r[6]) for r in rows]
+    popularity = [r[8] or 0 for r in rows]
+    bpm_vals = [r[9] or 0 for r in rows] if has_bpm else None
 
     duration_z, _, _ = zscore(durations)
     year_z, _, _ = zscore(years)
     popularity_z, _, _ = zscore(popularity)
     bpm_z = zscore(bpm_vals)[0] if bpm_vals is not None else None
 
+    text_dim = max(0, args.text_dim)
     for idx, row in enumerate(rows):
-        track_id, duration, release_date, monthly_listeners, *rest = row
-        vec = [
+        (
+            track_id,
+            track_name,
+            duration,
+            category_slug,
+            deezer_genre_id,
+            album_name,
+            release_date,
+            album_genre,
+            artist_name,
+            monthly_listeners,
+            *rest,
+        ) = row
+
+        slug = resolve_slug(category_slug, deezer_genre_id, album_genre) or "unknown"
+        tokens = tokenize(" ".join(filter(None, [track_name, artist_name, album_name, slug])))
+        text_vec = hash_tokens(tokens, text_dim)
+
+        # normalize text block then weight
+        text_vec = normalize(text_vec)
+        text_vec = [v * args.text_weight for v in text_vec]
+
+        num_vec = [
             duration_z.get(idx, 0.0),
             year_z.get(idx, 0.0),
             popularity_z.get(idx, 0.0),
         ]
         if bpm_z is not None:
-            vec.append(bpm_z.get(idx, 0.0))
+            num_vec.append(bpm_z.get(idx, 0.0))
+        num_vec = [v * args.num_weight for v in num_vec]
 
-        vector = normalize(vec)
-        upsert_embedding(cur, track_id, vector)
+        full_vec = text_vec + num_vec
+        full_vec = normalize(full_vec)
+
+        upsert_embedding(cur, track_id, full_vec)
 
     conn.commit()
-    print(f"Wrote embeddings for {len(rows)} tracks.")
+    print(f"Wrote embeddings for {len(rows)} tracks. dim={text_dim}+{len(num_vec)}")
 
 
 if __name__ == "__main__":
