@@ -34,8 +34,8 @@ export default function Sidebar({
 	isMobile = false,
 	onClose,
 }: SidebarProps) {
-	const { playlists, sharedPlaylists, savedAlbums, followedArtists, user } = usePage()
-		.props as unknown as InertiaPageProps
+	const { playlists, sharedPlaylists, savedAlbums, followedArtists, user } =
+		usePage().props as unknown as InertiaPageProps
 	const { setOpen: setEditPlaylistDetailsModalOpen } =
 		Modals.useEditPlaylistDetailsModal()
 
