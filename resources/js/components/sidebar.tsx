@@ -1,6 +1,6 @@
 import { SidebarItem } from "./library/sidebar-item"
 import { Button } from "./ui/button"
-import { usePage } from "@inertiajs/react"
+import { router, usePage } from "@inertiajs/react"
 import { Modals } from "@/hooks/useModals"
 import type { InertiaPageProps, Playlist } from "@/types"
 import { useState, useMemo } from "react"
@@ -34,7 +34,7 @@ export default function Sidebar({
 	isMobile = false,
 	onClose,
 }: SidebarProps) {
-	const { playlists, sharedPlaylists, savedAlbums, followedArtists } = usePage()
+	const { playlists, sharedPlaylists, savedAlbums, followedArtists, user } = usePage()
 		.props as unknown as InertiaPageProps
 	const { setOpen: setEditPlaylistDetailsModalOpen } =
 		Modals.useEditPlaylistDetailsModal()
@@ -211,86 +211,92 @@ export default function Sidebar({
 					</span>
 				</div>
 				<div className="flex items-center gap-1">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button
-								variant="ghost"
-								size="sm"
-								className="group h-8 px-2 gap-1.5 text-[#b3b3b3] hover:text-white hover:bg-transparent hover:scale-105 transition-all"
-							>
-								<svg
-									viewBox="0 0 16 16"
-									fill="currentColor"
-									className="w-4 h-4"
+					{user && (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="group h-8 px-2 gap-1.5 text-[#b3b3b3] hover:text-white hover:bg-transparent hover:scale-105 transition-all"
 								>
-									<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75"></path>
-								</svg>
-								<span className="text-sm">Create</span>
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent
-							align="start"
-							className="w-56 bg-[#282828] border-none text-white p-1"
-						>
-							<DropdownMenuItem
-								onClick={() => setEditPlaylistDetailsModalOpen(true, null)}
-								className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded"
+									<svg
+										viewBox="0 0 16 16"
+										fill="currentColor"
+										className="w-4 h-4"
+									>
+										<path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75"></path>
+									</svg>
+									<span className="text-sm">Create</span>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align="start"
+								className="w-56 bg-[#282828] border-none text-white p-1"
 							>
-								<svg
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									className="w-6 h-6"
+								<DropdownMenuItem
+									onClick={() => setEditPlaylistDetailsModalOpen(true, null)}
+									className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded"
 								>
-									<path d="M15 4H9v8H1v12h6v-6h6v6h6V12h-4V4zm-2 10H11v-2h2v2z" />
-								</svg>
-								<div className="flex-1">
-									<div className="text-white font-medium text-base">
-										Playlist
+									<svg
+										viewBox="0 0 24 24"
+										fill="currentColor"
+										className="w-6 h-6"
+									>
+										<path d="M15 4H9v8H1v12h6v-6h6v6h6V12h-4V4zm-2 10H11v-2h2v2z" />
+									</svg>
+									<div className="flex-1">
+										<div className="text-white font-medium text-base">
+											Playlist
+										</div>
+										<div className="text-[#a7a7a7] text-sm">
+											Create a playlist with songs or episodes
+										</div>
 									</div>
-									<div className="text-[#a7a7a7] text-sm">
-										Create a playlist with songs or episodes
-									</div>
-								</div>
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded opacity-50"
-								disabled
-							>
-								<svg
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									className="w-6 h-6"
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded opacity-50"
+									disabled
 								>
-									<circle cx="12" cy="12" r="10" opacity="0.3" />
-									<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-								</svg>
-								<div className="flex-1">
-									<div className="text-white font-medium text-base">Blend</div>
-									<div className="text-[#a7a7a7] text-sm">
-										Combine your friends' tastes into a playlist
+									<svg
+										viewBox="0 0 24 24"
+										fill="currentColor"
+										className="w-6 h-6"
+									>
+										<circle cx="12" cy="12" r="10" opacity="0.3" />
+										<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+									</svg>
+									<div className="flex-1">
+										<div className="text-white font-medium text-base">
+											Blend
+										</div>
+										<div className="text-[#a7a7a7] text-sm">
+											Combine your friends' tastes into a playlist
+										</div>
 									</div>
-								</div>
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded opacity-50"
-								disabled
-							>
-								<svg
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									className="w-6 h-6"
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded opacity-50"
+									disabled
 								>
-									<path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
-								</svg>
-								<div className="flex-1">
-									<div className="text-white font-medium text-base">Folder</div>
-									<div className="text-[#a7a7a7] text-sm">
-										Organise your playlists
+									<svg
+										viewBox="0 0 24 24"
+										fill="currentColor"
+										className="w-6 h-6"
+									>
+										<path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
+									</svg>
+									<div className="flex-1">
+										<div className="text-white font-medium text-base">
+											Folder
+										</div>
+										<div className="text-[#a7a7a7] text-sm">
+											Organise your playlists
+										</div>
 									</div>
-								</div>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					)}
 					{/* Full-screen toggle */}
 					<Button
 						variant="ghost"
@@ -590,6 +596,25 @@ export default function Sidebar({
 					}
 					return undefined
 				})()
+
+				if (!user) {
+					return (
+						<div className="flex flex-col items-center justify-center h-64 text-[#b3b3b3] text-center">
+							<p className="text-xl font-bold">Your library</p>
+							<p className="text-xs mt-1">
+								Login to create playlists and save your favorite songs
+							</p>
+							<Button
+								variant="default"
+								className="group rounded-full w-20 cursor-pointer mt-4"
+								onClick={() => router.visit("/login")}
+							>
+								Login
+							</Button>
+						</div>
+					)
+				}
+
 				return (
 					<div
 						className={cn(
