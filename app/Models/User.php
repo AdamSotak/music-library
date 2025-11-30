@@ -59,6 +59,7 @@ class User extends Authenticatable
             ->withPivot('role')
             ->withTimestamps();
     }
+
     public function savedAlbums(): BelongsToMany
     {
         return $this->belongsToMany(Album::class, 'user_albums', 'user_id', 'album_id')

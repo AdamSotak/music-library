@@ -107,9 +107,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		setCollaboratorsLoading(true)
 		setCollabError(null)
 		try {
-			const { data } = await axios.get(
-				`/playlist/${playlist.id}/collaborators`,
-			)
+			const { data } = await axios.get(`/playlist/${playlist.id}/collaborators`)
 			setCollaborators(data || [])
 		} catch (error) {
 			console.error("Failed to load collaborators", error)
@@ -350,7 +348,9 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 					<div className="flex items-center justify-center md:justify-start gap-2 text-xs md:text-sm mt-2 flex-wrap">
 						<span className="font-bold">
 							{playlist.owner_name ??
-								(playlist.is_default ? (user?.name ?? "You") : user?.name ?? "You")}
+								(playlist.is_default
+									? (user?.name ?? "You")
+									: (user?.name ?? "You"))}
 						</span>
 						<span>•</span>
 						<span>
@@ -941,9 +941,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 						{collaboratorsLoading ? (
 							<div className="text-sm text-zinc-400">Loading...</div>
 						) : collaborators.length === 0 ? (
-							<div className="text-sm text-zinc-400">
-								No collaborators yet.
-							</div>
+							<div className="text-sm text-zinc-400">No collaborators yet.</div>
 						) : (
 							collaborators.map((c) => (
 								<div
@@ -985,7 +983,9 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 											<Button
 												variant="ghost"
 												size="sm"
-												onClick={() => handleRemoveCollaborator(c.id.toString())}
+												onClick={() =>
+													handleRemoveCollaborator(c.id.toString())
+												}
 												className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
 											>
 												Remove

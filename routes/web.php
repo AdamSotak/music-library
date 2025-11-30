@@ -6,12 +6,12 @@ use App\Http\Controllers\AudioProxyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JamController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\RadioController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TrackController;
-use App\Http\Controllers\JamController;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(AuthController::class)->group(function () {

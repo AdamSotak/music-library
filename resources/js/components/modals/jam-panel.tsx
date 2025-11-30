@@ -59,8 +59,15 @@ export function JamPanel({ currentUserName }: JamPanelProps) {
 		if (sessionId) {
 			return (
 				<div className="flex items-center justify-between gap-2">
-					<div className="text-xs text-zinc-400 truncate">Jam ID: {sessionId}</div>
-					<Button variant="ghost" size="sm" className="text-red-400" onClick={endJam}>
+					<div className="text-xs text-zinc-400 truncate">
+						Jam ID: {sessionId}
+					</div>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="text-red-400"
+						onClick={endJam}
+					>
 						Leave
 					</Button>
 				</div>
@@ -69,7 +76,11 @@ export function JamPanel({ currentUserName }: JamPanelProps) {
 
 		return (
 			<div className="flex gap-2">
-				<Button onClick={startJam} disabled={status === "connecting"} className="flex-1">
+				<Button
+					onClick={startJam}
+					disabled={status === "connecting"}
+					className="flex-1"
+				>
 					Start Jam
 				</Button>
 				<input
@@ -102,7 +113,12 @@ export function JamPanel({ currentUserName }: JamPanelProps) {
 						value={inviteLink ?? ""}
 						className="bg-[#242424] border border-white/10 rounded px-3 py-2 text-xs text-white w-full"
 					/>
-					<Button size="sm" variant="ghost" onClick={handleCopy} className="text-white gap-2">
+					<Button
+						size="sm"
+						variant="ghost"
+						onClick={handleCopy}
+						className="text-white gap-2"
+					>
 						<Copy className="w-4 h-4" /> {copied ? "Copied" : "Copy"}
 					</Button>
 				</div>
@@ -116,7 +132,11 @@ export function JamPanel({ currentUserName }: JamPanelProps) {
 				</label>
 				{qrUrl && (
 					<div className="flex flex-col items-center gap-2 bg-[#191919] border border-white/10 rounded-md p-3">
-						<img src={qrUrl} alt="Jam QR" className="w-36 h-36 rounded bg-white" />
+						<img
+							src={qrUrl}
+							alt="Jam QR"
+							className="w-36 h-36 rounded bg-white"
+						/>
 						<div className="text-xs text-zinc-400">Scan to join</div>
 					</div>
 				)}
@@ -128,10 +148,20 @@ export function JamPanel({ currentUserName }: JamPanelProps) {
 		<aside className="fixed top-0 right-4 z-[80] h-full w-[340px] bg-[#121212] border border-black/50 shadow-2xl rounded-l-xl flex flex-col">
 			<div className="flex items-start justify-between p-4 border-b border-white/10">
 				<div>
-					<p className="text-xs text-green-400 uppercase tracking-[0.25em]">Jam</p>
-					<p className="text-xs text-zinc-400 mt-1">Listen together, anywhere</p>
+					<p className="text-xs text-green-400 uppercase tracking-[0.25em]">
+						Jam
+					</p>
+					<p className="text-xs text-zinc-400 mt-1">
+						Listen together, anywhere
+					</p>
 				</div>
-				<Button variant="ghost" size="icon" onClick={closePanel} className="text-white" aria-label="Close Jam panel">
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={closePanel}
+					className="text-white"
+					aria-label="Close Jam panel"
+				>
 					<X className="w-4 h-4" />
 				</Button>
 			</div>
@@ -159,7 +189,9 @@ export function JamPanel({ currentUserName }: JamPanelProps) {
 					<div className="text-sm text-zinc-400">Participants</div>
 					<div className="flex flex-col gap-2">
 						{participants.length === 0 && (
-							<div className="text-xs text-zinc-500">No one yet. Start a Jam or join one.</div>
+							<div className="text-xs text-zinc-500">
+								No one yet. Start a Jam or join one.
+							</div>
 						)}
 						{participants.map((p) => (
 							<div
@@ -183,4 +215,3 @@ export function JamPanel({ currentUserName }: JamPanelProps) {
 		</aside>
 	)
 }
-

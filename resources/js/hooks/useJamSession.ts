@@ -11,7 +11,10 @@ export type JamParticipant = {
 type ConnectionStatus = "disconnected" | "connecting" | "connected" | "error"
 
 const randomId = () => {
-	if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+	if (
+		typeof crypto !== "undefined" &&
+		typeof crypto.randomUUID === "function"
+	) {
 		return crypto.randomUUID()
 	}
 	return Math.random().toString(36).slice(2)
@@ -84,7 +87,11 @@ export function useJamSession(currentUserName: string | null) {
 		bcRef.current.postMessage({ type: "announce", participant: self })
 	}
 
-	const connectWebSocket = (id: string, role: JamRole, self: JamParticipant) => {
+	const connectWebSocket = (
+		id: string,
+		role: JamRole,
+		self: JamParticipant,
+	) => {
 		if (typeof window === "undefined") return
 		const wsUrl = `ws://localhost:3002/ws/jam/${id}${role === "host" ? "?host=1" : ""}`
 		setStatus("connecting")
@@ -111,7 +118,9 @@ export function useJamSession(currentUserName: string | null) {
 						setParticipants((prev) => {
 							const exists = prev.find((p) => p.id === msg.participant.id)
 							const next = exists ? prev : [...prev, msg.participant]
-							ws.send(JSON.stringify({ type: "participants", participants: next }))
+							ws.send(
+								JSON.stringify({ type: "participants", participants: next }),
+							)
 							return next
 						})
 					}
@@ -119,7 +128,7 @@ export function useJamSession(currentUserName: string | null) {
 					console.warn("Bad WS message", err)
 				}
 			}
-		} catch (err) {
+		} catch (_err) {
 			setStatus("error")
 			connectBroadcastChannel(id, self)
 		}

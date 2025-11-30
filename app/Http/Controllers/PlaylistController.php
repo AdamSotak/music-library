@@ -247,6 +247,7 @@ class PlaylistController extends Controller
     private function isOwner(Playlist $playlist): bool
     {
         $userId = auth()->id();
+
         return (bool) $playlist->collaborators()->wherePivot('role', 'owner')->where('user_id', $userId)->exists();
     }
 
