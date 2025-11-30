@@ -22,7 +22,7 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 	const [isAnimating, setIsAnimating] = useState(false)
 	const [searchQuery, setSearchQuery] = useState("")
 	const searchInputRef = useRef<HTMLInputElement>(null)
-	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const { user, receivedFriendRequests } = usePage()
 		.props as unknown as InertiaPageProps
 

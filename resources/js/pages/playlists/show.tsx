@@ -36,7 +36,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
 	const { setOpen: setShareModalOpen } = Modals.useSharePlaylistModal()
-	const { playlists, user } = usePage().props as unknown as InertiaPageProps
+	const { playlists } = usePage().props as unknown as InertiaPageProps
 	const likedSongsPlaylist = playlists.find((p) => p.is_default)
 	const [_likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
 	const { rgba } = useImageColor(
