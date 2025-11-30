@@ -65,6 +65,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/playlist/{id}/tracks', [PlaylistController::class, 'addTracks'])->name('playlists.addTracks');
     Route::delete('/playlist/{playlistId}/tracks/{trackId}', [PlaylistController::class, 'removeTrack'])->name('playlists.removeTrack');
 
+    // Shared playlist management
+    Route::post('/playlist/{id}/share', [PlaylistController::class, 'share'])->name('playlists.share');
+    Route::post('/playlist/{id}/share/users', [PlaylistController::class, 'addSharedUsers'])->name('playlists.addSharedUsers');
+    Route::delete('/playlist/{playlistId}/share/users/{userId}', [PlaylistController::class, 'removeSharedUser'])->name('playlists.removeSharedUser');
+    Route::post('/playlist/{id}/leave', [PlaylistController::class, 'leaveSharedPlaylist'])->name('playlists.leave');
+    Route::get('/api/playlist/{id}/share/users', [PlaylistController::class, 'getSharedUsers'])->name('api.playlists.sharedUsers');
+
     // Library management (save albums, follow artists)
     Route::post('/library/albums/{albumId}', [LibraryController::class, 'saveAlbum'])->name('library.saveAlbum');
     Route::post('/library/artists/{artistId}', [LibraryController::class, 'followArtist'])->name('library.followArtist');
