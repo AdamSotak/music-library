@@ -11,6 +11,7 @@ use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\RadioController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TrackController;
+use App\Http\Controllers\JamController;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(AuthController::class)->group(function () {
@@ -24,6 +25,9 @@ Route::controller(AuthController::class)->group(function () {
 Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index');
 });
+
+// Jam landing (for shared links / QR)
+Route::get('/jam/{id}', [JamController::class, 'show'])->name('jam.show');
 
 Route::controller(CategoryController::class)->group(function () {
     Route::get('/categories', 'show');
@@ -80,6 +84,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/playlist/{id}', [PlaylistController::class, 'destroy'])->name('playlists.destroy');
     Route::post('/playlist/{id}/tracks', [PlaylistController::class, 'addTracks'])->name('playlists.addTracks');
     Route::delete('/playlist/{playlistId}/tracks/{trackId}', [PlaylistController::class, 'removeTrack'])->name('playlists.removeTrack');
+    // Collaboration
+    Route::post('/playlist/{id}/invite', [PlaylistController::class, 'invite'])->name('playlists.invite');
+    Route::get('/playlist/{id}/collaborators', [PlaylistController::class, 'collaborators'])->name('playlists.collaborators');
+    Route::patch('/playlist/{id}/collaborators/{userId}', [PlaylistController::class, 'updateCollaborator'])->name('playlists.collaborators.update');
+    Route::delete('/playlist/{id}/collaborators/{userId}', [PlaylistController::class, 'removeCollaborator'])->name('playlists.collaborators.remove');
+    Route::get('/playlist/join/{token}', [PlaylistController::class, 'joinByToken'])->name('playlists.join');
 
     // Library management (save albums, follow artists)
     Route::post('/library/albums/{albumId}', [LibraryController::class, 'saveAlbum'])->name('library.saveAlbum');

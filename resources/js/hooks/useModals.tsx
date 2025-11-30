@@ -57,8 +57,19 @@ const useAddToPlaylistModal = create<AddToPlaylistModalState>((set) => ({
 	setOpen: (open, trackIds = []) => set({ open, trackIds }),
 }))
 
+interface JamModalState {
+	open: boolean
+	setOpen: (open: boolean) => void
+}
+
+const useJamModal = create<JamModalState>((set) => ({
+	open: false,
+	setOpen: (open) => set({ open }),
+}))
+
 export const Modals = {
 	useConfirmationModal,
 	useEditPlaylistDetailsModal,
 	useAddToPlaylistModal,
+	useJamModal,
 }

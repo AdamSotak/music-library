@@ -20,15 +20,25 @@ class Playlist extends Model
         'description',
         'is_default',
         'user_id',
+        'is_collaborative',
+        'invite_token',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
+        'is_collaborative' => 'boolean',
     ];
 
     public function tracks(): BelongsToMany
     {
         return $this->belongsToMany(Track::class, 'playlist_tracks', 'playlist_id', 'track_id');
+    }
+
+    public function collaborators(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'playlist_users', 'playlist_id', 'user_id')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function user(): BelongsTo

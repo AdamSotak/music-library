@@ -80,6 +80,14 @@ export type Playlist = {
 	created_at?: string
 	updated_at?: string
 	owner_name?: string | null
+	is_collaborative?: boolean
+	invite_token?: string | null
+	collaborators?: Array<{
+		id: string
+		name: string
+		role: string
+	}>
+	current_role?: string | null
 }
 
 export type ShelfItem = {

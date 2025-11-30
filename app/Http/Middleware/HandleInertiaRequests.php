@@ -38,15 +38,21 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
 
-        $playlists = Auth::check()
-            ? \App\Models\Playlist::with([
+        $playlists = [];
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $playlists = \App\Models\Playlist::with([
                 'tracks:id',
                 'user:id,name',
+                'collaborators:id,name',
             ])
-                ->where('user_id', Auth::id())
+                ->where(function ($q) use ($userId) {
+                    $q->where('user_id', $userId)
+                        ->orWhereHas('collaborators', fn ($c) => $c->where('users.id', $userId));
+                })
                 ->orderBy('created_at', 'desc')
                 ->get()
-                ->map(function ($playlist) {
+                ->map(function ($playlist) use ($userId) {
                     $firstTrack = DB::table('playlist_tracks')
                         ->join('tracks', 'playlist_tracks.track_id', '=', 'tracks.id')
                         ->leftJoin('albums', 'tracks.album_id', '=', 'albums.id')
@@ -54,12 +60,17 @@ class HandleInertiaRequests extends Middleware
                         ->select('albums.image_url')
                         ->first();
 
+                    $currentPivot = $playlist->collaborators
+                        ->firstWhere('id', $userId)?->pivot;
+
                     return [
                         'id' => $playlist->id,
                         'name' => $playlist->name,
                         'description' => $playlist->description ?: null,
                         'is_default' => $playlist->is_default,
+                        'is_collaborative' => $playlist->is_collaborative,
                         'owner_name' => $playlist->user?->name,
+                        'current_role' => $currentPivot->role ?? ($playlist->user_id === $userId ? 'owner' : null),
                         'image' => $firstTrack->image_url ?? null,
                         'tracks' => $playlist->tracks
                             ->map(fn ($track) => ['id' => $track->id])
@@ -68,8 +79,8 @@ class HandleInertiaRequests extends Middleware
                         'updated_at' => $playlist->updated_at,
                     ];
                 })
-                ->values()
-            : [];
+                ->values();
+        }
 
         $savedAlbums = Auth::check()
             ? Auth::user()->savedAlbums()->with('artist')->get()->map(function ($album) {

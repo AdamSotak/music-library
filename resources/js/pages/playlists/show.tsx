@@ -8,7 +8,18 @@ import axios from "axios"
 import { WaveformIndicator } from "@/components/waveform-indicator"
 import { Button } from "@/components/ui/button"
 import PlayButton from "@/components/home/play-button"
-import { ListPlus, Music, Radio, Edit3, Trash2, Share2 } from "lucide-react"
+import {
+	ListPlus,
+	Music,
+	Radio,
+	Edit3,
+	Trash2,
+	Share2,
+	UserPlus,
+	Users,
+	Copy,
+	Crown,
+} from "lucide-react"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
 import { TrackContextMenu } from "@/components/track-context-menu"
@@ -19,6 +30,14 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog"
 import { useLikedTracksStore } from "@/hooks/useLikedTracks"
 
 interface PlaylistShowProps {
@@ -40,7 +59,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
 	const { setOpen: setEditPlaylistOpen } = Modals.useEditPlaylistDetailsModal()
-	const { playlists } = usePage().props as unknown as InertiaPageProps
+	const { playlists, user } = usePage().props as unknown as InertiaPageProps
 	const likedTrackIds = useLikedTracksStore((state) => state.likedIds)
 	const { rgba } = useImageColor(
 		playlist.is_default
@@ -51,15 +70,110 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [searchResults, setSearchResults] = useState<SearchTrack[]>([])
 	const [isSearching, setIsSearching] = useState(false)
+	const [collaborators, setCollaborators] = useState(
+		playlist.collaborators ?? [],
+	)
+	const [sharedModalOpen, setSharedModalOpen] = useState(false)
+	const [collaboratorsLoading, setCollaboratorsLoading] = useState(false)
+	const [inviteLink, setInviteLink] = useState<string | null>(() => {
+		if (typeof window === "undefined") return null
+		if (playlist.invite_token) {
+			return `${window.location.origin}/playlist/join/${playlist.invite_token}`
+		}
+		return null
+	})
+	const [inviteLoading, setInviteLoading] = useState(false)
+	const [collabMessage, setCollabMessage] = useState<string | null>(null)
+	const [collabError, setCollabError] = useState<string | null>(null)
 	const playerQueue = useMemo(
 		() => toPlayerQueue(playlist.tracks),
 		[playlist.tracks],
 	)
+	const currentUserId = user?.id?.toString() ?? null
+	const currentRole = playlist.current_role ?? null
+	const isOwner = currentRole === "owner"
+	const canManage = isOwner
+	const canEditTracksLocal =
+		isOwner || (playlist.is_collaborative && currentRole === "collaborator")
 
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
 		const secs = seconds % 60
 		return `${mins}:${secs.toString().padStart(2, "0")}`
+	}
+
+	const fetchCollaborators = async () => {
+		if (!canManage) return
+		setCollaboratorsLoading(true)
+		setCollabError(null)
+		try {
+			const { data } = await axios.get(
+				`/playlist/${playlist.id}/collaborators`,
+			)
+			setCollaborators(data || [])
+		} catch (error) {
+			console.error("Failed to load collaborators", error)
+			setCollabError("Could not load collaborators")
+		} finally {
+			setCollaboratorsLoading(false)
+		}
+	}
+
+	const handleGenerateInvite = async () => {
+		setInviteLoading(true)
+		setCollabError(null)
+		try {
+			const { data } = await axios.post(`/playlist/${playlist.id}/invite`)
+			const url = data?.invite_url as string | undefined
+			if (url) {
+				setInviteLink(url)
+				await navigator.clipboard?.writeText(url)
+				setCollabMessage("Invite link copied to clipboard")
+			}
+		} catch (error) {
+			console.error("Failed to generate invite", error)
+			setCollabError("Could not generate invite link")
+		} finally {
+			setInviteLoading(false)
+		}
+	}
+
+	const handleCopyInvite = async () => {
+		if (!inviteLink) {
+			await handleGenerateInvite()
+			return
+		}
+		try {
+			await navigator.clipboard?.writeText(inviteLink)
+			setCollabMessage("Invite link copied to clipboard")
+		} catch (error) {
+			console.error("Copy failed", error)
+			setCollabError("Could not copy invite link")
+		}
+	}
+
+	const handleUpdateRole = async (userId: string, role: string) => {
+		setCollabError(null)
+		try {
+			await axios.patch(`/playlist/${playlist.id}/collaborators/${userId}`, {
+				role,
+			})
+			await fetchCollaborators()
+		} catch (error) {
+			console.error("Role update failed", error)
+			setCollabError("Could not update role")
+		}
+	}
+
+	const handleRemoveCollaborator = async (userId: string) => {
+		setCollabError(null)
+		try {
+			await axios.delete(`/playlist/${playlist.id}/collaborators/${userId}`)
+			await fetchCollaborators()
+		} catch (error) {
+			console.error("Removal failed", error)
+			setCollabError("Could not remove collaborator")
+		}
 	}
 
 	const handlePlayTrack = (
@@ -92,6 +206,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		trackName: string,
 		e: React.MouseEvent,
 	) => {
+		if (!canEditTracksLocal) return
 		e.stopPropagation()
 		setConfirmModalOpen(
 			true,
@@ -232,8 +347,11 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 					<p className="text-zinc-300 text-xs md:text-sm mb-2">
 						{playlist.description}
 					</p>
-					<div className="flex items-center justify-center md:justify-start gap-1 text-xs md:text-sm mt-2">
-						<span className="font-bold">Spotify</span>
+					<div className="flex items-center justify-center md:justify-start gap-2 text-xs md:text-sm mt-2 flex-wrap">
+						<span className="font-bold">
+							{playlist.owner_name ??
+								(playlist.is_default ? (user?.name ?? "You") : user?.name ?? "You")}
+						</span>
 						<span>•</span>
 						<span>
 							{playlist.tracks.length}{" "}
@@ -242,6 +360,61 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 						<span className="text-zinc-400">
 							{hours > 0 && `${hours} hr`} {minutes} min
 						</span>
+						{playlist.is_collaborative && (
+							<span className="flex items-center gap-1 text-zinc-300">
+								<Users className="w-4 h-4" />
+								Collaborative
+							</span>
+						)}
+					</div>
+					<div className="flex flex-wrap items-center gap-3 mt-2 justify-center md:justify-start">
+						{collaborators && collaborators.length > 0 && (
+							<>
+								{collaborators.slice(0, 4).map((c) => (
+									<div
+										key={c.id}
+										className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded-full text-xs"
+									>
+										<div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px] uppercase">
+											{c.name
+												.split(" ")
+												.map((p) => p[0])
+												.join("")
+												.slice(0, 2)}
+										</div>
+										<span className="text-white">{c.name}</span>
+										{c.role === "owner" && (
+											<Crown className="w-3 h-3 text-amber-400" />
+										)}
+									</div>
+								))}
+								{collaborators.length > 4 && (
+									<span className="text-xs text-zinc-300">
+										+{collaborators.length - 4} more
+									</span>
+								)}
+								<button
+									type="button"
+									onClick={() => {
+										setSharedModalOpen(true)
+										void fetchCollaborators()
+									}}
+									className="text-xs text-white underline hover:text-green-400"
+								>
+									Shared with
+								</button>
+							</>
+						)}
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							onClick={() => handleSharePlaylist()}
+							className="text-white text-xs bg-white/10 hover:bg-white/20 px-3 py-1 h-auto"
+						>
+							<Share2 className="w-3 h-3 mr-1" />
+							Share
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -264,6 +437,20 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							: undefined
 					}
 				/>
+				{!playlist.is_default && isOwner && (
+					<Button
+						size="icon"
+						variant="spotifyTransparent"
+						className="group"
+						title="Invite collaborators"
+						onClick={() => {
+							setSharedModalOpen(true)
+							void fetchCollaborators()
+						}}
+					>
+						<UserPlus className="min-w-5 min-h-5 transition-colors duration-300 group-hover:text-white" />
+					</Button>
+				)}
 				<DropdownMenu modal={false}>
 					<DropdownMenuTrigger asChild>
 						<Button size="icon" variant="spotifyTransparent" className="group">
@@ -284,6 +471,32 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 						sideOffset={8}
 						className="w-64 bg-[#282828] text-white border-none"
 					>
+						{isOwner && (
+							<>
+								<DropdownMenuItem
+									onSelect={(event) => {
+										event.preventDefault()
+										void handleCopyInvite()
+									}}
+									className="gap-2 text-sm"
+								>
+									<UserPlus className="w-4 h-4" />
+									Copy invite link
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={(event) => {
+										event.preventDefault()
+										setSharedModalOpen(true)
+										void fetchCollaborators()
+									}}
+									className="gap-2 text-sm"
+								>
+									<Users className="w-4 h-4" />
+									Manage collaborators
+								</DropdownMenuItem>
+								<DropdownMenuSeparator className="bg-white/10" />
+							</>
+						)}
 						<DropdownMenuItem
 							onSelect={(event) => {
 								event.preventDefault()
@@ -529,6 +742,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 												size="icon"
 												variant="spotifyTransparent"
 												className="group"
+												disabled={!canEditTracksLocal}
 												onClick={(e) =>
 													handleRemoveTrack(track.id, track.name, e)
 												}
@@ -711,6 +925,105 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 					</div>
 				)}
 			</div>
+
+			{/* Collaborators modal */}
+			<Dialog open={sharedModalOpen} onOpenChange={setSharedModalOpen}>
+				<DialogContent className="bg-[#181818] text-white border-none max-w-lg">
+					<DialogHeader>
+						<DialogTitle>Shared with</DialogTitle>
+						<DialogDescription className="text-zinc-400">
+							{isOwner
+								? "Owners can manage collaborators and invite others."
+								: "You are a collaborator on this playlist."}
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-3 max-h-[60vh] overflow-y-auto">
+						{collaboratorsLoading ? (
+							<div className="text-sm text-zinc-400">Loading...</div>
+						) : collaborators.length === 0 ? (
+							<div className="text-sm text-zinc-400">
+								No collaborators yet.
+							</div>
+						) : (
+							collaborators.map((c) => (
+								<div
+									key={c.id}
+									className="flex items-center justify-between gap-3 rounded-md border border-white/10 px-3 py-2"
+								>
+									<div className="flex items-center gap-3">
+										<div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold uppercase">
+											{c.name
+												.split(" ")
+												.map((p) => p[0])
+												.join("")
+												.slice(0, 2)}
+										</div>
+										<div className="flex flex-col">
+											<span className="font-medium">{c.name}</span>
+											<span className="text-xs text-zinc-400">
+												{c.role === "owner"
+													? "Owner"
+													: c.role === "collaborator"
+														? "Collaborator"
+														: "Viewer"}
+											</span>
+										</div>
+									</div>
+									{isOwner && c.id.toString() !== currentUserId && (
+										<div className="flex items-center gap-2">
+											<select
+												value={c.role}
+												onChange={(e) =>
+													handleUpdateRole(c.id.toString(), e.target.value)
+												}
+												className="bg-[#242424] border border-white/10 rounded px-2 py-1 text-sm"
+											>
+												<option value="owner">Owner</option>
+												<option value="collaborator">Collaborator</option>
+												<option value="viewer">Viewer</option>
+											</select>
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={() => handleRemoveCollaborator(c.id.toString())}
+												className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+											>
+												Remove
+											</Button>
+										</div>
+									)}
+								</div>
+							))
+						)}
+					</div>
+					{(collabMessage || collabError) && (
+						<div
+							className={`text-sm ${collabError ? "text-red-400" : "text-green-400"}`}
+						>
+							{collabError || collabMessage}
+						</div>
+					)}
+					{isOwner && (
+						<DialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-between">
+							<Button
+								onClick={() => void handleCopyInvite()}
+								disabled={inviteLoading}
+								className="bg-white text-black hover:bg-white/90 flex items-center gap-2 w-full sm:w-auto"
+							>
+								<Copy className="w-4 h-4" />
+								{inviteLoading ? "Generating..." : "Copy invite link"}
+							</Button>
+							<Button
+								variant="spotifyTransparent"
+								onClick={() => void fetchCollaborators()}
+								className="text-white border border-white/20 hover:border-white/40"
+							>
+								Refresh list
+							</Button>
+						</DialogFooter>
+					)}
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

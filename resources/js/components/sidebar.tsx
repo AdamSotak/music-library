@@ -254,6 +254,48 @@ export default function Sidebar({
 									</div>
 								</DropdownMenuItem>
 								<DropdownMenuItem
+									className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded"
+									onClick={() => Modals.useJamModal.getState().setOpen(true)}
+								>
+									<svg
+										viewBox="0 0 24 24"
+										className="w-6 h-6 text-white"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<circle cx="12" cy="12" r="8" fill="#333" />
+										<path
+											d="M9.2 14.2a3.5 3.5 0 0 1 5.6 0"
+											fill="none"
+											stroke="white"
+											strokeWidth="1.4"
+											strokeLinecap="round"
+										/>
+										<path
+											d="M8 12a5 5 0 0 1 8 0"
+											fill="none"
+											stroke="white"
+											strokeWidth="1.4"
+											strokeLinecap="round"
+											opacity="0.7"
+										/>
+										<path
+											d="M7 10a6.5 6.5 0 0 1 10 0"
+											fill="none"
+											stroke="white"
+											strokeWidth="1.2"
+											strokeLinecap="round"
+											opacity="0.4"
+										/>
+										<circle cx="12" cy="15" r="1.2" fill="white" />
+									</svg>
+									<div className="flex-1">
+										<div className="text-white font-medium text-base">Jam</div>
+										<div className="text-[#a7a7a7] text-sm">
+											Listen together, anywhere
+										</div>
+									</div>
+								</DropdownMenuItem>
+								<DropdownMenuItem
 									className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded opacity-50"
 									disabled
 								>
