@@ -24,7 +24,7 @@ interface SidebarProps {
 	onClose?: () => void
 }
 
-type FilterTab = "playlists" | "artists" | "albums"
+type FilterTab = "playlists" | "shared" | "artists" | "albums"
 type SortOption = "recents" | "recently_added" | "alphabetical" | "creator"
 type ViewOption = "compact" | "list" | "grid" | "large-grid"
 
@@ -34,7 +34,7 @@ export default function Sidebar({
 	isMobile = false,
 	onClose,
 }: SidebarProps) {
-	const { playlists, savedAlbums, followedArtists } = usePage()
+	const { playlists, sharedPlaylists, savedAlbums, followedArtists } = usePage()
 		.props as unknown as InertiaPageProps
 	const { setOpen: setEditPlaylistDetailsModalOpen } =
 		Modals.useEditPlaylistDetailsModal()
@@ -117,6 +117,27 @@ export default function Sidebar({
 				return items
 		}
 	}, [savedAlbums, sortBy])
+
+	const sortedSharedPlaylists = useMemo(() => {
+		const items = [...(sharedPlaylists || [])]
+		switch (sortBy) {
+			case "alphabetical":
+				return items.sort((a, b) => a.name.localeCompare(b.name))
+			case "creator":
+				return items.sort((a, b) =>
+					(a.owner_name || a.name).localeCompare(b.owner_name || b.name),
+				)
+			case "recents":
+			case "recently_added":
+				return items.sort(
+					(a, b) =>
+						getDateValue(b.updated_at || b.created_at) -
+						getDateValue(a.updated_at || a.created_at),
+				)
+			default:
+				return items
+		}
+	}, [sharedPlaylists, sortBy])
 
 	// On mobile, always show expanded version
 	const shouldShowExpanded = isMobile || !isCollapsed
@@ -292,12 +313,12 @@ export default function Sidebar({
 				</div>
 			</div>
 
-			{/* Tabs: Playlists, Artists, Albums */}
-			<div className="flex gap-2 px-2 py-1">
+			{/* Tabs: Playlists, Shared, Artists, Albums */}
+			<div className="flex gap-2 px-2 py-1 overflow-x-auto">
 				<Button
 					variant="ghost"
 					size="sm"
-					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${
+					className={`text-sm rounded-full px-3 h-8 font-normal transition-all flex-shrink-0 ${
 						activeTab === "playlists"
 							? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
 							: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
@@ -309,7 +330,24 @@ export default function Sidebar({
 				<Button
 					variant="ghost"
 					size="sm"
-					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${
+					className={`text-sm rounded-full px-3 h-8 font-normal transition-all flex-shrink-0 ${
+						activeTab === "shared"
+							? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+							: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
+					}`}
+					onClick={() => setActiveTab("shared")}
+				>
+					Shared
+					{sharedPlaylists && sharedPlaylists.length > 0 && (
+						<span className="ml-1.5 px-1.5 py-0.5 text-xs bg-green-500 text-black rounded-full">
+							{sharedPlaylists.length}
+						</span>
+					)}
+				</Button>
+				<Button
+					variant="ghost"
+					size="sm"
+					className={`text-sm rounded-full px-3 h-8 font-normal transition-all flex-shrink-0 ${
 						activeTab === "artists"
 							? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
 							: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
@@ -321,7 +359,7 @@ export default function Sidebar({
 				<Button
 					variant="ghost"
 					size="sm"
-					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${
+					className={`text-sm rounded-full px-3 h-8 font-normal transition-all flex-shrink-0 ${
 						activeTab === "albums"
 							? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
 							: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
@@ -577,19 +615,61 @@ export default function Sidebar({
 									title={playlist.name}
 									tracks={playlist.tracks}
 									description={
-										playlist.description ||
-										`Playlist • ${playlist.tracks.length} ${
-											playlist.tracks.length === 1 ? "song" : "songs"
-										}`
+										playlist.is_shared
+											? `Shared • ${playlist.tracks.length} ${
+													playlist.tracks.length === 1 ? "song" : "songs"
+												}`
+											: playlist.description ||
+												`Playlist • ${playlist.tracks.length} ${
+													playlist.tracks.length === 1 ? "song" : "songs"
+												}`
 									}
 									image={playlist.image}
 									href={`/playlist/${playlist.id}`}
 									onClose={isMobile ? onClose : undefined}
 									isMobile={isMobile}
 									isLikedSongs={playlist.is_default}
+									isShared={playlist.is_shared}
 									viewMode={viewAs}
 									type="playlist"
 								/>
+							))}
+
+						{activeTab === "shared" &&
+							(sortedSharedPlaylists.length > 0 ? (
+								sortedSharedPlaylists.map((playlist) => (
+									<SidebarItem
+										key={playlist.id}
+										id={String(playlist.id)}
+										title={playlist.name}
+										tracks={playlist.tracks}
+										description={`by ${playlist.owner_name} • ${playlist.tracks.length} ${
+											playlist.tracks.length === 1 ? "song" : "songs"
+										}`}
+										image={playlist.image}
+										href={`/playlist/${playlist.id}`}
+										onClose={isMobile ? onClose : undefined}
+										isMobile={isMobile}
+										isShared={true}
+										viewMode={viewAs}
+										type="playlist"
+									/>
+								))
+							) : (
+								<div className="flex flex-col items-center justify-center h-64 text-[#b3b3b3]">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill="currentColor"
+										className="w-16 h-16 mb-4 opacity-50"
+									>
+										<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path>
+									</svg>
+									<p className="text-sm font-medium">No shared playlists</p>
+									<p className="text-xs mt-1 text-center px-4">
+										When friends share playlists with you, they'll appear here
+									</p>
+								</div>
 							))}
 
 						{activeTab === "artists" &&
