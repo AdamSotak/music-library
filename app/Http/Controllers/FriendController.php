@@ -12,7 +12,7 @@ class FriendController extends Controller
     public function sendFriendRequest(Request $request, int $userId)
     {
         $targetUser = User::findOrFail($userId);
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         if ($currentUser->id === $userId) {
             return redirect()->back()->with('error', 'You cannot send a friend request to yourself.');
@@ -33,6 +33,26 @@ class FriendController extends Controller
                 DB::table('user_friends')
                     ->where('user_id', $existingRequest->user_id)
                     ->where('friend_id', $existingRequest->friend_id)
+                    ->delete();
+
+                // remove ex-friend from any shared playlists owned by current user
+                DB::table('shared_playlist_users')
+                    ->whereIn('playlist_id', function ($query) use ($currentUser) {
+                        $query->select('id')
+                            ->from('playlists')
+                            ->where('user_id', $currentUser->id);
+                    })
+                    ->where('user_id', $userId)
+                    ->delete();
+
+                // remove current user from any shared playlists owned by ex-friend
+                DB::table('shared_playlist_users')
+                    ->whereIn('playlist_id', function ($query) use ($userId) {
+                        $query->select('id')
+                            ->from('playlists')
+                            ->where('user_id', $userId);
+                    })
+                    ->where('user_id', $currentUser->id)
                     ->delete();
             } elseif ($existingRequest->status === 'pending') {
                 // cancel pending request
@@ -57,7 +77,7 @@ class FriendController extends Controller
 
     public function acceptFriendRequest(Request $request, int $userId)
     {
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         $friendRequest = DB::table('user_friends')
             ->where('user_id', $userId)
@@ -83,7 +103,7 @@ class FriendController extends Controller
 
     public function removeFriend(Request $request, int $userId)
     {
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         $relationship = DB::table('user_friends')
             ->where(function ($query) use ($currentUser, $userId) {
@@ -95,18 +115,39 @@ class FriendController extends Controller
             ->first();
 
         if ($relationship) {
+            // remove from friendship table
             DB::table('user_friends')
                 ->where('user_id', $relationship->user_id)
                 ->where('friend_id', $relationship->friend_id)
+                ->delete();
+
+            // removes exfriend from any shared playist owned by user
+            DB::table('shared_playlist_users')
+                ->whereIn('playlist_id', function ($query) use ($currentUser) {
+                    $query->select('id')
+                        ->from('playlists')
+                        ->where('user_id', $currentUser->id);
+                })
+                ->where('user_id', $userId)
+                ->delete();
+
+            // removes user from any shared playlist owned by exfriend
+            DB::table('shared_playlist_users')
+                ->whereIn('playlist_id', function ($query) use ($userId) {
+                    $query->select('id')
+                        ->from('playlists')
+                        ->where('user_id', $userId);
+                })
+                ->where('user_id', $currentUser->id)
                 ->delete();
         }
 
         return redirect()->back();
     }
 
-    public function checkFriendStatus(int $userId)
+    public function checkFriendStatus(Request $request, int $userId)
     {
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         if ($currentUser->id === $userId) {
             return response()->json(['status' => 'self']);
@@ -146,7 +187,7 @@ class FriendController extends Controller
         ]);
 
         $query = $request->input('query');
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         $users = User::where(function ($q) use ($query) {
             $q->where('name', 'like', "%{$query}%")
@@ -170,7 +211,6 @@ class FriendController extends Controller
                 if ($relationship) {
                     $status = $relationship->status;
 
-                    // If pending, check who sent it
                     if ($status === 'pending') {
                         if ($relationship->user_id === $currentUser->id) {
                             $status = 'pending_sent';

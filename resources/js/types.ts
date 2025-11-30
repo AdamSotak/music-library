@@ -6,6 +6,7 @@ export type InertiaPageProps = {
 		createdAt: string
 	} | null
 	playlists: Playlist[]
+	sharedPlaylists: Playlist[]
 	savedAlbums: SavedAlbum[]
 	followedArtists: FollowedArtist[]
 	friends: Friend[]
@@ -101,9 +102,20 @@ export type Playlist = {
 	image: string
 	tracks: Track[]
 	is_default?: boolean
+	is_shared?: boolean
+	is_owner?: boolean
+	owner_id?: number
+	owner_name?: string | null
+	shared_with?: SharedUser[]
 	created_at?: string
 	updated_at?: string
-	owner_name?: string | null
+}
+
+export type SharedUser = {
+	id: number
+	name: string
+	email: string
+	added_at: string
 }
 
 export type ShelfItem = {

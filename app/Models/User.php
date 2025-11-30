@@ -100,4 +100,12 @@ class User extends Authenticatable
             ->wherePivot('status', 'pending')
             ->withPivot('created_at');
     }
+
+    public function sharedPlaylists(): BelongsToMany
+    {
+        return $this->belongsToMany(Playlist::class, 'shared_playlist_users', 'user_id', 'playlist_id')
+            ->where('is_shared', true)
+            ->withPivot('added_at', 'added_by')
+            ->orderByPivot('added_at', 'desc');
+    }
 }

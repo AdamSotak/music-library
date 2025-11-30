@@ -59,6 +59,7 @@ class HandleInertiaRequests extends Middleware
                         'name' => $playlist->name,
                         'description' => $playlist->description ?: null,
                         'is_default' => $playlist->is_default,
+                        'is_shared' => $playlist->is_shared,
                         'owner_name' => $playlist->user?->name,
                         'image' => $firstTrack->image_url ?? null,
                         'tracks' => $playlist->tracks
@@ -131,6 +132,39 @@ class HandleInertiaRequests extends Middleware
             })
             : [];
 
+        $sharedPlaylists = Auth::check()
+            ? Auth::user()->sharedPlaylists()->with([
+                'tracks:id',
+                'user:id,name',
+            ])
+                ->get()
+                ->map(function ($playlist) {
+                    $firstTrack = DB::table('playlist_tracks')
+                        ->join('tracks', 'playlist_tracks.track_id', '=', 'tracks.id')
+                        ->leftJoin('albums', 'tracks.album_id', '=', 'albums.id')
+                        ->where('playlist_tracks.playlist_id', $playlist->id)
+                        ->select('albums.image_url')
+                        ->first();
+
+                    return [
+                        'id' => $playlist->id,
+                        'name' => $playlist->name,
+                        'description' => $playlist->description ?: null,
+                        'is_default' => $playlist->is_default,
+                        'is_shared' => $playlist->is_shared,
+                        'owner_id' => $playlist->user_id,
+                        'owner_name' => $playlist->user?->name,
+                        'image' => $firstTrack->image_url ?? null,
+                        'tracks' => $playlist->tracks
+                            ->map(fn ($track) => ['id' => $track->id])
+                            ->values(),
+                        'created_at' => $playlist->created_at,
+                        'updated_at' => $playlist->updated_at,
+                    ];
+                })
+                ->values()
+            : [];
+
         $user = Auth::user();
 
         return [
@@ -142,6 +176,7 @@ class HandleInertiaRequests extends Middleware
                 'createdAt' => $user->created_at,
             ] : null,
             'playlists' => $playlists,
+            'sharedPlaylists' => $sharedPlaylists,
             'savedAlbums' => $savedAlbums,
             'followedArtists' => $followedArtists,
             'friends' => $friends,
