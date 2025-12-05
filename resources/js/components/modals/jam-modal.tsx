@@ -12,8 +12,10 @@ import { Modals } from "@/hooks/useModals"
 import { Copy, Loader2, WifiOff } from "lucide-react"
 
 export function JamModal({
+	currentUserId,
 	currentUserName,
 }: {
+	currentUserId: string | null
 	currentUserName: string | null
 }) {
 	const { open, setOpen } = Modals.useJamModal()
@@ -30,7 +32,7 @@ export function JamModal({
 		startJam,
 		endJam,
 		joinJam,
-	} = useJamSession(currentUserName)
+	} = useJamSession(currentUserId, currentUserName)
 
 	useEffect(() => {
 		if (typeof window === "undefined") return

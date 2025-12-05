@@ -17,6 +17,12 @@ interface PlayerState {
 	isPlaying: boolean
 	queue: Track[]
 	currentIndex: number
+	onTrackChange?: (track: Track | null, index: number) => void
+	onPlayStateChange?: (isPlaying: boolean) => void
+	setListeners: (handlers: {
+		onTrackChange?: (track: Track | null, index: number) => void
+		onPlayStateChange?: (isPlaying: boolean) => void
+	}) => void
 	setCurrentTrack: (track: Track, queue?: Track[], index?: number) => void
 	setIsPlaying: (isPlaying: boolean) => void
 	playNext: () => void
@@ -30,24 +36,42 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 	isPlaying: false,
 	queue: [],
 	currentIndex: -1,
+	onTrackChange: undefined,
+	onPlayStateChange: undefined,
+
+	setListeners: (handlers) => set(() => handlers),
 
 	setCurrentTrack: (track, queue = [], index = -1) =>
-		set({
-			currentTrack: track,
-			queue: queue.length > 0 ? queue : [track],
-			currentIndex: index >= 0 ? index : 0,
-			isPlaying: true,
+		set((state) => {
+			const next = {
+				currentTrack: track,
+				queue: queue.length > 0 ? queue : [track],
+				currentIndex: index >= 0 ? index : 0,
+				isPlaying: true,
+			}
+			state.onTrackChange?.(next.currentTrack, next.currentIndex)
+			state.onPlayStateChange?.(true)
+			return next
 		}),
 
-	setIsPlaying: (isPlaying) => set({ isPlaying }),
+	setIsPlaying: (isPlaying) =>
+		set((state) => {
+			state.onPlayStateChange?.(isPlaying)
+			return { isPlaying }
+		}),
 
 	playNext: () => {
 		const { queue, currentIndex } = get()
 		if (currentIndex < queue.length - 1) {
-			set({
-				currentTrack: queue[currentIndex + 1],
-				currentIndex: currentIndex + 1,
-				isPlaying: true,
+			set((state) => {
+				const next = {
+					currentTrack: queue[currentIndex + 1],
+					currentIndex: currentIndex + 1,
+					isPlaying: true,
+				}
+				state.onTrackChange?.(next.currentTrack, next.currentIndex)
+				state.onPlayStateChange?.(true)
+				return next
 			})
 		}
 	},
@@ -55,10 +79,15 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 	playPrevious: () => {
 		const { queue, currentIndex } = get()
 		if (currentIndex > 0) {
-			set({
-				currentTrack: queue[currentIndex - 1],
-				currentIndex: currentIndex - 1,
-				isPlaying: true,
+			set((state) => {
+				const next = {
+					currentTrack: queue[currentIndex - 1],
+					currentIndex: currentIndex - 1,
+					isPlaying: true,
+				}
+				state.onTrackChange?.(next.currentTrack, next.currentIndex)
+				state.onPlayStateChange?.(true)
+				return next
 			})
 		}
 	},

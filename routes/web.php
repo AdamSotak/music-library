@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\Api\JamApiController;
 use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\AudioProxyController;
 use App\Http\Controllers\AuthController;
@@ -97,3 +98,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/library/albums/{albumId}/check', [LibraryController::class, 'checkAlbumSaved'])->name('library.checkAlbumSaved');
     Route::get('/library/artists/{artistId}/check', [LibraryController::class, 'checkArtistFollowed'])->name('library.checkArtistFollowed');
 });
+    Route::prefix('api/jams')->controller(JamApiController::class)->group(function () {
+        Route::post('/', 'store')->name('api.jams.store');
+        Route::post('/{id}/join', 'join')->name('api.jams.join');
+        Route::get('/{id}', 'show')->name('api.jams.show');
+    });

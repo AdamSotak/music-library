@@ -12,7 +12,7 @@ export default function ModalsProvider() {
 			<ConfirmationModal />
 			<EditPlaylistDetailsModal />
 			<AddToPlaylistModal />
-			<JamPanel currentUserName={user?.name ?? null} />
+			<JamPanel currentUserId={user?.id?.toString() ?? null} currentUserName={user?.name ?? null} />
 		</>
 	)
 }
