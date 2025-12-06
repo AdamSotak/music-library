@@ -15,7 +15,7 @@ createInertiaApp({
 			throw new Error(`Page not found: ${name}`)
 		}
 
-		const layoutIgnore = ["Login", "Signup"]
+		const layoutIgnore = ["Login", "Signup", "VerifyTwoFactor"]
 		if (layoutIgnore.includes(page.default.name)) {
 			return page.default
 		}
