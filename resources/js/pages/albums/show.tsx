@@ -313,7 +313,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 							{/* Track info - responsive layout */}
 							<div className="flex items-center gap-3 md:min-w-0">
 								{/* Mobile track number */}
-								<div className="md:hidden text-center text-xs w-6 flex-shrink-0">
+								<div className="md:hidden text-center text-xs w-6 flex-shrink-0 ml-2">
 									{isCurrentTrack && isPlaying ? (
 										<WaveformIndicator />
 									) : (
