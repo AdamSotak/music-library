@@ -24,6 +24,8 @@ import {
 	Clipboard,
 } from "lucide-react"
 import { useLikedTracksStore } from "@/hooks/useLikedTracks"
+import { useJamSession } from "@/hooks/useJamSession"
+import { usePlayer } from "@/hooks/usePlayer"
 
 type TrackContextMenuProps = {
 	trackId: string
@@ -47,6 +49,12 @@ export function TrackContextMenu({
 	children,
 }: TrackContextMenuProps) {
 	const { playlists } = usePage().props as unknown as InertiaPageProps
+	const player = usePlayer()
+	const { sessionId, addToJamQueue } = useJamSession(
+		// safe fallbacks; JamPanel passes user ids
+		(usePage().props as any)?.user?.id?.toString?.() ?? null,
+		(usePage().props as any)?.user?.name ?? null,
+	)
 	const userPlaylists =
 		(playlists as Playlist[] | undefined)?.filter((p) => !p.is_default) ?? []
 	const likedPlaylistId = useLikedTracksStore((state) => state.playlistId)
@@ -67,6 +75,60 @@ export function TrackContextMenu({
 				},
 			},
 		)
+	}
+
+	const handleAddToQueue = () => {
+		const allPlaylists = (playlists as Playlist[] | undefined) ?? []
+
+		let fullTrack:
+			| {
+					id: string
+					name: string
+					artist: string
+					artist_id: string
+					album: string
+					album_id?: string
+					album_cover?: string
+					duration: number
+					audio: string | null
+			  }
+			| null = null
+
+		for (const playlist of allPlaylists) {
+			const fromPlaylist = playlist.tracks?.find(
+				(track) => track.id.toString() === trackId.toString(),
+			)
+			if (fromPlaylist) {
+				fullTrack = {
+					id: fromPlaylist.id.toString(),
+					name: fromPlaylist.name,
+					artist: fromPlaylist.artist,
+					artist_id: fromPlaylist.artist_id,
+					album: fromPlaylist.album ?? "",
+					album_id: fromPlaylist.album_id,
+					album_cover: fromPlaylist.album_cover,
+					duration: fromPlaylist.duration,
+					audio: fromPlaylist.audio,
+				}
+				break
+			}
+		}
+
+		if (!fullTrack) {
+			fullTrack = {
+				id: trackId,
+				name: trackName ?? "Track",
+				artist: "",
+				artist_id: artistId ?? "",
+				album: "",
+				album_id: albumId,
+				album_cover: undefined,
+				duration: 0,
+				audio: null,
+			}
+		}
+
+		player.addToQueue([fullTrack])
 	}
 
 	const handleToggleLike = () => {
@@ -143,9 +205,42 @@ export function TrackContextMenu({
 							: "Save to your Liked Songs"}
 					</ContextMenuItem>
 				)}
-				{(userPlaylists.length > 0 || canToggleLike) && (
-					<ContextMenuSeparator />
+				<ContextMenuItem
+					onSelect={(event) => {
+						event.preventDefault()
+						handleAddToQueue()
+					}}
+					className="flex items-center gap-2"
+				>
+					<RadioIcon className="w-4 h-4 text-zinc-400" />
+					Add to queue
+				</ContextMenuItem>
+				<ContextMenuSeparator />
+				{sessionId && (
+					<ContextMenuItem
+						onSelect={(event) => {
+							event.preventDefault()
+							addToJamQueue?.([
+								{
+									id: trackId,
+									name: trackName ?? "Track",
+									artist: "",
+									artist_id: artistId ?? "",
+									album: "",
+									album_id: albumId,
+									album_cover: undefined,
+									duration: 0,
+									audio: null,
+								},
+							])
+						}}
+						className="flex items-center gap-2"
+					>
+						<RadioIcon className="w-4 h-4 text-zinc-400" />
+						Add to Jam queue
+					</ContextMenuItem>
 				)}
+				{sessionId && <ContextMenuSeparator />}
 				<ContextMenuItem
 					onSelect={(event) => {
 						event.preventDefault()

@@ -158,7 +158,8 @@ export function JamPanel({
 						{status === "connected" && <span>Connected</span>}
 						{status === "error" && (
 							<span className="flex items-center gap-2 text-red-400">
-								<WifiOff className="w-4 h-4" /> WebSocket unavailable, falling back
+								<WifiOff className="w-4 h-4" /> WebSocket unavailable, falling
+								back
 							</span>
 						)}
 					</div>
@@ -194,7 +195,11 @@ export function JamPanel({
 						</div>
 						{qrUrl && (
 							<div className="flex flex-col items-center gap-2 bg-[#111] border border-white/10 rounded-xl p-3">
-								<img src={qrUrl} alt="Jam QR" className="w-36 h-36 rounded bg-white" />
+								<img
+									src={qrUrl}
+									alt="Jam QR"
+									className="w-36 h-36 rounded bg-white"
+								/>
 								<div className="text-xs text-zinc-400">Scan to join</div>
 							</div>
 						)}
@@ -203,7 +208,9 @@ export function JamPanel({
 					<div className="rounded-2xl bg-[#1c1c1c] border border-white/10 p-4">
 						<div className="flex items-center justify-between mb-3">
 							<h4 className="text-lg font-semibold">Participants</h4>
-							<span className="text-xs text-zinc-400">{participants.length}</span>
+							<span className="text-xs text-zinc-400">
+								{participants.length}
+							</span>
 						</div>
 						<div className="space-y-2">
 							{participants.length === 0 && (
@@ -221,7 +228,9 @@ export function JamPanel({
 									</div>
 									<div>
 										<div className="text-white">{participant.name}</div>
-										<div className="text-[11px] text-zinc-400">{participant.role}</div>
+										<div className="text-[11px] text-zinc-400">
+											{participant.role}
+										</div>
 									</div>
 								</div>
 							))}
@@ -235,7 +244,8 @@ export function JamPanel({
 								<div className="font-mono break-all">{sessionId}</div>
 								{sharedQueue.length > 0 && (
 									<div className="mt-3 text-[11px] text-zinc-400">
-										Queue synced from current playlist ({sharedQueue.length} tracks).
+										Queue synced from current playlist ({sharedQueue.length}{" "}
+										tracks).
 									</div>
 								)}
 							</div>
@@ -243,7 +253,9 @@ export function JamPanel({
 							<div className="rounded-2xl bg-[#1c1c1c] border border-white/10">
 								<div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
 									<div>
-										<div className="text-sm font-semibold text-white">Shared Queue</div>
+										<div className="text-sm font-semibold text-white">
+											Shared Queue
+										</div>
 										<div className="text-xs text-zinc-400">
 											Lightweight view, distinct from playlists.
 										</div>
@@ -275,7 +287,9 @@ export function JamPanel({
 													{track.$isCurrent ? "●" : track.$position}
 												</div>
 												<div className="flex flex-col min-w-0">
-													<div className="font-medium text-sm truncate">{track.name}</div>
+													<div className="font-medium text-sm truncate">
+														{track.name}
+													</div>
 													<div className="text-[11px] text-zinc-500 truncate">
 														{track.artist} • {track.album ?? "Single"}
 													</div>

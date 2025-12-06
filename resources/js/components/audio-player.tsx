@@ -4,6 +4,7 @@ import { Slider } from "./ui/slider"
 import { ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react"
 import { usePlayer, type Track } from "@/hooks/usePlayer"
 import { router } from "@inertiajs/react"
+import { useUiLayout } from "@/hooks/useUiLayout"
 
 // Mobile compact player component
 function MobilePlayer({
@@ -121,6 +122,8 @@ function DesktopPlayer({
 	playPrevious: () => void
 	formatTime: (seconds: number) => string
 }) {
+	const { toggleRightSidebar } = useUiLayout()
+
 	return (
 		<div className="flex justify-between items-center w-full h-20 px-4">
 			<div>
@@ -388,6 +391,7 @@ function DesktopPlayer({
 					size={"icon"}
 					variant={"spotifyTransparent"}
 					className="group w-4 h-4"
+					onClick={toggleRightSidebar}
 				>
 					<svg
 						data-encore-id="icon"
@@ -491,17 +495,17 @@ function DesktopPlayer({
 					size={"icon"}
 					variant={"spotifyTransparent"}
 					className="group w-4 h-4"
+					onClick={toggleRightSidebar}
 				>
 					<svg
 						data-encore-id="icon"
 						role="img"
-						aria-hidden="true"
 						viewBox="0 0 16 16"
 						fill="gray"
+						aria-hidden="true"
 						className="max-w-4 max-h-4 transition-colors duration-300 group-hover:fill-white"
 					>
-						<path d="M16 2.45c0-.8-.65-1.45-1.45-1.45H1.45C.65 1 0 1.65 0 2.45v11.1C0 14.35.65 15 1.45 15h5.557v-1.5H1.5v-11h13V7H16z"></path>
-						<path d="M15.25 9.007a.75.75 0 0 1 .75.75v4.493a.75.75 0 0 1-.75.75H9.325a.75.75 0 0 1-.75-.75V9.757a.75.75 0 0 1 .75-.75z"></path>
+						<path d="M2 2.75a.75.75 0 0 0 0 1.5h12a.75.75 0 0 0 0-1.5zm0 3.5A.75.75 0 0 0 2 7.75h8a.75.75 0 0 0 0-1.5zm0 5.5a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 0 1.5h-5.5A.75.75 0 0 1 2 11.75z"></path>
 					</svg>
 				</Button>
 

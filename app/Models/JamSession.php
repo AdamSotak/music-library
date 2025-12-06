@@ -12,7 +12,9 @@ class JamSession extends Model
     use HasFactory;
 
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     protected $fillable = [
         'id',
         'host_user_id',

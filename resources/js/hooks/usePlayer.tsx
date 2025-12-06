@@ -23,8 +23,13 @@ interface PlayerState {
 		onTrackChange?: (track: Track | null, index: number) => void
 		onPlayStateChange?: (isPlaying: boolean) => void
 	}) => void
-	setCurrentTrack: (track: Track, queue?: Track[], index?: number) => void
-	setIsPlaying: (isPlaying: boolean) => void
+	setCurrentTrack: (
+		track: Track,
+		queue?: Track[],
+		index?: number,
+		options?: { suppressListeners?: boolean },
+	) => void
+	setIsPlaying: (isPlaying: boolean, options?: { suppressListeners?: boolean }) => void
 	playNext: () => void
 	playPrevious: () => void
 	addToQueue: (tracks: Track[], options?: { playNext?: boolean }) => void
@@ -41,7 +46,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
 	setListeners: (handlers) => set(() => handlers),
 
-	setCurrentTrack: (track, queue = [], index = -1) =>
+	setCurrentTrack: (track, queue = [], index = -1, options) =>
 		set((state) => {
 			const next = {
 				currentTrack: track,
@@ -49,14 +54,18 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 				currentIndex: index >= 0 ? index : 0,
 				isPlaying: true,
 			}
-			state.onTrackChange?.(next.currentTrack, next.currentIndex)
-			state.onPlayStateChange?.(true)
+			if (!options?.suppressListeners) {
+				state.onTrackChange?.(next.currentTrack, next.currentIndex)
+				state.onPlayStateChange?.(true)
+			}
 			return next
 		}),
 
-	setIsPlaying: (isPlaying) =>
+	setIsPlaying: (isPlaying, options) =>
 		set((state) => {
-			state.onPlayStateChange?.(isPlaying)
+			if (!options?.suppressListeners) {
+				state.onPlayStateChange?.(isPlaying)
+			}
 			return { isPlaying }
 		}),
 

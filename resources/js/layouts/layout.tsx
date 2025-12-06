@@ -8,6 +8,7 @@ import AudioPlayer from "@/components/audio-player"
 import { usePage } from "@inertiajs/react"
 import type { InertiaPageProps } from "@/types"
 import { useLikedTracksStore } from "@/hooks/useLikedTracks"
+import { JamSidebar } from "@/components/jam-sidebar"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
 	const page = usePage()
@@ -83,15 +84,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 							/>
 						</div>
 
-						{/* Main Content */}
-						<div
-							ref={mainContentRef}
-							className={cn(
-								"h-full bg-background-base rounded-lg overflow-y-auto transition-all duration-300 flex-1",
-								sidebarSize === "expanded" ? "lg:hidden" : "",
-							)}
-						>
-							{children}
+						{/* Main Content + Jam sidebar */}
+						<div className="flex-1 h-full flex gap-2">
+							<div
+								ref={mainContentRef}
+								className={cn(
+									"h-full bg-background-base rounded-lg overflow-y-auto transition-all duration-300 flex-1",
+									sidebarSize === "expanded" ? "lg:hidden" : "",
+								)}
+							>
+								{children}
+							</div>
+							<JamSidebar
+								currentUserId={
+									(page.props as InertiaPageProps).user?.id?.toString?.() ??
+									null
+								}
+								currentUserName={
+									(page.props as InertiaPageProps).user?.name ?? null
+								}
+							/>
 						</div>
 					</div>
 				</main>

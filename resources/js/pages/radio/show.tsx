@@ -13,6 +13,7 @@ import {
 } from "react"
 import { RadioIcon } from "@/utils/icons"
 import { cn } from "@/lib/utils"
+import { csrfFetch } from "@/utils/csrf"
 
 type SeedType = "track" | "album" | "artist"
 
@@ -40,14 +41,6 @@ export default function RadioShow({
 	const queue = useMemo(() => toPlayerQueue(displayTracks), [displayTracks])
 	const [isFetchingMore, setIsFetchingMore] = useState(false)
 	const [hasMore, setHasMore] = useState(true)
-	const csrfToken =
-		typeof document !== "undefined"
-			? (
-					document.querySelector(
-						'meta[name="csrf-token"]',
-					) as HTMLMetaElement | null
-				)?.content
-			: undefined
 
 	useEffect(() => {
 		setDisplayTracks(tracks)
@@ -108,13 +101,11 @@ export default function RadioShow({
 		try {
 			setIsFetchingMore(true)
 			const excludeIds = displayTracks.map((track) => track.id)
-			const res = await fetch("/api/radio/next", {
+			const res = await csrfFetch("/api/radio/next", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					"X-CSRF-TOKEN": csrfToken ?? "",
 				},
-				credentials: "same-origin",
 				body: JSON.stringify({
 					seed_type,
 					seed_id,
@@ -137,7 +128,6 @@ export default function RadioShow({
 		}
 	}, [
 		appendTracks,
-		csrfToken,
 		displayTracks,
 		hasMore,
 		isFetchingMore,

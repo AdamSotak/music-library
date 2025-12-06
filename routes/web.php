@@ -97,9 +97,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/library/artists/{artistId}', [LibraryController::class, 'followArtist'])->name('library.followArtist');
     Route::get('/library/albums/{albumId}/check', [LibraryController::class, 'checkAlbumSaved'])->name('library.checkAlbumSaved');
     Route::get('/library/artists/{artistId}/check', [LibraryController::class, 'checkArtistFollowed'])->name('library.checkArtistFollowed');
-});
+
+    // Jam API
     Route::prefix('api/jams')->controller(JamApiController::class)->group(function () {
         Route::post('/', 'store')->name('api.jams.store');
         Route::post('/{id}/join', 'join')->name('api.jams.join');
         Route::get('/{id}', 'show')->name('api.jams.show');
+        Route::post('/{id}/queue', 'updateQueue')->name('api.jams.queue.update');
+        Route::post('/{id}/queue/add', 'addToQueue')->name('api.jams.queue.add');
+        Route::post('/{id}/playback', 'updatePlayback')->name('api.jams.playback.update');
     });
+});

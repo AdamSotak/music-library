@@ -10,8 +10,11 @@ class JamPlaybackState extends Model
     use HasFactory;
 
     protected $primaryKey = 'jam_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     protected $fillable = [
         'jam_id',
         'position',

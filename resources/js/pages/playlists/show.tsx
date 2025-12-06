@@ -452,10 +452,10 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 					</Button>
 				)}
 				<DropdownMenu modal={false}>
-					<DropdownMenuTrigger asChild>
-						<Button size="icon" variant="spotifyTransparent" className="group">
+					<DropdownMenuTrigger className="outline-none group">
+						<span className="inline-flex items-center justify-center rounded-full h-9 w-9 md:h-10 md:w-10 bg-transparent text-white cursor-pointer transition-transform duration-75 group-hover:scale-105 active:scale-95">
 							<svg
-								className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
+								className="w-6 h-6 md:w-7 md:h-7 transition-colors duration-300 fill-gray-400 group-hover:fill-white"
 								fill="gray"
 								viewBox="0 0 24 24"
 								aria-hidden="true"
@@ -464,7 +464,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 								<circle cx="12" cy="12" r="2" />
 								<circle cx="19" cy="12" r="2" />
 							</svg>
-						</Button>
+						</span>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent
 						align="end"

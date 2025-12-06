@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import type { Track } from "@/hooks/usePlayer"
 import { usePlayer } from "@/hooks/usePlayer"
+import { csrfFetch } from "@/utils/csrf"
 
 export type JamRole = "host" | "guest"
 
@@ -13,7 +14,10 @@ export type JamParticipant = {
 type ConnectionStatus = "disconnected" | "connecting" | "connected" | "error"
 
 const randomId = () => {
-	if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+	if (
+		typeof crypto !== "undefined" &&
+		typeof crypto.randomUUID === "function"
+	) {
 		return crypto.randomUUID()
 	}
 	return Math.random().toString(36).slice(2)
@@ -44,19 +48,38 @@ type ApiQueueItem = {
 	track: Track
 }
 
+const dedupeById = <T extends { id: string }>(items: T[]): T[] => {
+	const seen = new Set<string>()
+	const out: T[] = []
+	for (const item of items) {
+		if (seen.has(item.id)) continue
+		seen.add(item.id)
+		out.push(item)
+	}
+	return out
+}
+
 const mapParticipant = (input: ApiParticipant): JamParticipant => ({
 	id: input.id?.toString() ?? randomId(),
 	name: input.name ?? "Guest",
 	role: input.role === "host" ? "host" : "guest",
 })
 
-export function useJamSession(currentUserId: string | null, currentUserName: string | null) {
+export function useJamSession(
+	currentUserId: string | null,
+	currentUserName: string | null,
+) {
 	const [sessionId, setSessionId] = useState<string | null>(null)
 	const [isHost, setIsHost] = useState(false)
 	const [participants, setParticipants] = useState<JamParticipant[]>([])
 	const [status, setStatus] = useState<ConnectionStatus>("disconnected")
 	const [allowControls, setAllowControls] = useState(true)
 	const [sharedQueue, setSharedQueue] = useState<Track[]>([])
+	const currentIndexRef = useRef<number>(0)
+	const canControl = useMemo(
+		() => isHost || allowControls,
+		[isHost, allowControls],
+	)
 
 	const wsRef = useRef<WebSocket | null>(null)
 	const bcRef = useRef<BroadcastChannel | null>(null)
@@ -99,7 +122,10 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 		if (storageKeyRef.current && typeof window !== "undefined") {
 			try {
 				const envelope = { ...((payload as object) ?? {}), ts: Date.now() }
-				window.localStorage.setItem(storageKeyRef.current, JSON.stringify(envelope))
+				window.localStorage.setItem(
+					storageKeyRef.current,
+					JSON.stringify(envelope),
+				)
 				// clean up to avoid storage bloat; remove triggers another event but harmless
 				window.localStorage.removeItem(storageKeyRef.current)
 			} catch {
@@ -132,11 +158,13 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 			if (msg?.type === "participants" && Array.isArray(msg.participants)) {
 				setParticipants(
 					dedupeParticipants(
-						msg.participants.map((p: Partial<JamParticipant> & { userId?: string }) => ({
-							id: p.id ?? p.userId ?? randomId(),
-							name: p.name ?? "Guest",
-							role: p.role === "host" ? "host" : "guest",
-						})),
+						msg.participants.map(
+							(p: Partial<JamParticipant> & { userId?: string }) => ({
+								id: p.id ?? p.userId ?? randomId(),
+								name: p.name ?? "Guest",
+								role: p.role === "host" ? "host" : "guest",
+							}),
+						),
 					),
 				)
 			} else if (msg?.type === "announce" && msg.participant) {
@@ -153,15 +181,17 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 				(msg?.type === "queue" || msg?.type === "queue_snapshot") &&
 				Array.isArray(msg.tracks || msg.queue)
 			) {
-				setSharedQueue((msg.tracks as Track[]) ?? (msg.queue as Track[]))
+				const incoming = (msg.tracks as Track[]) ?? (msg.queue as Track[])
+				setSharedQueue(dedupeById(incoming))
 			} else if (msg?.type === "queue_add" && Array.isArray(msg.items)) {
 				const items = msg.items
 					.map((it: any) => it.track ?? it)
 					.filter(Boolean) as Track[]
-				setSharedQueue((prev) => [...prev, ...items])
+				setSharedQueue((prev) => dedupeById([...prev, ...items]))
 			} else if (msg?.type === "playback_state") {
 				if (msg.clientId && msg.clientId === clientIdRef.current) return
-				if (typeof msg.ts === "number" && msg.ts < lastPlaybackTsRef.current) return
+				if (typeof msg.ts === "number" && msg.ts < lastPlaybackTsRef.current)
+					return
 				lastPlaybackTsRef.current = msg.ts ?? Date.now()
 				const queue = sharedQueueRef.current
 				if (!queue.length) return
@@ -170,9 +200,12 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 						? msg.index
 						: queue.findIndex((t) => t.id === msg.trackId)
 				if (idx >= 0 && queue[idx]) {
-					player.setCurrentTrack(queue[idx], queue, idx)
+					currentIndexRef.current = idx
+					player.setCurrentTrack(queue[idx], queue, idx, {
+						suppressListeners: true,
+					})
 					if (typeof msg.isPlaying === "boolean") {
-						player.setIsPlaying(msg.isPlaying)
+						player.setIsPlaying(msg.isPlaying, { suppressListeners: true })
 					}
 				}
 			}
@@ -191,7 +224,11 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 		}
 	}
 
-	const connectWebSocket = (id: string, role: JamRole, self: JamParticipant) => {
+	const connectWebSocket = (
+		id: string,
+		role: JamRole,
+		self: JamParticipant,
+	) => {
 		if (typeof window === "undefined") return
 		const wsUrl = `ws://localhost:3002/ws/jam/${id}`
 		setStatus("connecting")
@@ -200,7 +237,15 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 			wsRef.current = ws
 			ws.onopen = () => {
 				setStatus("connected")
-				ws.send(JSON.stringify({ type: "announce", jamId: id, userId: self.id, name: self.name, role: self.role }))
+				ws.send(
+					JSON.stringify({
+						type: "announce",
+						jamId: id,
+						userId: self.id,
+						name: self.name,
+						role: self.role,
+					}),
+				)
 			}
 			ws.onerror = () => {
 				setStatus("error")
@@ -211,10 +256,7 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 			ws.onmessage = (ev) => {
 				try {
 					const msg = JSON.parse(ev.data)
-					if (
-						msg.type === "participants" &&
-						Array.isArray(msg.participants)
-					) {
+					if (msg.type === "participants" && Array.isArray(msg.participants)) {
 						setParticipants(
 							dedupeParticipants(
 								msg.participants.map(
@@ -229,7 +271,9 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 					} else if (msg.type === "announce" && msg.participant) {
 						setParticipants((prev) => {
 							const exists = prev.find((p) => p.id === msg.participant.id)
-							const next = dedupeParticipants(exists ? prev : [...prev, msg.participant])
+							const next = dedupeParticipants(
+								exists ? prev : [...prev, msg.participant],
+							)
 							ws.send(
 								JSON.stringify({
 									type: "participants",
@@ -243,7 +287,7 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 										type: "queue_snapshot",
 										jamId: id,
 										tracks: sharedQueueRef.current,
-										}),
+									}),
 								)
 							}
 							return next
@@ -252,15 +296,20 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 						(msg.type === "queue" || msg.type === "queue_snapshot") &&
 						Array.isArray(msg.tracks || msg.queue)
 					) {
-						setSharedQueue((msg.tracks as Track[]) ?? (msg.queue as Track[]))
+						const incoming = (msg.tracks as Track[]) ?? (msg.queue as Track[])
+						setSharedQueue(dedupeById(incoming))
 					} else if (msg.type === "queue_add" && Array.isArray(msg.items)) {
 						const items = msg.items
 							.map((it: any) => it.track ?? it)
 							.filter(Boolean) as Track[]
-						setSharedQueue((prev) => [...prev, ...items])
+						setSharedQueue((prev) => dedupeById([...prev, ...items]))
 					} else if (msg.type === "playback_state") {
 						if (msg.clientId && msg.clientId === clientIdRef.current) return
-						if (typeof msg.ts === "number" && msg.ts < lastPlaybackTsRef.current) return
+						if (
+							typeof msg.ts === "number" &&
+							msg.ts < lastPlaybackTsRef.current
+						)
+							return
 						lastPlaybackTsRef.current = msg.ts ?? Date.now()
 						const queue = sharedQueueRef.current
 						if (!queue.length) return
@@ -269,9 +318,14 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 								? msg.index
 								: queue.findIndex((t) => t.id === msg.trackId)
 						if (idx >= 0 && queue[idx]) {
-							player.setCurrentTrack(queue[idx], queue, idx)
+							currentIndexRef.current = idx
+							player.setCurrentTrack(queue[idx], queue, idx, {
+								suppressListeners: true,
+							})
 							if (typeof msg.isPlaying === "boolean") {
-								player.setIsPlaying(msg.isPlaying)
+								player.setIsPlaying(msg.isPlaying, {
+									suppressListeners: true,
+								})
 							}
 							// TODO: seek to msg.offsetMs when a seek helper is available
 						}
@@ -287,8 +341,16 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 	}
 
 	const startJam = async (options?: StartJamOptions) => {
-		const queue = options?.tracks ?? []
-		if (!queue.length) {
+		if (!currentUserId) {
+			console.warn("Must be logged in to start a Jam")
+			return
+		}
+		const baseQueue =
+			(options?.tracks?.length ? options.tracks : undefined) ??
+			(player.queue.length ? player.queue : undefined) ??
+			(player.currentTrack ? [player.currentTrack] : undefined)
+
+		if (!baseQueue || !baseQueue.length) {
 			console.warn("Cannot start Jam without a queue")
 			return
 		}
@@ -296,20 +358,15 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 			seed_type: options?.seedType ?? "manual",
 			seed_id: options?.seedId ?? "local-queue",
 			allow_controls: allowControls,
-			tracks: queue.map((track) => ({ id: track.id })),
+			tracks: baseQueue.map((track) => ({ id: track.id })),
 		}
-		const csrf = document
-			.querySelector('meta[name="csrf-token"]')
-			?.getAttribute("content")
-		const response = await fetch("/api/jams", {
+
+		const response = await csrfFetch("/api/jams", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				"X-CSRF-TOKEN": csrf ?? "",
-				"X-Requested-With": "XMLHttpRequest",
 				Accept: "application/json",
 			},
-			credentials: "include",
 			body: JSON.stringify(payload),
 		})
 		if (!response.ok) {
@@ -328,12 +385,33 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 		setSessionId(id)
 		setIsHost(true)
 		setParticipants(
-			data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ?? [self],
+			dedupeById(
+				(data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ?? [
+					self,
+				]) as JamParticipant[],
+			),
 		)
-		setSharedQueue(
+		const initialQueue =
 			(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
-				queue,
-		)
+			baseQueue
+		setSharedQueue(initialQueue)
+		if (initialQueue.length) {
+			// Use playback.position when available, otherwise default to first track
+			const playbackIndex =
+				typeof data.playback?.position === "number"
+					? data.playback.position
+					: 0
+			const safeIndex =
+				playbackIndex >= 0 && playbackIndex < initialQueue.length
+					? playbackIndex
+					: 0
+			currentIndexRef.current = safeIndex
+			player.setCurrentTrack(
+				initialQueue[safeIndex],
+				initialQueue,
+				safeIndex,
+			)
+		}
 		connectWebSocket(id, "host", self)
 	}
 
@@ -349,19 +427,17 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 
 	const joinJam = async (id: string) => {
 		if (!id) return
+		if (!currentUserId) {
+			console.warn("Must be logged in to join a Jam")
+			return
+		}
 		storageKeyRef.current = `jam-${id}-relay`
-		const csrf = document
-			.querySelector('meta[name="csrf-token"]')
-			?.getAttribute("content")
-		const response = await fetch(`/api/jams/${id}/join`, {
+		const response = await csrfFetch(`/api/jams/${id}/join`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				"X-CSRF-TOKEN": csrf ?? "",
-				"X-Requested-With": "XMLHttpRequest",
 				Accept: "application/json",
 			},
-			credentials: "include",
 			body: JSON.stringify({}),
 		})
 		if (!response.ok) {
@@ -378,89 +454,189 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 		setSessionId(id)
 		setIsHost(false)
 		setParticipants(
-			data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ?? [
-				self,
-			],
+			dedupeById(
+				(data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ?? [
+					self,
+				]) as JamParticipant[],
+			),
 		)
-		setSharedQueue(
+		const queueFromApi =
 			(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
-				[],
-		)
+			[]
+		setSharedQueue(queueFromApi)
+		if (queueFromApi.length) {
+			const playbackIndex =
+				typeof data.playback?.position === "number"
+					? data.playback.position
+					: 0
+			const safeIndex =
+				playbackIndex >= 0 && playbackIndex < queueFromApi.length
+					? playbackIndex
+					: 0
+			currentIndexRef.current = safeIndex
+			player.setCurrentTrack(
+				queueFromApi[safeIndex],
+				queueFromApi,
+				safeIndex,
+			)
+		}
 		connectWebSocket(id, "guest", self)
 	}
 
-	const syncQueue = (queue: Track[]) => {
-		setSharedQueue(queue)
-		if (sessionId) {
-			emit({
-				type: "queue_snapshot",
-				jamId: sessionId,
-				tracks: queue,
-				index: 0,
+	const syncQueue = async (queue: Track[]) => {
+		setSharedQueue(dedupeById(queue))
+		if (!sessionId) return
+
+		emit({
+			type: "queue_snapshot",
+			jamId: sessionId,
+			tracks: queue,
+			index: currentIndexRef.current ?? 0,
+		})
+
+		try {
+			const response = await csrfFetch(`/api/jams/${sessionId}/queue`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json",
+				},
+				body: JSON.stringify({
+					tracks: queue.map((track) => ({ id: track.id })),
+				}),
 			})
+			if (!response.ok) {
+				const text = await response.text()
+				console.error("Failed to sync Jam queue", response.status, text)
+				return
+			}
+			const data = await response.json()
+			const updatedQueue = dedupeById(
+				(data.queue as ApiQueueItem[] | undefined)?.map(
+					(item) => item.track,
+				) ?? queue,
+			)
+			setSharedQueue(updatedQueue)
+		} catch (err) {
+			console.error("Error syncing Jam queue", err)
 		}
 	}
 
-	const addToJamQueue = (tracks: Track[]) => {
+	const addToJamQueue = async (tracks: Track[]) => {
 		if (!sessionId || !tracks.length) return
-		setSharedQueue((prev) => {
-			const deduped = tracks.filter((t) => !prev.some((p) => p.id === t.id))
-			if (!deduped.length) return prev
-			const next = [...prev, ...deduped]
-			emit({
-				type: "queue_add",
-				jamId: sessionId,
-				items: deduped.map((track) => ({ track })),
+
+		const current = sharedQueueRef.current
+		const deduped = tracks.filter((t) => !current.some((p) => p.id === t.id))
+		if (!deduped.length) return
+
+		const optimistic = dedupeById([...current, ...deduped])
+		setSharedQueue(optimistic)
+		emit({
+			type: "queue_add",
+			jamId: sessionId,
+			items: deduped.map((track) => ({ track })),
+		})
+
+		try {
+			const response = await csrfFetch(`/api/jams/${sessionId}/queue/add`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json",
+				},
+				body: JSON.stringify({
+					tracks: deduped.map((track) => ({ id: track.id })),
+				}),
 			})
-			return next
+			if (!response.ok) {
+				const text = await response.text()
+				console.error("Failed to add to Jam queue", response.status, text)
+				return
+			}
+			const data = await response.json()
+			const updatedQueue = dedupeById(
+				(data.queue as ApiQueueItem[] | undefined)?.map(
+					(item) => item.track,
+				) ?? optimistic,
+			)
+			setSharedQueue(updatedQueue)
+		} catch (err) {
+			console.error("Error adding tracks to Jam queue", err)
+		}
+	}
+
+	const sendPlaybackState = (
+		track: Track | null,
+		index: number | undefined,
+		isPlaying = true,
+	) => {
+		if (!sessionId) return
+
+		const effectiveIndex =
+			typeof index === "number" && index >= 0 ? index : currentIndexRef.current
+		currentIndexRef.current = effectiveIndex ?? 0
+
+		emit({
+			type: "playback_state",
+			jamId: sessionId,
+			trackId: track?.id,
+			index: effectiveIndex,
+			offsetMs: 0,
+			isPlaying,
+			ts: Date.now(),
+			clientId: clientIdRef.current,
+		})
+
+		void csrfFetch(`/api/jams/${sessionId}/playback`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify({
+				position: typeof effectiveIndex === "number" ? effectiveIndex : 0,
+				offset_ms: 0,
+				is_playing: isPlaying,
+			}),
+		}).catch((err) => {
+			console.error("Failed to persist Jam playback state", err)
 		})
 	}
 
 	// Host: emit playback_state on player events
 	useEffect(() => {
-		if (!sessionId || !isHost) {
+		if (!sessionId) {
 			player.setListeners({})
 			return
 		}
 
 		const onTrackChange = (track: Track | null, index: number) => {
+			if (!canControl) return
 			if (track && !sharedQueueRef.current.some((t) => t.id === track.id)) {
 				addToJamQueue([track])
 			}
-			emit({
-				type: "playback_state",
-				jamId: sessionId,
-				trackId: track?.id,
-				index,
-				offsetMs: 0,
-				isPlaying: true,
-				ts: Date.now(),
-				clientId: clientIdRef.current,
-			})
+			sendPlaybackState(track, index, true)
 		}
 
 		const onPlayStateChange = (isPlaying: boolean) => {
+			if (!canControl) return
 			const state = usePlayer.getState()
-			emit({
-				type: "playback_state",
-				jamId: sessionId,
-				trackId: state.currentTrack?.id,
-				index: state.currentIndex,
-				offsetMs: 0,
-				isPlaying,
-				ts: Date.now(),
-				clientId: clientIdRef.current,
-			})
+			sendPlaybackState(state.currentTrack, state.currentIndex, isPlaying)
 		}
 
 		player.setListeners({ onTrackChange, onPlayStateChange })
 		// cleanup happens when deps change
-	}, [sessionId, isHost])
+	}, [sessionId, isHost, allowControls, canControl])
 
 	useEffect(() => {
 		if (typeof window === "undefined") return
 		const onStorage = (ev: StorageEvent) => {
-			if (!storageKeyRef.current || ev.key !== storageKeyRef.current || !ev.newValue) return
+			if (
+				!storageKeyRef.current ||
+				ev.key !== storageKeyRef.current ||
+				!ev.newValue
+			)
+				return
 			try {
 				const msg = JSON.parse(ev.newValue)
 				if (msg.type === "participants" && Array.isArray(msg.participants)) {
@@ -468,7 +644,9 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 				} else if (msg.type === "announce" && msg.participant) {
 					setParticipants((prev) => {
 						const exists = prev.find((p) => p.id === msg.participant.id)
-						const next = dedupeParticipants(exists ? prev : [...prev, msg.participant])
+						const next = dedupeParticipants(
+							exists ? prev : [...prev, msg.participant],
+						)
 						broadcastParticipants(next)
 						if (isHost && sharedQueueRef.current.length) {
 							broadcastQueue(sharedQueueRef.current)
@@ -484,7 +662,8 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 					setSharedQueue((prev) => [...prev, ...items])
 				} else if (msg.type === "playback_state") {
 					if (msg.clientId && msg.clientId === clientIdRef.current) return
-					if (typeof msg.ts === "number" && msg.ts < lastPlaybackTsRef.current) return
+					if (typeof msg.ts === "number" && msg.ts < lastPlaybackTsRef.current)
+						return
 					lastPlaybackTsRef.current = msg.ts ?? Date.now()
 					const queue = sharedQueueRef.current
 					if (!queue.length) return
@@ -493,9 +672,14 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 							? msg.index
 							: queue.findIndex((t) => t.id === msg.trackId)
 					if (idx >= 0 && queue[idx]) {
-						player.setCurrentTrack(queue[idx], queue, idx)
+						currentIndexRef.current = idx
+						player.setCurrentTrack(queue[idx], queue, idx, {
+							suppressListeners: true,
+						})
 						if (typeof msg.isPlaying === "boolean") {
-							player.setIsPlaying(msg.isPlaying)
+							player.setIsPlaying(msg.isPlaying, {
+								suppressListeners: true,
+							})
 						}
 					}
 				}
@@ -524,5 +708,7 @@ export function useJamSession(currentUserId: string | null, currentUserName: str
 		startJam,
 		endJam,
 		joinJam,
+		sendPlaybackState,
+		canControl,
 	}
 }

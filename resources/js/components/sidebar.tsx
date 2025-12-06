@@ -4,6 +4,7 @@ import { router, usePage } from "@inertiajs/react"
 import { Modals } from "@/hooks/useModals"
 import type { InertiaPageProps, Playlist } from "@/types"
 import { useState, useMemo } from "react"
+import { useUiLayout } from "@/hooks/useUiLayout"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -38,6 +39,7 @@ export default function Sidebar({
 		.props as unknown as InertiaPageProps
 	const { setOpen: setEditPlaylistDetailsModalOpen } =
 		Modals.useEditPlaylistDetailsModal()
+	const { openRightSidebar } = useUiLayout()
 
 	const [activeTab, setActiveTab] = useState<FilterTab>("playlists")
 	const [sortBy, setSortBy] = useState<SortOption>("recents")
@@ -255,7 +257,7 @@ export default function Sidebar({
 								</DropdownMenuItem>
 								<DropdownMenuItem
 									className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded"
-									onClick={() => Modals.useJamModal.getState().setOpen(true)}
+									onClick={() => openRightSidebar()}
 								>
 									<svg
 										viewBox="0 0 24 24"
