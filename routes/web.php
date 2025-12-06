@@ -45,6 +45,9 @@ Route::get('/tracks/{id}', [TrackController::class, 'show'])->name('tracks.show'
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/api/search/tracks', [SearchController::class, 'searchTracks'])->name('api.search.tracks');
 
+Route::get('/scan', [TrackController::class, 'scan'])->name('scan');
+Route::get('/api/barcode/{track}', [TrackController::class, 'generateBarcode'])->name('api.barcode');
+
 // Audio proxy with smart URL refresh
 Route::get('/api/audio/stream', [AudioProxyController::class, 'stream'])->name('api.audio.stream');
 

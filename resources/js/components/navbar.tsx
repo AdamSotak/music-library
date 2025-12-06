@@ -21,6 +21,7 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 	const [isSearchOpen, setIsSearchOpen] = useState(false)
 	const [isAnimating, setIsAnimating] = useState(false)
 	const [searchQuery, setSearchQuery] = useState("")
+	const [_scannerOpen, _setScannerOpen] = useState(false)
 	const searchInputRef = useRef<HTMLInputElement>(null)
 	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const { user } = usePage().props as unknown as InertiaPageProps
@@ -31,12 +32,10 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 	const handleSearchChange = (value: string) => {
 		setSearchQuery(value)
 
-		// Clear previous timeout
 		if (searchTimeoutRef.current) {
 			clearTimeout(searchTimeoutRef.current)
 		}
 
-		// Debounce search for 300ms
 		searchTimeoutRef.current = setTimeout(() => {
 			if (value.trim().length >= 2) {
 				router.visit(`/search?q=${encodeURIComponent(value.trim())}`, {
@@ -53,21 +52,18 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 		}, 300)
 	}
 
-	// Handle popup opening animation
 	const openSearchPopup = () => {
 		setIsSearchOpen(true)
 		setIsAnimating(false)
 	}
 
-	// Handle popup closing animation
 	const closeSearchPopup = useCallback(() => {
 		setIsAnimating(false)
 		setTimeout(() => {
 			setIsSearchOpen(false)
-		}, 300) // Match animation duration
+		}, 300)
 	}, [])
 
-	// Focus search input when popup opens and handle animation
 	useEffect(() => {
 		if (isSearchOpen) {
 			setTimeout(() => {
@@ -82,7 +78,6 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 		}
 	}, [isSearchOpen])
 
-	// Close search popup when clicking outside
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			const target = event.target as Element
@@ -103,7 +98,6 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 		<>
 			<div className="flex justify-between items-center pl-5 pr-4 h-16">
 				<div className="flex items-center">
-					{/* Mobile Menu Button */}
 					<Button
 						size="icon"
 						variant="spotifyTransparent"
@@ -170,7 +164,6 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 							)}
 						</Button>
 
-						{/* Desktop Search Bar - Hidden on mobile */}
 						<div
 							tabIndex={-1}
 							className={cn(
@@ -267,7 +260,6 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 							</div>
 						</div>
 
-						{/* Mobile Search Button - Visible only on mobile */}
 						<Button
 							size={"icon"}
 							className="lg:hidden rounded-full w-10 h-10 mobile-search-button"
@@ -290,6 +282,16 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 				</div>
 
 				<div className="flex items-center gap-1.5">
+					{/* Scanner Button */}
+					{/* <Button
+						size={"icon"}
+						variant={"spotifyTransparent"}
+						className="group rounded-full"
+						onClick={() => setScannerOpen(true)}
+					>
+						<QrCode className="min-w-6 min-h-6 text-gray-400 transition-colors duration-300 group-hover:text-white" />
+					</Button> */}
+
 					<Button
 						size={"icon"}
 						variant={"spotifyTransparent"}
@@ -487,6 +489,16 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 					</div>
 				</div>
 			)}
+
+			{/* Scanner Dialog */}
+			{/* <Dialog open={scannerOpen} onOpenChange={setScannerOpen}>
+				<DialogContent className="max-w-2xl bg-zinc-900 border-white/10">
+					<DialogHeader>
+						<DialogTitle className="text-white">Scan Music Code</DialogTitle>
+					</DialogHeader>
+					<BarcodeScanner />
+				</DialogContent>
+			</Dialog> */}
 		</>
 	)
 }
