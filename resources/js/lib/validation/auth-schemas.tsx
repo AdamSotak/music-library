@@ -14,3 +14,10 @@ export const signupFormSchema = z.object({
 		.string()
 		.min(8, { error: "Password must be at least 8 characters long" }),
 })
+
+export const twoFactorVerifySchema = z.object({
+	code: z
+		.string()
+		.min(6, { error: "Code must be 6 digits" })
+		.max(6, { error: "Code must be 6 digits" }),
+})
