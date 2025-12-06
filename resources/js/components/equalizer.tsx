@@ -39,6 +39,7 @@ export default function Equalizer({ audio, trackKey }: EqualizerProps) {
 		if (!audio) return
 
 		const AudioCtx =
+			// biome-ignore lint/suspicious/noExplicitAny: window object is not typed
 			(window as any).AudioContext || (window as any).webkitAudioContext
 		if (!AudioCtx) {
 			console.warn("Web Audio API not supported")
