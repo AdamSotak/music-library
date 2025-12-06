@@ -28,7 +28,9 @@ export default function MusicBarcode({
 	// QR via qrserver.com
 	const qrUrl = useMemo(
 		() =>
-			`https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=${encodeURIComponent(trackUrl)}`,
+			`https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=${encodeURIComponent(
+				trackUrl,
+			)}`,
 		[trackUrl],
 	)
 
@@ -108,13 +110,13 @@ export default function MusicBarcode({
 						<div className="flex gap-2">
 							<Button
 								onClick={() => setMode("qr")}
-								variant={mode === "qr" ? "default" : "secondary"}
+								variant={mode === "qr" ? "default" : "spotifyTransparent"}
 							>
 								QR
 							</Button>
 							<Button
 								onClick={() => setMode("barcode")}
-								variant={mode === "barcode" ? "default" : "secondary"}
+								variant={mode === "barcode" ? "default" : "spotifyTransparent"}
 							>
 								Barcode
 							</Button>
