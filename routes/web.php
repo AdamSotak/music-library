@@ -12,7 +12,6 @@ use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TrackController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::controller(AuthController::class)->group(function () {
     Route::get('/login', 'login')->name('login');

@@ -17,11 +17,11 @@ class Check2FA
     {
         $user = auth()->user();
 
-        if (! $user || ! $user->two_factor_enabled) {
+        if (!$user || !$user->two_factor_enabled) {
             return $next($request);
         }
 
-        if (! session('2fa_verified')) {
+        if (!session('2fa_verified')) {
             return redirect()->route('2fa.verify');
         }
 

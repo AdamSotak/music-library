@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class FriendController extends Controller
 {
+    public function index()
+    {
+        return Inertia::render('friends/index');
+    }
+
     // Send friend request or remove if already friends
     public function sendFriendRequest(Request $request, int $userId)
     {
