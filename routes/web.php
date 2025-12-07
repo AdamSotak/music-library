@@ -5,6 +5,7 @@ use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\AudioProxyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\FriendController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\PlaylistController;
@@ -89,9 +90,26 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::post('/playlist/{id}/tracks', [PlaylistController::class, 'addTracks'])->name('playlists.addTracks');
     Route::delete('/playlist/{playlistId}/tracks/{trackId}', [PlaylistController::class, 'removeTrack'])->name('playlists.removeTrack');
 
+    // Shared playlist management
+    Route::post('/playlist/{id}/share', [PlaylistController::class, 'share'])->name('playlists.share');
+    Route::post('/playlist/{id}/share/users', [PlaylistController::class, 'addSharedUsers'])->name('playlists.addSharedUsers');
+    Route::delete('/playlist/{playlistId}/share/users/{userId}', [PlaylistController::class, 'removeSharedUser'])->name('playlists.removeSharedUser');
+    Route::post('/playlist/{id}/leave', [PlaylistController::class, 'leaveSharedPlaylist'])->name('playlists.leave');
+    Route::get('/api/playlist/{id}/share/users', [PlaylistController::class, 'getSharedUsers'])->name('api.playlists.sharedUsers');
+
     // Library management (save albums, follow artists)
     Route::post('/library/albums/{albumId}', [LibraryController::class, 'saveAlbum'])->name('library.saveAlbum');
     Route::post('/library/artists/{artistId}', [LibraryController::class, 'followArtist'])->name('library.followArtist');
     Route::get('/library/albums/{albumId}/check', [LibraryController::class, 'checkAlbumSaved'])->name('library.checkAlbumSaved');
     Route::get('/library/artists/{artistId}/check', [LibraryController::class, 'checkArtistFollowed'])->name('library.checkArtistFollowed');
+
+    // Friend management
+    Route::post('/friends/{userId}', [FriendController::class, 'sendFriendRequest'])->name('friends.sendRequest');
+    Route::post('/friends/{userId}/accept', [FriendController::class, 'acceptFriendRequest'])->name('friends.acceptRequest');
+    Route::post('/friends/{userId}/remove', [FriendController::class, 'removeFriend'])->name('friends.remove');
+    Route::get('/friends/{userId}/status', [FriendController::class, 'checkFriendStatus'])->name('friends.checkStatus');
+    Route::get('/api/friends/search', [FriendController::class, 'searchUsers'])->name('api.friends.search');
+
+    // Friends page
+    Route::get('/friends', [FriendController::class, 'index'])->name('friends.index');
 });

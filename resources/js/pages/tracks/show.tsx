@@ -154,6 +154,19 @@ export default function TrackShow({ track }: TrackShowProps) {
 						</svg>
 					</Button>
 				)}
+				<AddToPlaylistDropdown trackId={track.id} includeShared>
+					<Button size="icon" variant="spotifyTransparent" className="group">
+						<svg
+							className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
+							fill="gray"
+							viewBox="0 0 24 24"
+						>
+							<circle cx="5" cy="12" r="2" />
+							<circle cx="12" cy="12" r="2" />
+							<circle cx="19" cy="12" r="2" />
+						</svg>
+					</Button>
+				</AddToPlaylistDropdown>
 
 				{/* Music Barcode Button */}
 				<MusicBarcode trackId={track.id} trackName={track.name} />
