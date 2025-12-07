@@ -46,10 +46,10 @@ class HomeController extends Controller
         $friendRecommendation = null;
         if (Auth::user()) {
             $friends = Auth::user()->getFriends();
-    
+
             if ($friends->isNotEmpty()) {
                 $friendIds = $friends->pluck('id');
-    
+
                 // Single query: Get all friends' playlists that have tracks, then pick one randomly
                 $playlistWithTracks = Playlist::whereIn('user_id', $friendIds)
                     ->where('is_default', true)
@@ -57,7 +57,7 @@ class HomeController extends Controller
                     ->with('user:id,name')
                     ->inRandomOrder()
                     ->first();
-    
+
                 if ($playlistWithTracks) {
                     // Get random tracks from the selected friend's liked songs playlist
                     $friendTracks = Track::with(['artist', 'album'])
@@ -78,7 +78,7 @@ class HomeController extends Controller
                             'duration' => $track->duration,
                             'audio' => $track->audio_url,
                         ]);
-    
+
                     $friendRecommendation = [
                         'friend_name' => $playlistWithTracks->user->name,
                         'friend_id' => $playlistWithTracks->user->id,
@@ -87,7 +87,6 @@ class HomeController extends Controller
                 }
             }
         }
-
 
         return Inertia::render('index', [
             'albums' => $albums,
