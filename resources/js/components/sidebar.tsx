@@ -345,8 +345,8 @@ export default function Sidebar({
 				>
 					Shared
 					{sharedPlaylists && sharedPlaylists.length > 0 && (
-						<span className="ml-1.5 px-1.5 py-0.5 text-xs bg-green-500 text-black rounded-full">
-							{sharedPlaylists.length}
+						<span className="ml-1.5 w-4 h-4 flex items-center justify-center bg-green-500 text-black rounded-full text-[10px] px-1.5 py-0.5">
+							{sharedPlaylists.length > 9 ? "9+" : sharedPlaylists.length}
 						</span>
 					)}
 				</Button>
