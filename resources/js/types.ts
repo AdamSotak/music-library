@@ -4,6 +4,7 @@ export type InertiaPageProps = {
 		name: string
 		email: string
 		createdAt: string
+		twoFactorEnabled: boolean
 	} | null
 	playlists: Playlist[]
 	sharedPlaylists: Playlist[]

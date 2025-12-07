@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             HandleInertiaRequests::class,
+        ])->alias([
+            '2fa' => \App\Http\Middleware\Check2FA::class,
+        ])->validateCsrfTokens(except: [
+            'http://localhost:8000/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

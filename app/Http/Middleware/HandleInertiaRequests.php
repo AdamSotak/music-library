@@ -174,6 +174,7 @@ class HandleInertiaRequests extends Middleware
                 'name' => $user->name,
                 'email' => $user->email,
                 'createdAt' => $user->created_at,
+                'twoFactorEnabled' => $user->two_factor_enabled,
             ] : null,
             'playlists' => $playlists,
             'sharedPlaylists' => $sharedPlaylists,

@@ -20,6 +20,12 @@ Route::controller(AuthController::class)->group(function () {
 
     Route::post('/login', 'storeLogin');
     Route::post('/signup', 'storeSignup');
+
+    // 2FA verification route (must be accessible without 2fa middleware)
+    Route::middleware('auth')->group(function () {
+        Route::get('/verify-2fa', 'showTwoFactorVerify')->name('2fa.verify');
+        Route::post('/verifyTwoFactorLogin', 'verifyTwoFactorLogin');
+    });
 });
 
 Route::controller(HomeController::class)->group(function () {
@@ -47,6 +53,9 @@ Route::get('/tracks/{id}', [TrackController::class, 'show'])->name('tracks.show'
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/api/search/tracks', [SearchController::class, 'searchTracks'])->name('api.search.tracks');
 
+Route::get('/scan', [TrackController::class, 'scan'])->name('scan');
+Route::get('/api/barcode/{track}', [TrackController::class, 'generateBarcode'])->name('api.barcode');
+
 // Audio proxy with smart URL refresh
 Route::get('/api/audio/stream', [AudioProxyController::class, 'stream'])->name('api.audio.stream');
 
@@ -60,19 +69,20 @@ Route::get('/api/debug/data', function () {
     ]);
 });
 
-// Protected routes
-Route::middleware('auth')->group(function () {
+// Auth-only routes (no 2FA verification required - users can access these immediately after login)
+Route::middleware(['auth'])->group(function () {
     Route::controller(AuthController::class)->group(function () {
         Route::post('/logout', 'logout');
         Route::get('/account', 'account');
         Route::post('/delete-account', 'destroy');
+        Route::get('/setupTwoFactor', 'setupTwoFactor');
+        Route::post('/verifyTwoFactor', 'verifyTwoFactor');
+        Route::post('/disableTwoFactor', 'disableTwoFactor');
     });
+});
 
-    // Friends page
-    Route::get('/friends', function () {
-        return Inertia::render('friends/index');
-    })->name('friends.index');
-
+// Protected routes (require both auth and 2FA verification if enabled)
+Route::middleware(['auth', '2fa'])->group(function () {
     // Playlist management
     Route::post('/playlist', [PlaylistController::class, 'store'])->name('playlists.store');
     Route::get('/playlist/{id}', [PlaylistController::class, 'show'])->name('playlists.show');
@@ -100,4 +110,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/friends/{userId}/remove', [FriendController::class, 'removeFriend'])->name('friends.remove');
     Route::get('/friends/{userId}/status', [FriendController::class, 'checkFriendStatus'])->name('friends.checkStatus');
     Route::get('/api/friends/search', [FriendController::class, 'searchUsers'])->name('api.friends.search');
+
+    // Friends page
+    Route::get('/friends', [FriendController::class, 'index'])->name('friends.index');
 });
