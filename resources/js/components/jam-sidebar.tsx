@@ -48,19 +48,13 @@ export function JamSidebar({
 
 	const upcoming = useMemo(
 		() =>
-			nowPlaying
-				? queue.filter((track) => track.id !== nowPlaying.id)
-				: queue,
+			nowPlaying ? queue.filter((track) => track.id !== nowPlaying.id) : queue,
 		[queue, nowPlaying],
 	)
 
 	const handleStartJam = async () => {
 		const baseQueue =
-			player.queue.length > 0
-				? player.queue
-				: nowPlaying
-					? [nowPlaying]
-					: []
+			player.queue.length > 0 ? player.queue : nowPlaying ? [nowPlaying] : []
 
 		if (!baseQueue.length) {
 			alert("Play something first, then start a Jam.")
@@ -246,9 +240,7 @@ export function JamSidebar({
 							<input
 								type="checkbox"
 								checked={allowControls}
-								onChange={(event) =>
-									setAllowControls(event.target.checked)
-								}
+								onChange={(event) => setAllowControls(event.target.checked)}
 							/>
 							Allow others to control playback
 						</label>
@@ -352,9 +344,7 @@ export function JamSidebar({
 							className="w-full text-left px-2 py-2 flex items-center justify-between hover:bg-white/5 rounded-md transition"
 						>
 							<div className="flex items-center gap-3 min-w-0">
-								<div className="w-5 text-[11px] text-zinc-400">
-									{index + 1}
-								</div>
+								<div className="w-5 text-[11px] text-zinc-400">{index + 1}</div>
 								<div className="flex flex-col min-w-0">
 									<div className="text-sm truncate">{track.name}</div>
 									<div className="text-[11px] text-zinc-500 truncate">
@@ -393,9 +383,7 @@ export function JamSidebar({
 													className="w-8 h-8 object-cover"
 												/>
 											) : (
-												<span className="text-[10px] text-zinc-300">
-													Track
-												</span>
+												<span className="text-[10px] text-zinc-300">Track</span>
 											)}
 										</div>
 										<div className="flex flex-col min-w-0">

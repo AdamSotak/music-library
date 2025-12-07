@@ -122,7 +122,7 @@ function DesktopPlayer({
 	playPrevious: () => void
 	formatTime: (seconds: number) => string
 }) {
-	const { toggleRightSidebar } = useUiLayout()
+	const { toggleRightSidebar, isRightSidebarOpen } = useUiLayout()
 
 	return (
 		<div className="flex justify-between items-center w-full h-20 px-4">
@@ -390,7 +390,7 @@ function DesktopPlayer({
 				<Button
 					size={"icon"}
 					variant={"spotifyTransparent"}
-					className="group w-4 h-4"
+					className="group w-4 h-4 relative"
 					onClick={toggleRightSidebar}
 				>
 					<svg
@@ -398,11 +398,14 @@ function DesktopPlayer({
 						role="img"
 						aria-hidden="true"
 						viewBox="0 0 16 16"
-						fill="gray"
-						className="max-w-4 max-h-4 transition-colors duration-300 group-hover:fill-white"
+						fill={isRightSidebarOpen ? "#1ed760" : "gray"}
+						className={`max-w-4 max-h-4 transition-colors duration-300 ${!isRightSidebarOpen ? "group-hover:fill-white" : ""}`}
 					>
 						<path d="M15 15H1v-1.5h14zm0-4.5H1V9h14zm-14-7A2.5 2.5 0 0 1 3.5 1h9a2.5 2.5 0 0 1 0 5h-9A2.5 2.5 0 0 1 1 3.5m2.5-1a1 1 0 0 0 0 2h9a1 1 0 1 0 0-2z"></path>
 					</svg>
+					{isRightSidebarOpen && (
+						<div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-spotify-green rounded-full" />
+					)}
 				</Button>
 
 				<Button
@@ -491,23 +494,7 @@ function DesktopPlayer({
 					/>
 				</div>
 
-				<Button
-					size={"icon"}
-					variant={"spotifyTransparent"}
-					className="group w-4 h-4"
-					onClick={toggleRightSidebar}
-				>
-					<svg
-						data-encore-id="icon"
-						role="img"
-						viewBox="0 0 16 16"
-						fill="gray"
-						aria-hidden="true"
-						className="max-w-4 max-h-4 transition-colors duration-300 group-hover:fill-white"
-					>
-						<path d="M2 2.75a.75.75 0 0 0 0 1.5h12a.75.75 0 0 0 0-1.5zm0 3.5A.75.75 0 0 0 2 7.75h8a.75.75 0 0 0 0-1.5zm0 5.5a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 0 1.5h-5.5A.75.75 0 0 1 2 11.75z"></path>
-					</svg>
-				</Button>
+
 
 				<Button
 					size={"icon"}
@@ -950,11 +937,10 @@ export default function AudioPlayer() {
 			{/* Full-screen mobile player modal */}
 			{isExpanded && (
 				<div
-					className={`fixed inset-0 z-50 bg-gradient-to-b from-zinc-800 to-zinc-900 lg:hidden transition-transform duration-300 ease-in-out ${
-						isClosing
-							? "animate-out slide-out-to-bottom"
-							: "animate-in slide-in-from-bottom"
-					}`}
+					className={`fixed inset-0 z-50 bg-gradient-to-b from-zinc-800 to-zinc-900 lg:hidden transition-transform duration-300 ease-in-out ${isClosing
+						? "animate-out slide-out-to-bottom"
+						: "animate-in slide-in-from-bottom"
+						}`}
 					onClick={(e) => {
 						// Close if clicking on backdrop (not on content)
 						if (e.target === e.currentTarget) {

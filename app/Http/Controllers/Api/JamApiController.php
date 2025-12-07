@@ -4,24 +4,29 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\JamParticipant;
-use App\Models\JamPlaybackState;
 use App\Models\JamQueueItem;
 use App\Models\JamSession;
+use App\Services\JamService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class JamApiController extends Controller
 {
+    protected JamService $jamService;
+
+    public function __construct(JamService $jamService)
+    {
+        $this->jamService = $jamService;
+    }
+
     /**
      * Ensure the current user is allowed to mutate the Jam state.
      */
     protected function assertCanControlJam(JamSession $jam, Request $request): void
     {
         $userId = $request->user()->id ?? null;
-        if (!$userId) {
+        if (! $userId) {
             abort(Response::HTTP_UNAUTHORIZED);
         }
         if ($jam->host_user_id === $userId) {
@@ -43,39 +48,7 @@ class JamApiController extends Controller
             'tracks.*.id' => 'required|string|exists:tracks,id',
         ]);
 
-        $jam = DB::transaction(function () use ($validated, $request) {
-            $jam = JamSession::create([
-                'id' => (string) Str::uuid(),
-                'host_user_id' => $request->user()->id,
-                'seed_type' => $validated['seed_type'],
-                'seed_id' => $validated['seed_id'],
-                'allow_controls' => $validated['allow_controls'] ?? true,
-            ]);
-
-            JamParticipant::updateOrCreate(
-                ['jam_id' => $jam->id, 'user_id' => $request->user()->id],
-                ['role' => 'host', 'joined_at' => now()],
-            );
-
-            foreach ($validated['tracks'] as $index => $trackData) {
-                JamQueueItem::create([
-                    'jam_id' => $jam->id,
-                    'position' => $index,
-                    'track_id' => $trackData['id'],
-                    'added_by' => $request->user()->id,
-                    'source' => $validated['seed_type'],
-                ]);
-            }
-
-            JamPlaybackState::create([
-                'jam_id' => $jam->id,
-                'position' => 0,
-                'offset_ms' => 0,
-                'is_playing' => false,
-            ]);
-
-            return $jam;
-        });
+        $jam = $this->jamService->createJam($request->user()->id, $validated);
 
         return $this->formatJamResponse($jam->id, $request->user()->id);
     }
@@ -87,21 +60,17 @@ class JamApiController extends Controller
 
     public function join(string $id, Request $request): JsonResponse
     {
-        $jam = JamSession::findOrFail($id);
-
-        JamParticipant::updateOrCreate(
-            ['jam_id' => $jam->id, 'user_id' => $request->user()->id],
-            ['role' => $request->input('role', 'guest'), 'joined_at' => now()],
+        $this->jamService->joinJam(
+            $id,
+            $request->user()->id,
+            $request->input('role', 'guest')
         );
 
-        return $this->formatJamResponse($jam->id, $request->user()->id);
+        return $this->formatJamResponse($id, $request->user()->id);
     }
 
     /**
      * Replace the Jam queue with the provided ordered list of tracks.
-     *
-     * This is used by the host to keep the canonical queue in sync with
-     * the local player queue (and to support reordering).
      */
     public function updateQueue(string $id, Request $request): JsonResponse
     {
@@ -113,19 +82,7 @@ class JamApiController extends Controller
         $jam = JamSession::findOrFail($id);
         $this->assertCanControlJam($jam, $request);
 
-        DB::transaction(function () use ($jam, $validated, $request): void {
-            JamQueueItem::where('jam_id', $jam->id)->delete();
-
-            foreach ($validated['tracks'] as $index => $trackData) {
-                JamQueueItem::create([
-                    'jam_id' => $jam->id,
-                    'position' => $index,
-                    'track_id' => $trackData['id'],
-                    'added_by' => $request->user()->id,
-                    'source' => $jam->seed_type,
-                ]);
-            }
-        });
+        $this->jamService->updateQueue($jam, $validated['tracks'], $request->user()->id);
 
         return $this->formatJamResponse($jam->id, $request->user()->id);
     }
@@ -143,20 +100,7 @@ class JamApiController extends Controller
         $jam = JamSession::findOrFail($id);
         $this->assertCanControlJam($jam, $request);
 
-        DB::transaction(function () use ($jam, $validated, $request): void {
-            $currentMax = JamQueueItem::where('jam_id', $jam->id)->max('position');
-            $position = is_numeric($currentMax) ? ((int) $currentMax) + 1 : 0;
-
-            foreach ($validated['tracks'] as $trackData) {
-                JamQueueItem::create([
-                    'jam_id' => $jam->id,
-                    'position' => $position++,
-                    'track_id' => $trackData['id'],
-                    'added_by' => $request->user()->id,
-                    'source' => $jam->seed_type,
-                ]);
-            }
-        });
+        $this->jamService->addToQueue($jam, $validated['tracks'], $request->user()->id);
 
         return $this->formatJamResponse($jam->id, $request->user()->id);
     }
@@ -175,17 +119,7 @@ class JamApiController extends Controller
         $jam = JamSession::findOrFail($id);
         $this->assertCanControlJam($jam, $request);
 
-        JamPlaybackState::updateOrCreate(
-            ['jam_id' => $jam->id],
-            array_merge(
-                [
-                    'position' => 0,
-                    'offset_ms' => 0,
-                    'is_playing' => false,
-                ],
-                $validated,
-            )
-        );
+        $this->jamService->updatePlayback($jam, $validated);
 
         return $this->formatJamResponse($jam->id, $request->user()->id);
     }

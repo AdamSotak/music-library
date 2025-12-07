@@ -80,19 +80,17 @@ export function TrackContextMenu({
 	const handleAddToQueue = () => {
 		const allPlaylists = (playlists as Playlist[] | undefined) ?? []
 
-		let fullTrack:
-			| {
-					id: string
-					name: string
-					artist: string
-					artist_id: string
-					album: string
-					album_id?: string
-					album_cover?: string
-					duration: number
-					audio: string | null
-			  }
-			| null = null
+		let fullTrack: {
+			id: string
+			name: string
+			artist: string
+			artist_id: string
+			album: string
+			album_id?: string
+			album_cover?: string
+			duration: number
+			audio: string | null
+		} | null = null
 
 		for (const playlist of allPlaylists) {
 			const fromPlaylist = playlist.tracks?.find(

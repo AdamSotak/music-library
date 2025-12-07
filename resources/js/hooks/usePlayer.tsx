@@ -29,7 +29,10 @@ interface PlayerState {
 		index?: number,
 		options?: { suppressListeners?: boolean },
 	) => void
-	setIsPlaying: (isPlaying: boolean, options?: { suppressListeners?: boolean }) => void
+	setIsPlaying: (
+		isPlaying: boolean,
+		options?: { suppressListeners?: boolean },
+	) => void
 	playNext: () => void
 	playPrevious: () => void
 	addToQueue: (tracks: Track[], options?: { playNext?: boolean }) => void

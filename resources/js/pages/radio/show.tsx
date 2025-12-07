@@ -126,14 +126,7 @@ export default function RadioShow({
 		} finally {
 			setIsFetchingMore(false)
 		}
-	}, [
-		appendTracks,
-		displayTracks,
-		hasMore,
-		isFetchingMore,
-		seed_id,
-		seed_type,
-	])
+	}, [appendTracks, displayTracks, hasMore, isFetchingMore, seed_id, seed_type])
 
 	const titleMap: Record<SeedType, string> = {
 		track: "Track Radio",

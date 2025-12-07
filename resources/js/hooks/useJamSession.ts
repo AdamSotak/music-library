@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import type { Track } from "@/hooks/usePlayer"
 import { usePlayer } from "@/hooks/usePlayer"
-import { csrfFetch } from "@/utils/csrf"
+import axios from "axios"
+
 
 export type JamRole = "host" | "guest"
 
@@ -358,61 +359,48 @@ export function useJamSession(
 			seed_type: options?.seedType ?? "manual",
 			seed_id: options?.seedId ?? "local-queue",
 			allow_controls: allowControls,
-			tracks: baseQueue.map((track) => ({ id: track.id })),
+			tracks: baseQueue, // Send full track objects, not just IDs
 		}
 
-		const response = await csrfFetch("/api/jams", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-			},
-			body: JSON.stringify(payload),
-		})
-		if (!response.ok) {
-			const text = await response.text()
-			console.error("Failed to create jam session", response.status, text)
-			return
-		}
-		const data = await response.json()
-		const id = data.jam.id as string
-		storageKeyRef.current = `jam-${id}-relay`
-		const self: JamParticipant = {
-			id: currentUserId ?? randomId(),
-			name: currentUserName ?? "You",
-			role: "host",
-		}
-		setSessionId(id)
-		setIsHost(true)
-		setParticipants(
-			dedupeById(
-				(data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ?? [
-					self,
-				]) as JamParticipant[],
-			),
-		)
-		const initialQueue =
-			(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
-			baseQueue
-		setSharedQueue(initialQueue)
-		if (initialQueue.length) {
-			// Use playback.position when available, otherwise default to first track
-			const playbackIndex =
-				typeof data.playback?.position === "number"
-					? data.playback.position
-					: 0
-			const safeIndex =
-				playbackIndex >= 0 && playbackIndex < initialQueue.length
-					? playbackIndex
-					: 0
-			currentIndexRef.current = safeIndex
-			player.setCurrentTrack(
-				initialQueue[safeIndex],
-				initialQueue,
-				safeIndex,
+		try {
+			const response = await axios.post("/api/jams", payload)
+			const data = response.data
+			const id = data.jam.id as string
+			storageKeyRef.current = `jam-${id}-relay`
+			const self: JamParticipant = {
+				id: currentUserId ?? randomId(),
+				name: currentUserName ?? "You",
+				role: "host",
+			}
+			setSessionId(id)
+			setIsHost(true)
+			setParticipants(
+				dedupeById(
+					(data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ?? [
+						self,
+					]) as JamParticipant[],
+				),
 			)
+			const initialQueue =
+				(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
+				baseQueue
+			setSharedQueue(initialQueue)
+			if (initialQueue.length) {
+				const playbackIndex =
+					typeof data.playback?.position === "number"
+						? data.playback.position
+						: 0
+				const safeIndex =
+					playbackIndex >= 0 && playbackIndex < initialQueue.length
+						? playbackIndex
+						: 0
+				currentIndexRef.current = safeIndex
+				player.setCurrentTrack(initialQueue[safeIndex], initialQueue, safeIndex)
+			}
+			connectWebSocket(id, "host", self)
+		} catch (error: any) {
+			console.error("Failed to create jam session", error)
 		}
-		connectWebSocket(id, "host", self)
 	}
 
 	const endJam = () => {
@@ -425,62 +413,52 @@ export function useJamSession(
 		setStatus("disconnected")
 	}
 
-	const joinJam = async (id: string) => {
-		if (!id) return
+	const joinJam = async (id: string): Promise<boolean> => {
+		if (!id) return false
 		if (!currentUserId) {
 			console.warn("Must be logged in to join a Jam")
-			return
+			return false
 		}
 		storageKeyRef.current = `jam-${id}-relay`
-		const response = await csrfFetch(`/api/jams/${id}/join`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-			},
-			body: JSON.stringify({}),
-		})
-		if (!response.ok) {
-			const text = await response.text()
-			console.error("Unable to join jam", id, response.status, text)
-			return
-		}
-		const data = await response.json()
-		const self: JamParticipant = {
-			id: currentUserId ?? randomId(),
-			name: currentUserName ?? "You",
-			role: "guest",
-		}
-		setSessionId(id)
-		setIsHost(false)
-		setParticipants(
-			dedupeById(
-				(data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ?? [
-					self,
-				]) as JamParticipant[],
-			),
-		)
-		const queueFromApi =
-			(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
-			[]
-		setSharedQueue(queueFromApi)
-		if (queueFromApi.length) {
-			const playbackIndex =
-				typeof data.playback?.position === "number"
-					? data.playback.position
-					: 0
-			const safeIndex =
-				playbackIndex >= 0 && playbackIndex < queueFromApi.length
-					? playbackIndex
-					: 0
-			currentIndexRef.current = safeIndex
-			player.setCurrentTrack(
-				queueFromApi[safeIndex],
-				queueFromApi,
-				safeIndex,
+		try {
+			const response = await axios.post(`/api/jams/${id}/join`, {})
+			const data = response.data
+			const self: JamParticipant = {
+				id: currentUserId ?? randomId(),
+				name: currentUserName ?? "You",
+				role: "guest",
+			}
+			setSessionId(id)
+			setIsHost(false)
+			setParticipants(
+				dedupeById(
+					(data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ?? [
+						self,
+					]) as JamParticipant[],
+				),
 			)
+			const queueFromApi =
+				(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
+				[]
+			setSharedQueue(queueFromApi)
+			if (queueFromApi.length) {
+				const playbackIndex =
+					typeof data.playback?.position === "number"
+						? data.playback.position
+						: 0
+				const safeIndex =
+					playbackIndex >= 0 && playbackIndex < queueFromApi.length
+						? playbackIndex
+						: 0
+				currentIndexRef.current = safeIndex
+				player.setCurrentTrack(queueFromApi[safeIndex], queueFromApi, safeIndex)
+			}
+			connectWebSocket(id, "guest", self)
+			return true
+		} catch (error) {
+			console.error("Unable to join jam", id, error)
+			return false
 		}
-		connectWebSocket(id, "guest", self)
 	}
 
 	const syncQueue = async (queue: Track[]) => {
@@ -495,26 +473,13 @@ export function useJamSession(
 		})
 
 		try {
-			const response = await csrfFetch(`/api/jams/${sessionId}/queue`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Accept: "application/json",
-				},
-				body: JSON.stringify({
-					tracks: queue.map((track) => ({ id: track.id })),
-				}),
+			const response = await axios.post(`/api/jams/${sessionId}/queue`, {
+				tracks: queue, // Send full objects
 			})
-			if (!response.ok) {
-				const text = await response.text()
-				console.error("Failed to sync Jam queue", response.status, text)
-				return
-			}
-			const data = await response.json()
+			const data = response.data
 			const updatedQueue = dedupeById(
-				(data.queue as ApiQueueItem[] | undefined)?.map(
-					(item) => item.track,
-				) ?? queue,
+				(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
+				queue,
 			)
 			setSharedQueue(updatedQueue)
 		} catch (err) {
@@ -529,35 +494,21 @@ export function useJamSession(
 		const deduped = tracks.filter((t) => !current.some((p) => p.id === t.id))
 		if (!deduped.length) return
 
+		// Optimistic update locally
 		const optimistic = dedupeById([...current, ...deduped])
 		setSharedQueue(optimistic)
-		emit({
-			type: "queue_add",
-			jamId: sessionId,
-			items: deduped.map((track) => ({ track })),
-		})
 
 		try {
-			const response = await csrfFetch(`/api/jams/${sessionId}/queue/add`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Accept: "application/json",
+			const response = await axios.post(
+				`/api/jams/${sessionId}/queue/add`,
+				{
+					tracks: deduped, // Send full objects
 				},
-				body: JSON.stringify({
-					tracks: deduped.map((track) => ({ id: track.id })),
-				}),
-			})
-			if (!response.ok) {
-				const text = await response.text()
-				console.error("Failed to add to Jam queue", response.status, text)
-				return
-			}
-			const data = await response.json()
+			)
+			const data = response.data
 			const updatedQueue = dedupeById(
-				(data.queue as ApiQueueItem[] | undefined)?.map(
-					(item) => item.track,
-				) ?? optimistic,
+				(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
+				optimistic,
 			)
 			setSharedQueue(updatedQueue)
 		} catch (err) {
@@ -587,20 +538,15 @@ export function useJamSession(
 			clientId: clientIdRef.current,
 		})
 
-		void csrfFetch(`/api/jams/${sessionId}/playback`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-			},
-			body: JSON.stringify({
+		axios
+			.post(`/api/jams/${sessionId}/playback`, {
 				position: typeof effectiveIndex === "number" ? effectiveIndex : 0,
 				offset_ms: 0,
 				is_playing: isPlaying,
-			}),
-		}).catch((err) => {
-			console.error("Failed to persist Jam playback state", err)
-		})
+			})
+			.catch((err: any) => {
+				console.error("Failed to persist Jam playback state", err)
+			})
 	}
 
 	// Host: emit playback_state on player events

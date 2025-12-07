@@ -14,4 +14,3 @@ export const useUiLayout = create<UiLayoutState>((set) => ({
 	toggleRightSidebar: () =>
 		set((state) => ({ isRightSidebarOpen: !state.isRightSidebarOpen })),
 }))
-
