@@ -1,10 +1,16 @@
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuTrigger,
+} from "@/components/ui/context-menu"
 import { useJamSession } from "@/hooks/useJamSession"
-import { usePlayer, type Track } from "@/hooks/usePlayer"
+import { getTrackCover, usePlayer, type Track } from "@/hooks/usePlayer"
 import { useUiLayout } from "@/hooks/useUiLayout"
-import { Copy, Play, Users, X } from "lucide-react"
+import { Copy, Play, Trash, Users, X } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 type RightSidebarProps = {
@@ -17,7 +23,8 @@ export function RightSidebar({
 	currentUserName,
 }: RightSidebarProps) {
 	const player = usePlayer()
-	const { isRightSidebarOpen, closeRightSidebar, openRightSidebar } = useUiLayout()
+	const { isRightSidebarOpen, closeRightSidebar, openRightSidebar } =
+		useUiLayout()
 	const [activeTab, setActiveTab] = useState("queue")
 	const [recentlyPlayed, setRecentlyPlayed] = useState<Track[]>([])
 	const lastTrackRef = useRef<Track | null>(null)
@@ -37,8 +44,18 @@ export function RightSidebar({
 		allowControls,
 		setAllowControls,
 		canControl,
-		joinJam
+		joinJam,
+		removeFromQueue: removeFromJamQueue,
 	} = useJamSession(currentUserId, currentUserName)
+
+	// Handler for removing a track from queue (local or Jam)
+	const handleRemoveFromQueue = (trackId: string) => {
+		if (sessionId) {
+			removeFromJamQueue(trackId)
+		} else {
+			player.removeFromQueue(trackId)
+		}
+	}
 
 	// Derived queue state: shared if jam active, else local
 	const queue: Track[] = useMemo(
@@ -50,9 +67,7 @@ export function RightSidebar({
 
 	const upcoming = useMemo(
 		() =>
-			nowPlaying
-				? queue.filter((track) => track.id !== nowPlaying.id)
-				: queue,
+			nowPlaying ? queue.filter((track) => track.id !== nowPlaying.id) : queue,
 		[queue, nowPlaying],
 	)
 
@@ -96,11 +111,7 @@ export function RightSidebar({
 
 	const handleStartJam = async () => {
 		const baseQueue =
-			player.queue.length > 0
-				? player.queue
-				: nowPlaying
-					? [nowPlaying]
-					: []
+			player.queue.length > 0 ? player.queue : nowPlaying ? [nowPlaying] : []
 
 		if (!baseQueue.length) {
 			alert("Play something first, then start a Jam.")
@@ -121,7 +132,9 @@ export function RightSidebar({
 		if (!pendingJoinId) return
 
 		if (!currentUserId) {
-			if (confirm("You must be logged in to join a Jam Session. Go to login?")) {
+			if (
+				confirm("You must be logged in to join a Jam Session. Go to login?")
+			) {
 				window.location.href = "/login"
 			}
 			return
@@ -186,7 +199,8 @@ export function RightSidebar({
 			{pendingJoinId && !sessionId && (
 				<div className="mx-4 mb-3 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
 					<p className="text-xs text-indigo-200 mb-2">
-						You've been invited to join Jam <span className="font-mono text-white">{pendingJoinId}</span>
+						You've been invited to join Jam{" "}
+						<span className="font-mono text-white">{pendingJoinId}</span>
 					</p>
 					<div className="flex gap-2">
 						<Button
@@ -272,11 +286,7 @@ export function RightSidebar({
 						{qrUrl && (
 							<div className="shrink-0">
 								<div className="bg-white p-1 rounded">
-									<img
-										src={qrUrl}
-										alt="Scan to join"
-										className="w-16 h-16"
-									/>
+									<img src={qrUrl} alt="Scan to join" className="w-16 h-16" />
 								</div>
 							</div>
 						)}
@@ -340,7 +350,7 @@ export function RightSidebar({
 												{nowPlaying.name || "Unknown Track"}
 											</div>
 											<div className="text-xs text-zinc-400 truncate">
-												{nowPlaying.artist || "Unknown Artist"}
+												{(typeof nowPlaying.artist === 'object' ? nowPlaying.artist.name : nowPlaying.artist) || "Unknown Artist"}
 											</div>
 										</div>
 									</div>
@@ -375,50 +385,69 @@ export function RightSidebar({
 										</div>
 									) : (
 										upcoming.map((track, i) => (
-											<div
-												key={`${track?.id || i}-${i}`}
-												className="group flex items-center gap-3 p-2 -mx-2 rounded hover:bg-white/5 transition-colors cursor-pointer"
-												onClick={() => track?.id && handlePlayFromHere(track.id)}
-											>
-												<div className="w-4 text-center text-xs text-zinc-500 group-hover:hidden shrink-0">
-													{i + 1}
-												</div>
-												<button
-													onClick={(e) => {
-														e.stopPropagation()
-														track?.id && handlePlayFromHere(track.id)
-													}}
-													className="w-4 hidden group-hover:flex items-center justify-center text-white shrink-0"
-												>
-													<Play className="h-3 w-3 fill-current" />
-												</button>
-
-												<div className="h-10 w-10 shrink-0 rounded overflow-hidden bg-zinc-800">
-													{track?.album_cover ? (
-														<img
-															src={track.album_cover}
-															alt=""
-															className="h-full w-full object-cover"
-															onError={(e) => {
-																e.currentTarget.src = ""
-																e.currentTarget.style.display = "none"
-															}}
-														/>
-													) : (
-														<div className="h-full w-full flex items-center justify-center">
-															<Play className="h-4 w-4 text-zinc-600" />
+											<ContextMenu key={`${track?.id || i}-${i}`}>
+												<ContextMenuTrigger>
+													<div
+														className="group flex items-center gap-3 p-2 -mx-2 rounded hover:bg-white/5 transition-colors cursor-pointer"
+														onClick={() =>
+															track?.id && handlePlayFromHere(track.id)
+														}
+													>
+														<div className="w-4 text-center text-xs text-zinc-500 group-hover:hidden shrink-0">
+															{i + 1}
 														</div>
-													)}
-												</div>
-												<div className="flex-1 min-w-0">
-													<div className="text-sm text-white truncate group-hover:text-green-400 transition-colors">
-														{track?.name || "Unknown Track"}
+														<button
+															onClick={(e) => {
+																e.stopPropagation()
+																track?.id && handlePlayFromHere(track.id)
+															}}
+															className="w-4 hidden group-hover:flex items-center justify-center text-white shrink-0"
+														>
+															<Play className="h-3 w-3 fill-current" />
+														</button>
+
+														<div className="h-10 w-10 shrink-0 rounded overflow-hidden bg-zinc-800">
+															{getTrackCover(track) ? (
+																<img
+																	src={getTrackCover(track)}
+																	alt=""
+																	className="h-full w-full object-cover"
+																	onError={(e) => {
+																		e.currentTarget.src = ""
+																		e.currentTarget.style.display = "none"
+																	}}
+																/>
+															) : (
+																<div className="h-full w-full flex items-center justify-center">
+																	<Play className="h-4 w-4 text-zinc-600" />
+																</div>
+															)}
+														</div>
+														<div className="flex-1 min-w-0">
+															<div className="text-sm text-white truncate group-hover:text-green-400 transition-colors">
+																{track?.name || "Unknown Track"}
+															</div>
+															<div className="text-xs text-zinc-400 truncate">
+																{/* Cast to any to handle mixed backend/frontend kinds */}
+																{(typeof (track as any)?.artist === "object"
+																	? (track as any).artist.name
+																	: track?.artist) || "Unknown Artist"}
+															</div>
+														</div>
 													</div>
-													<div className="text-xs text-zinc-400 truncate">
-														{track?.artist || "Unknown Artist"}
-													</div>
-												</div>
-											</div>
+												</ContextMenuTrigger>
+												<ContextMenuContent className="w-48 bg-[#282828] border-white/5 text-white">
+													<ContextMenuItem
+														className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer"
+														onClick={() =>
+															track?.id && handleRemoveFromQueue(track.id)
+														}
+													>
+														<Trash className="w-4 h-4 mr-2" />
+														Remove from queue
+													</ContextMenuItem>
+												</ContextMenuContent>
+											</ContextMenu>
 										))
 									)}
 								</div>
@@ -436,7 +465,9 @@ export function RightSidebar({
 							<div className="space-y-0.5">
 								{recentlyPlayed.length === 0 ? (
 									<div className="py-6 text-center">
-										<p className="text-sm text-zinc-500">No playback history yet</p>
+										<p className="text-sm text-zinc-500">
+											No playback history yet
+										</p>
 										<p className="text-xs text-zinc-600 mt-1">
 											Start playing to see your history
 										</p>
@@ -448,9 +479,9 @@ export function RightSidebar({
 											className="group flex items-center gap-3 p-2 -mx-2 rounded hover:bg-white/5 transition-colors"
 										>
 											<div className="h-10 w-10 shrink-0 rounded overflow-hidden bg-zinc-800">
-												{track?.album_cover ? (
+												{getTrackCover(track) ? (
 													<img
-														src={track.album_cover}
+														src={getTrackCover(track)}
 														alt=""
 														className="h-full w-full object-cover"
 														onError={(e) => {
@@ -469,7 +500,9 @@ export function RightSidebar({
 													{track?.name || "Unknown Track"}
 												</div>
 												<div className="text-xs text-zinc-400 truncate">
-													{track?.artist || "Unknown Artist"}
+													{(typeof (track as any)?.artist === "object"
+														? (track as any).artist.name
+														: track?.artist) || "Unknown Artist"}
 												</div>
 											</div>
 										</div>

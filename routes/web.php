@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}', 'show')->name('api.jams.show');
         Route::post('/{id}/queue', 'updateQueue')->name('api.jams.queue.update');
         Route::post('/{id}/queue/add', 'addToQueue')->name('api.jams.queue.add');
+        Route::post('/{id}/queue/remove', 'removeFromQueue')->name('api.jams.queue.remove');
         Route::post('/{id}/playback', 'updatePlayback')->name('api.jams.playback.update');
     });
 });

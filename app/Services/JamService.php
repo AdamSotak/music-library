@@ -41,33 +41,43 @@ class JamService
     protected function syncTrack(array $trackData): void
     {
         // Handle both flat (frontend) and nested (backend/API) structures
-        
+
         // 1. Resolve Artist ID and Name
         $artistId = $trackData['artist_id'] ?? $trackData['artist']['id'] ?? null;
         $artistName = $trackData['artist'] ?? $trackData['artist']['name'] ?? 'Unknown Artist';
-        // If 'artist' is an array, use it; otherwise valid if we have ID
         
-        if ($artistId) {
-             // If $artistName is an array (nested case), pick name
-             if (is_array($artistName)) $artistName = $artistName['name'] ?? 'Unknown Artist';
+        // Handle array name case
+        if (is_array($artistName)) {
+            $artistName = $artistName['name'] ?? 'Unknown Artist';
+        }
 
+        if ($artistId) {
             \App\Models\Artist::updateOrCreate(
                 ['id' => $artistId],
                 [
                     'name' => $artistName,
-                    'image_url' => $trackData['artist']['image_url'] ?? null, // Best effort
+                    'image_url' => $trackData['artist']['image_url'] ?? null,
                 ]
             );
+        } else {
+            // Fallback: Find or create by name
+            $artist = \App\Models\Artist::firstOrCreate(
+                ['name' => $artistName],
+                ['id' => (string) Str::uuid(), 'image_url' => null]
+            );
+            $artistId = $artist->id;
         }
 
-        // 2. Resolve Album ID and Name
+        // 2. Resolve Album ID
         $albumId = $trackData['album_id'] ?? $trackData['album']['id'] ?? null;
         $albumName = $trackData['album'] ?? $trackData['album']['name'] ?? 'Unknown Album';
         $albumCover = $trackData['album_cover'] ?? $trackData['album']['cover'] ?? $trackData['album']['image_url'] ?? null;
 
+        if (is_array($albumName)) {
+            $albumName = $albumName['name'] ?? 'Unknown Album';
+        }
+
         if ($albumId) {
-             if (is_array($albumName)) $albumName = $albumName['name'] ?? 'Unknown Album';
-             
             \App\Models\Album::updateOrCreate(
                 ['id' => $albumId],
                 [
@@ -76,11 +86,19 @@ class JamService
                     'cover' => $albumCover,
                 ]
             );
+        } else {
+             // Fallback: Find or create by name + artist
+             $album = \App\Models\Album::firstOrCreate(
+                ['name' => $albumName, 'artist_id' => $artistId],
+                ['id' => (string) Str::uuid(), 'cover' => $albumCover]
+            );
+            $albumId = $album->id;
         }
 
         // 3. Sync Track
+        // Now we should always have artistId and albumId
         if ($artistId && $albumId) {
-             \App\Models\Track::updateOrCreate(
+            \App\Models\Track::updateOrCreate(
                 ['id' => $trackData['id']],
                 [
                     'name' => $trackData['name'],
@@ -88,7 +106,6 @@ class JamService
                     'album_id' => $albumId,
                     'duration' => $trackData['duration'] ?? 0,
                     'audio' => $trackData['audio'] ?? $trackData['audio_url'] ?? null,
-                    // 'deezer_track_id' => ... // if available
                 ]
             );
         }
@@ -237,5 +254,34 @@ class JamService
             ['type' => 'playback_state'],
             $data
         ));
+    }
+
+    public function removeFromQueue(JamSession $jam, string $trackId, string $userId): void
+    {
+        DB::transaction(function () use ($jam, $trackId, $userId) {
+            // Find the item to remove (first occurrence or specific?)
+            // For now, let's remove the *first* occurrence of this track in the queue
+            // A better UI would pass the specific queue_item_id or position, but trackId is what we have for now.
+            $item = JamQueueItem::where('jam_id', $jam->id)
+                ->where('track_id', $trackId)
+                ->orderBy('position', 'asc')
+                ->first();
+
+            if ($item) {
+                $item->delete();
+                
+                // Re-index subsequent items? 
+                // Not strictly necessary if frontend sorts by position, but cleaner.
+                // Let's just broadcast the new snapshot for simplicity and correctness.
+                
+                $jam->load(['queueItems.track.artist', 'queueItems.track.album']);
+                $queue = $jam->queueItems->sortBy('position')->values()->map(fn ($item) => $item->track);
+
+                $this->broadcast($jam->id, [
+                    'type' => 'queue_snapshot',
+                    'tracks' => $queue,
+                ]);
+            }
+        });
     }
 }

@@ -45,10 +45,13 @@ class JamApiController extends Controller
             'seed_id' => 'required|string',
             'allow_controls' => 'sometimes|boolean',
             'tracks' => 'required|array|min:1',
-            'tracks.*.id' => 'required|string|exists:tracks,id',
+            'tracks.*.id' => 'required|string',
         ]);
 
-        $jam = $this->jamService->createJam($request->user()->id, $validated);
+        $data = $validated;
+        $data['tracks'] = $request->input('tracks');
+
+        $jam = $this->jamService->createJam($request->user()->id, $data);
 
         return $this->formatJamResponse($jam->id, $request->user()->id);
     }
@@ -76,13 +79,13 @@ class JamApiController extends Controller
     {
         $validated = $request->validate([
             'tracks' => 'required|array|min:1',
-            'tracks.*.id' => 'required|string|exists:tracks,id',
+            'tracks.*.id' => 'required|string',
         ]);
 
         $jam = JamSession::findOrFail($id);
         $this->assertCanControlJam($jam, $request);
 
-        $this->jamService->updateQueue($jam, $validated['tracks'], $request->user()->id);
+        $this->jamService->updateQueue($jam, $request->input('tracks'), $request->user()->id);
 
         return $this->formatJamResponse($jam->id, $request->user()->id);
     }
@@ -94,13 +97,13 @@ class JamApiController extends Controller
     {
         $validated = $request->validate([
             'tracks' => 'required|array|min:1',
-            'tracks.*.id' => 'required|string|exists:tracks,id',
+            'tracks.*.id' => 'required|string',
         ]);
 
         $jam = JamSession::findOrFail($id);
         $this->assertCanControlJam($jam, $request);
 
-        $this->jamService->addToQueue($jam, $validated['tracks'], $request->user()->id);
+        $this->jamService->addToQueue($jam, $request->input('tracks'), $request->user()->id);
 
         return $this->formatJamResponse($jam->id, $request->user()->id);
     }
@@ -120,6 +123,23 @@ class JamApiController extends Controller
         $this->assertCanControlJam($jam, $request);
 
         $this->jamService->updatePlayback($jam, $validated);
+
+        return $this->formatJamResponse($jam->id, $request->user()->id);
+    }
+
+    /**
+     * Remove a track from the Jam queue.
+     */
+    public function removeFromQueue(string $id, Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'track_id' => 'required|string|exists:tracks,id',
+        ]);
+
+        $jam = JamSession::findOrFail($id);
+        $this->assertCanControlJam($jam, $request);
+
+        $this->jamService->removeFromQueue($jam, $validated['track_id'], $request->user()->id);
 
         return $this->formatJamResponse($jam->id, $request->user()->id);
     }

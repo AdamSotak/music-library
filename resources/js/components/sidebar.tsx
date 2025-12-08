@@ -5,6 +5,7 @@ import { Modals } from "@/hooks/useModals"
 import type { InertiaPageProps, Playlist } from "@/types"
 import { useState, useMemo } from "react"
 import { useUiLayout } from "@/hooks/useUiLayout"
+import { useJamSession } from "@/hooks/useJamSession"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -40,6 +41,10 @@ export default function Sidebar({
 	const { setOpen: setEditPlaylistDetailsModalOpen } =
 		Modals.useEditPlaylistDetailsModal()
 	const { openRightSidebar } = useUiLayout()
+	// Initialize Jam session hook to access startJam
+	const currentUserId = user?.id ? String(user.id) : null
+	const currentUserName = user?.name || null
+	const { startJam, sessionId } = useJamSession(currentUserId, currentUserName)
 
 	const [activeTab, setActiveTab] = useState<FilterTab>("playlists")
 	const [sortBy, setSortBy] = useState<SortOption>("recents")
@@ -257,7 +262,12 @@ export default function Sidebar({
 								</DropdownMenuItem>
 								<DropdownMenuItem
 									className="flex items-center gap-3 px-3 py-3 hover:bg-[#3e3e3e] cursor-pointer rounded"
-									onClick={() => setTimeout(() => openRightSidebar(), 100)}
+									onClick={async () => {
+										openRightSidebar()
+										if (!sessionId && startJam) {
+											await startJam()
+										}
+									}}
 								>
 									<svg
 										viewBox="0 0 24 24"
@@ -348,8 +358,8 @@ export default function Sidebar({
 					variant="ghost"
 					size="sm"
 					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${activeTab === "playlists"
-							? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
-							: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
+						? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+						: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
 						}`}
 					onClick={() => setActiveTab("playlists")}
 				>
@@ -359,8 +369,8 @@ export default function Sidebar({
 					variant="ghost"
 					size="sm"
 					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${activeTab === "artists"
-							? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
-							: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
+						? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+						: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
 						}`}
 					onClick={() => setActiveTab("artists")}
 				>
@@ -370,8 +380,8 @@ export default function Sidebar({
 					variant="ghost"
 					size="sm"
 					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${activeTab === "albums"
-							? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
-							: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
+						? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+						: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
 						}`}
 					onClick={() => setActiveTab("albums")}
 				>

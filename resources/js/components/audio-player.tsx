@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "./ui/button"
 import { Slider } from "./ui/slider"
 import { ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react"
-import { usePlayer, type Track } from "@/hooks/usePlayer"
+import { getTrackCover, usePlayer, type Track } from "@/hooks/usePlayer"
 import { router } from "@inertiajs/react"
 import { useUiLayout } from "@/hooks/useUiLayout"
 
@@ -24,7 +24,7 @@ function MobilePlayer({
 			<div className="flex items-center gap-3 flex-1 min-w-0">
 				<img
 					src={
-						currentTrack?.album_cover ||
+						getTrackCover(currentTrack) ||
 						`https://placehold.co/40x40/333/white?text=T`
 					}
 					alt="Album cover"
@@ -35,7 +35,10 @@ function MobilePlayer({
 						{currentTrack?.name || "No track"}
 					</span>
 					<span className="text-xs text-white/70 leading-none truncate">
-						{currentTrack?.artist || "Unknown artist"}
+						{/* Handle artist as object or string */}
+						{(typeof currentTrack?.artist === "object"
+							? (currentTrack.artist as any).name
+							: currentTrack?.artist) || "Unknown artist"}
 					</span>
 				</div>
 			</div>
@@ -131,7 +134,7 @@ function DesktopPlayer({
 					<div>
 						<img
 							src={
-								currentTrack?.album_cover ||
+								getTrackCover(currentTrack) ||
 								`https://placehold.co/48x48/333/white?text=T`
 							}
 							alt="Album cover"
@@ -150,7 +153,10 @@ function DesktopPlayer({
 									router.visit(`/artist/${currentTrack?.artist_id}`)
 								}
 							>
-								{currentTrack?.artist || "Unknown artist"}
+								{/* Handle artist as object or string */}
+								{(typeof currentTrack?.artist === "object"
+									? (currentTrack.artist as any).name
+									: currentTrack?.artist) || "Unknown artist"}
 							</span>
 						</div>
 
@@ -494,8 +500,6 @@ function DesktopPlayer({
 					/>
 				</div>
 
-
-
 				<Button
 					size={"icon"}
 					variant={"spotifyTransparent"}
@@ -585,7 +589,7 @@ function ExpandedPlayer({
 			<div className="flex-1 flex items-center justify-center mb-6 px-4">
 				<img
 					src={
-						currentTrack?.album_cover ||
+						getTrackCover(currentTrack) ||
 						`https://placehold.co/400x400/333/white?text=T`
 					}
 					alt="Album cover"
@@ -599,7 +603,10 @@ function ExpandedPlayer({
 					{currentTrack?.name || "No track"}
 				</h1>
 				<p className="text-lg text-white/70 truncate">
-					{currentTrack?.artist || "Unknown artist"}
+					{/* Handle artist as object or string */}
+					{(typeof currentTrack?.artist === "object"
+						? (currentTrack.artist as any).name
+						: currentTrack?.artist) || "Unknown artist"}
 				</p>
 			</div>
 

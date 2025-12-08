@@ -3,13 +3,24 @@ import { create } from "zustand"
 export interface Track {
 	id: string
 	name: string
-	artist: string
+	artist: string | { name: string; id: string }
 	artist_id: string
-	album: string
+	album: string | { name: string; id: string; cover: string }
 	album_id?: string
 	album_cover?: string
 	duration: number
 	audio: string | null
+}
+
+export const getTrackCover = (track?: Track | null) => {
+	if (!track) return undefined
+	// Prefer flat album_cover if present
+	if (track.album_cover) return track.album_cover
+	// Fallback to nested album.cover (backend)
+	if (typeof track.album === "object" && (track.album as any)?.cover) {
+		return (track.album as any).cover
+	}
+	return undefined
 }
 
 interface PlayerState {
@@ -36,6 +47,7 @@ interface PlayerState {
 	playNext: () => void
 	playPrevious: () => void
 	addToQueue: (tracks: Track[], options?: { playNext?: boolean }) => void
+	removeFromQueue: (trackId: string) => void
 	clearQueue: () => void
 }
 
@@ -121,10 +133,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 			const nextQueue =
 				options.playNext && state.currentIndex >= 0
 					? [
-							...state.queue.slice(0, state.currentIndex + 1),
-							...deduped,
-							...state.queue.slice(state.currentIndex + 1),
-						]
+						...state.queue.slice(0, state.currentIndex + 1),
+						...deduped,
+						...state.queue.slice(state.currentIndex + 1),
+					]
 					: [...state.queue, ...deduped]
 
 			let nextCurrentTrack = state.currentTrack
@@ -138,6 +150,31 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 					(track) => track.id === nextCurrentTrack?.id,
 				)
 				nextIndex = resolvedIndex >= 0 ? resolvedIndex : nextIndex
+			}
+
+			return {
+				queue: nextQueue,
+				currentTrack: nextCurrentTrack,
+				currentIndex: nextIndex,
+			}
+		}),
+
+	removeFromQueue: (trackId: string) =>
+		set((state) => {
+			const nextQueue = state.queue.filter((t) => t.id !== trackId)
+			let nextIndex = state.currentIndex
+			let nextCurrentTrack = state.currentTrack
+
+			// Adjust index if removed track was before current
+			if (state.currentTrack) {
+				const newIdx = nextQueue.findIndex((t) => t.id === state.currentTrack?.id)
+				if (newIdx >= 0) {
+					nextIndex = newIdx
+				} else {
+					// Current track was removed
+					nextCurrentTrack = nextQueue[0] || null
+					nextIndex = nextCurrentTrack ? 0 : -1
+				}
 			}
 
 			return {

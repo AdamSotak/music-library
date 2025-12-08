@@ -3,7 +3,6 @@ import type { Track } from "@/hooks/usePlayer"
 import { usePlayer } from "@/hooks/usePlayer"
 import axios from "axios"
 
-
 export type JamRole = "host" | "guest"
 
 export type JamParticipant = {
@@ -499,12 +498,9 @@ export function useJamSession(
 		setSharedQueue(optimistic)
 
 		try {
-			const response = await axios.post(
-				`/api/jams/${sessionId}/queue/add`,
-				{
-					tracks: deduped, // Send full objects
-				},
-			)
+			const response = await axios.post(`/api/jams/${sessionId}/queue/add`, {
+				tracks: deduped, // Send full objects
+			})
 			const data = response.data
 			const updatedQueue = dedupeById(
 				(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
@@ -513,6 +509,24 @@ export function useJamSession(
 			setSharedQueue(updatedQueue)
 		} catch (err) {
 			console.error("Error adding tracks to Jam queue", err)
+		}
+	}
+
+	const removeFromQueue = async (trackId: string) => {
+		if (!sessionId) return
+
+		// Optimistic update
+		const current = sharedQueueRef.current
+		const optimistic = current.filter((t) => t.id !== trackId)
+		setSharedQueue(optimistic)
+
+		try {
+			await axios.post(`/api/jams/${sessionId}/queue/remove`, {
+				track_id: trackId,
+			})
+		} catch (err) {
+			console.error("Error removing track from Jam queue", err)
+			// Revert on error? For now, we rely on next broadcast to fix state if needed
 		}
 	}
 
@@ -656,5 +670,6 @@ export function useJamSession(
 		joinJam,
 		sendPlaybackState,
 		canControl,
+		removeFromQueue,
 	}
 }
