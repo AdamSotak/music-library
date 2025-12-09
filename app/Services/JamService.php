@@ -45,7 +45,7 @@ class JamService
         // 1. Resolve Artist ID and Name
         $artistId = $trackData['artist_id'] ?? $trackData['artist']['id'] ?? null;
         $artistName = $trackData['artist'] ?? $trackData['artist']['name'] ?? 'Unknown Artist';
-        
+
         // Handle array name case
         if (is_array($artistName)) {
             $artistName = $artistName['name'] ?? 'Unknown Artist';
@@ -56,14 +56,21 @@ class JamService
                 ['id' => $artistId],
                 [
                     'name' => $artistName,
-                    'image_url' => $trackData['artist']['image_url'] ?? null,
+                    'image_url' => $trackData['artist']['image_url'] ?? '', // Required string
+                    'monthly_listeners' => $trackData['artist']['monthly_listeners'] ?? 0, // Required integer
+                    'is_verified' => $trackData['artist']['is_verified'] ?? false, // Required boolean
                 ]
             );
         } else {
             // Fallback: Find or create by name
             $artist = \App\Models\Artist::firstOrCreate(
                 ['name' => $artistName],
-                ['id' => (string) Str::uuid(), 'image_url' => null]
+                [
+                    'id' => (string) Str::uuid(),
+                    'image_url' => '',
+                    'monthly_listeners' => 0,
+                    'is_verified' => false,
+                ]
             );
             $artistId = $artist->id;
         }
@@ -71,7 +78,7 @@ class JamService
         // 2. Resolve Album ID
         $albumId = $trackData['album_id'] ?? $trackData['album']['id'] ?? null;
         $albumName = $trackData['album'] ?? $trackData['album']['name'] ?? 'Unknown Album';
-        $albumCover = $trackData['album_cover'] ?? $trackData['album']['cover'] ?? $trackData['album']['image_url'] ?? null;
+        $albumCover = $trackData['album_cover'] ?? $trackData['album']['cover'] ?? $trackData['album']['image_url'] ?? '';
 
         if (is_array($albumName)) {
             $albumName = $albumName['name'] ?? 'Unknown Album';
@@ -83,29 +90,49 @@ class JamService
                 [
                     'name' => $albumName,
                     'artist_id' => $artistId,
-                    'cover' => $albumCover,
+                    'image_url' => $albumCover, // Use correct column name
+                    'release_date' => $trackData['album']['release_date'] ?? now(), // Required date
+                    'genre' => $trackData['album']['genre'] ?? 'Unknown', // Required string
                 ]
             );
         } else {
              // Fallback: Find or create by name + artist
              $album = \App\Models\Album::firstOrCreate(
                 ['name' => $albumName, 'artist_id' => $artistId],
-                ['id' => (string) Str::uuid(), 'cover' => $albumCover]
+                [
+                    'id' => (string) Str::uuid(), 
+                    'image_url' => $albumCover,
+                    'release_date' => now(), 
+                    'genre' => 'Unknown'
+                ]
             );
             $albumId = $album->id;
         }
 
         // 3. Sync Track
         // Now we should always have artistId and albumId
+        // 3. Sync Track
+        // Now we should always have artistId and albumId
         if ($artistId && $albumId) {
+            // Ensure default category exists to prevent FK violation
+            \App\Models\Category::firstOrCreate(
+                ['slug' => 'music'],
+                [
+                    'name' => 'Music',
+                    'color' => '#1DB954',
+                    'image_url' => '',
+                ]
+            );
+
             \App\Models\Track::updateOrCreate(
                 ['id' => $trackData['id']],
                 [
-                    'name' => $trackData['name'],
+                    'name' => $trackData['name'] ?? 'Unknown Track',
                     'artist_id' => $artistId,
                     'album_id' => $albumId,
                     'duration' => $trackData['duration'] ?? 0,
-                    'audio' => $trackData['audio'] ?? $trackData['audio_url'] ?? null,
+                    'audio_url' => $trackData['audio'] ?? $trackData['audio_url'] ?? '', 
+                    'category_slug' => 'music',
                 ]
             );
         }
@@ -258,7 +285,7 @@ class JamService
 
     public function removeFromQueue(JamSession $jam, string $trackId, string $userId): void
     {
-        DB::transaction(function () use ($jam, $trackId, $userId) {
+        DB::transaction(function () use ($jam, $trackId) {
             // Find the item to remove (first occurrence or specific?)
             // For now, let's remove the *first* occurrence of this track in the queue
             // A better UI would pass the specific queue_item_id or position, but trackId is what we have for now.
@@ -269,11 +296,11 @@ class JamService
 
             if ($item) {
                 $item->delete();
-                
-                // Re-index subsequent items? 
+
+                // Re-index subsequent items?
                 // Not strictly necessary if frontend sorts by position, but cleaner.
                 // Let's just broadcast the new snapshot for simplicity and correctness.
-                
+
                 $jam->load(['queueItems.track.artist', 'queueItems.track.album']);
                 $queue = $jam->queueItems->sortBy('position')->values()->map(fn ($item) => $item->track);
 

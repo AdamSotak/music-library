@@ -133,10 +133,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 			const nextQueue =
 				options.playNext && state.currentIndex >= 0
 					? [
-						...state.queue.slice(0, state.currentIndex + 1),
-						...deduped,
-						...state.queue.slice(state.currentIndex + 1),
-					]
+							...state.queue.slice(0, state.currentIndex + 1),
+							...deduped,
+							...state.queue.slice(state.currentIndex + 1),
+						]
 					: [...state.queue, ...deduped]
 
 			let nextCurrentTrack = state.currentTrack
@@ -167,7 +167,9 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
 			// Adjust index if removed track was before current
 			if (state.currentTrack) {
-				const newIdx = nextQueue.findIndex((t) => t.id === state.currentTrack?.id)
+				const newIdx = nextQueue.findIndex(
+					(t) => t.id === state.currentTrack?.id,
+				)
 				if (newIdx >= 0) {
 					nextIndex = newIdx
 				} else {

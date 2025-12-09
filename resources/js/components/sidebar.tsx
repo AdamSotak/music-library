@@ -357,10 +357,11 @@ export default function Sidebar({
 				<Button
 					variant="ghost"
 					size="sm"
-					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${activeTab === "playlists"
-						? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
-						: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
-						}`}
+					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${
+						activeTab === "playlists"
+							? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+							: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
+					}`}
 					onClick={() => setActiveTab("playlists")}
 				>
 					Playlists
@@ -368,10 +369,11 @@ export default function Sidebar({
 				<Button
 					variant="ghost"
 					size="sm"
-					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${activeTab === "artists"
-						? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
-						: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
-						}`}
+					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${
+						activeTab === "artists"
+							? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+							: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
+					}`}
 					onClick={() => setActiveTab("artists")}
 				>
 					Artists
@@ -379,10 +381,11 @@ export default function Sidebar({
 				<Button
 					variant="ghost"
 					size="sm"
-					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${activeTab === "albums"
-						? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
-						: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
-						}`}
+					className={`text-sm rounded-full px-3 h-8 font-normal transition-all ${
+						activeTab === "albums"
+							? "bg-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+							: "bg-transparent text-[#b3b3b3] hover:bg-[#1a1a1a]"
+					}`}
 					onClick={() => setActiveTab("albums")}
 				>
 					Albums
@@ -465,8 +468,9 @@ export default function Sidebar({
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={() => setSortBy("creator")}
-							className={`flex justify-between px-3 py-2 hover:bg-[#3e3e3e] cursor-pointer ${activeTab !== "playlists" ? "opacity-60 cursor-not-allowed" : ""
-								}`}
+							className={`flex justify-between px-3 py-2 hover:bg-[#3e3e3e] cursor-pointer ${
+								activeTab !== "playlists" ? "opacity-60 cursor-not-allowed" : ""
+							}`}
 							disabled={activeTab !== "playlists"}
 						>
 							<span>Creator</span>
@@ -653,7 +657,8 @@ export default function Sidebar({
 									tracks={playlist.tracks}
 									description={
 										playlist.description ||
-										`Playlist • ${playlist.tracks.length} ${playlist.tracks.length === 1 ? "song" : "songs"
+										`Playlist • ${playlist.tracks.length} ${
+											playlist.tracks.length === 1 ? "song" : "songs"
 										}`
 									}
 									image={playlist.image}

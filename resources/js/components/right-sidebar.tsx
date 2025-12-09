@@ -350,7 +350,9 @@ export function RightSidebar({
 												{nowPlaying.name || "Unknown Track"}
 											</div>
 											<div className="text-xs text-zinc-400 truncate">
-												{(typeof nowPlaying.artist === 'object' ? nowPlaying.artist.name : nowPlaying.artist) || "Unknown Artist"}
+												{(typeof nowPlaying.artist === "object"
+													? nowPlaying.artist.name
+													: nowPlaying.artist) || "Unknown Artist"}
 											</div>
 										</div>
 									</div>

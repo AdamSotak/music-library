@@ -478,7 +478,7 @@ export function useJamSession(
 			const data = response.data
 			const updatedQueue = dedupeById(
 				(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
-				queue,
+					queue,
 			)
 			setSharedQueue(updatedQueue)
 		} catch (err) {
@@ -504,7 +504,7 @@ export function useJamSession(
 			const data = response.data
 			const updatedQueue = dedupeById(
 				(data.queue as ApiQueueItem[] | undefined)?.map((item) => item.track) ??
-				optimistic,
+					optimistic,
 			)
 			setSharedQueue(updatedQueue)
 		} catch (err) {
