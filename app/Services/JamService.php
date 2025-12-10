@@ -51,6 +51,14 @@ class JamService
             $artistName = $artistName['name'] ?? 'Unknown Artist';
         }
 
+        // Normalise empty or missing artist name
+        if (is_string($artistName)) {
+            $artistName = trim($artistName);
+        }
+        if ($artistName === '' || $artistName === null) {
+            $artistName = 'Unknown Artist';
+        }
+
         if ($artistId) {
             \App\Models\Artist::updateOrCreate(
                 ['id' => $artistId],
@@ -84,6 +92,13 @@ class JamService
             $albumName = $albumName['name'] ?? 'Unknown Album';
         }
 
+        if (is_string($albumName)) {
+            $albumName = trim($albumName);
+        }
+        if ($albumName === '' || $albumName === null) {
+            $albumName = 'Unknown Album';
+        }
+
         if ($albumId) {
             \App\Models\Album::updateOrCreate(
                 ['id' => $albumId],
@@ -96,21 +111,19 @@ class JamService
                 ]
             );
         } else {
-             // Fallback: Find or create by name + artist
-             $album = \App\Models\Album::firstOrCreate(
+            // Fallback: Find or create by name + artist
+            $album = \App\Models\Album::firstOrCreate(
                 ['name' => $albumName, 'artist_id' => $artistId],
                 [
-                    'id' => (string) Str::uuid(), 
+                    'id' => (string) Str::uuid(),
                     'image_url' => $albumCover,
-                    'release_date' => now(), 
-                    'genre' => 'Unknown'
+                    'release_date' => now(),
+                    'genre' => 'Unknown',
                 ]
             );
             $albumId = $album->id;
         }
 
-        // 3. Sync Track
-        // Now we should always have artistId and albumId
         // 3. Sync Track
         // Now we should always have artistId and albumId
         if ($artistId && $albumId) {
@@ -124,17 +137,35 @@ class JamService
                 ]
             );
 
-            \App\Models\Track::updateOrCreate(
-                ['id' => $trackData['id']],
-                [
-                    'name' => $trackData['name'] ?? 'Unknown Track',
-                    'artist_id' => $artistId,
-                    'album_id' => $albumId,
-                    'duration' => $trackData['duration'] ?? 0,
-                    'audio_url' => $trackData['audio'] ?? $trackData['audio_url'] ?? '', 
-                    'category_slug' => 'music',
-                ]
-            );
+            // Avoid overwriting existing, well-formed tracks with "Unknown" placeholders.
+            // If we have a non-empty name, always apply it (it may correct a previous placeholder).
+            $incomingName = isset($trackData['name']) && trim((string) $trackData['name']) !== ''
+                ? trim((string) $trackData['name'])
+                : null;
+
+            $payload = [
+                'artist_id' => $artistId,
+                'album_id' => $albumId,
+                'duration' => $trackData['duration'] ?? 0,
+                'audio_url' => $trackData['audio'] ?? $trackData['audio_url'] ?? '',
+                'category_slug' => 'music',
+            ];
+
+            if ($incomingName !== null) {
+                $payload['name'] = $incomingName;
+            }
+
+            $track = \App\Models\Track::find($trackData['id']);
+
+            if ($track) {
+                // Only update the name when we have a concrete title; otherwise keep the existing one.
+                $track->update($payload);
+            } else {
+                $payload['id'] = $trackData['id'];
+                $payload['name'] = $payload['name'] ?? 'Unknown Track';
+
+                \App\Models\Track::create($payload);
+            }
         }
     }
 
@@ -174,6 +205,20 @@ class JamService
                 'is_playing' => false,
             ]);
 
+            // Preload full queue with artist/album metadata and broadcast an
+            // initial snapshot so that the WS relay has a complete view of
+            // the Jam queue from the moment it is created.
+            $jam->load(['queueItems.track.artist', 'queueItems.track.album']);
+            $queue = $jam->queueItems->sortBy('position')->values()->map(
+                fn ($item) => $item->track
+            );
+
+            $this->broadcast($jam->id, [
+                'type' => 'queue_snapshot',
+                'tracks' => $queue,
+                'index' => 0,
+            ]);
+
             return $jam;
         });
     }
@@ -182,9 +227,12 @@ class JamService
     {
         $jam = JamSession::findOrFail($jamId);
 
-        $participant = JamParticipant::updateOrCreate(
+        // Preserve existing host role if the joining user is the host.
+        $effectiveRole = $jam->host_user_id === $userId ? 'host' : $role;
+
+        JamParticipant::updateOrCreate(
             ['jam_id' => $jam->id, 'user_id' => $userId],
-            ['role' => $role, 'joined_at' => now()]
+            ['role' => $effectiveRole, 'joined_at' => now()]
         );
 
         // Broadcast new participant
@@ -265,22 +313,23 @@ class JamService
 
     public function updatePlayback(JamSession $jam, array $data): void
     {
+        // Normalise incoming data (REST uses position/offset_ms/is_playing)
+        $position = $data['position'] ?? $data['index'] ?? 0;
+        $offsetMs = $data['offset_ms'] ?? $data['offsetMs'] ?? 0;
+        $isPlaying = $data['is_playing'] ?? $data['isPlaying'] ?? false;
+
         JamPlaybackState::updateOrCreate(
             ['jam_id' => $jam->id],
-            array_merge(
-                [
-                    'position' => 0,
-                    'offset_ms' => 0,
-                    'is_playing' => false,
-                ],
-                $data,
-            )
+            [
+                'position' => $position,
+                'offset_ms' => $offsetMs,
+                'is_playing' => $isPlaying,
+            ]
         );
-
-        $this->broadcast($jam->id, array_merge(
-            ['type' => 'playback_state'],
-            $data
-        ));
+        // Realtime playback synchronisation is driven by the WebSocket clients.
+        // We persist the canonical state here for late joiners, but do not
+        // rebroadcast a separate playback_state event from the backend to avoid
+        // competing with client-originated playback_state messages.
     }
 
     public function removeFromQueue(JamSession $jam, string $trackId, string $userId): void

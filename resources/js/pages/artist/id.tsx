@@ -253,6 +253,7 @@ export default function ArtistPage({
 									onAddToPlaylist={(id) =>
 										setAddToPlaylistModalOpen(true, [id])
 									}
+									fullTrack={playerQueue[index] ?? toPlayerTrack(track)}
 								>
 									<div
 										className="grid grid-cols-[auto_1fr_auto] items-center px-1 sm:px-2 py-2 rounded group hover:bg-white/10 cursor-pointer"

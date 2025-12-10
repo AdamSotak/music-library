@@ -3,6 +3,7 @@ import { router } from "@inertiajs/react"
 import { Modals } from "@/hooks/useModals"
 import PlayButton from "@/components/home/play-button"
 import { TrackContextMenu } from "@/components/track-context-menu"
+import { toPlayerTrack } from "@/utils/player"
 
 interface Artist {
 	type: string
@@ -168,7 +169,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 							) : null}
 						</div>
 					)}
-
+					
 					{/* Songs */}
 					{results.tracks.length > 0 && (
 						<div className="min-w-0">
@@ -178,8 +179,10 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 									<TrackContextMenu
 										key={track.id}
 										trackId={track.id}
+										trackName={track.name}
 										artistId={track.artist_id}
 										albumId={track.album_id}
+										fullTrack={toPlayerTrack(track)}
 									>
 										<div
 											onClick={() => router.visit(`/tracks/${track.id}`)}

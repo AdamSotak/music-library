@@ -133,7 +133,11 @@ class JamApiController extends Controller
     public function removeFromQueue(string $id, Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'track_id' => 'required|string|exists:tracks,id',
+            // We only need a well‑formed string here – the service layer
+            // will no‑op gracefully if the track does not exist in the
+            // current Jam queue. Using exists:tracks,id caused 500s
+            // when DB state drifted from the in‑memory Jam queue.
+            'track_id' => 'required|string',
         ]);
 
         $jam = JamSession::findOrFail($id);
@@ -155,17 +159,43 @@ class JamApiController extends Controller
 
         $queue = $jam->queueItems->map(function (JamQueueItem $item) {
             $track = $item->track;
+            // It is possible for a JamQueueItem to outlive its track (or the
+            // relations to be temporarily missing). In that case we still want
+            // to return a sane placeholder object instead of throwing.
+            if (! $track) {
+                return [
+                    'position' => $item->position,
+                    'track' => [
+                        'id' => $item->track_id,
+                        'name' => 'Unknown Track',
+                        'artist' => 'Unknown Artist',
+                        'artist_id' => '',
+                        'album' => 'Unknown Album',
+                        'album_id' => null,
+                        'album_cover' => null,
+                        'duration' => 0,
+                        'audio' => null,
+                    ],
+                ];
+            }
+
+            $artist = $track->artist;
+            $album = $track->album;
+
+            $artistName = $artist?->name ?: ($track->artist_id ?: 'Unknown Artist');
+            $albumName = $album?->name ?: ($track->album_id ?: 'Unknown Album');
 
             return [
                 'position' => $item->position,
                 'track' => [
                     'id' => $track->id,
-                    'name' => $track->name,
-                    'artist' => $track->artist->name ?? $track->artist?->name ?? $track->artist_id,
+                    'name' => $track->name ?? 'Unknown Track',
+                    'artist' => $artistName,
                     'artist_id' => $track->artist_id,
-                    'album' => $track->album->name ?? $track->album?->name ?? $track->album_id,
+                    'album' => $albumName,
                     'album_id' => $track->album_id,
-                    'album_cover' => $track->album->cover ?? $track->album?->cover ?? null,
+                    // Use album image_url as cover for Jam tracks when available
+                    'album_cover' => $album?->image_url ?? null,
                     'duration' => $track->duration,
                     'audio' => $track->audio_url ?? $track->audio,
                 ],

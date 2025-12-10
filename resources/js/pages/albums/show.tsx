@@ -325,6 +325,7 @@ export default function AlbumShow({ album }: AlbumShowProps) {
 							isLiked={likedTrackIds.has(track.id)}
 							onToggleLike={handleToggleLiked}
 							onAddToPlaylist={(id) => setAddToPlaylistModalOpen(true, [id])}
+							fullTrack={playerQueue[index] ?? toPlayerTrack(track)}
 						>
 							<div
 								className={`

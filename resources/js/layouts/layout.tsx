@@ -9,6 +9,7 @@ import { usePage } from "@inertiajs/react"
 import type { InertiaPageProps } from "@/types"
 import { useLikedTracksStore } from "@/hooks/useLikedTracks"
 import { RightSidebar } from "@/components/right-sidebar"
+import { JamSessionProvider } from "@/hooks/useJamSession"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
 	const page = usePage()
@@ -56,8 +57,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 				? "lg:w-full"
 				: "lg:w-[26vw] lg:min-w-[320px] lg:max-w-[320px]"
 
+	const castProps = page.props as InertiaPageProps
+	const currentUserId = castProps.user?.id?.toString?.() ?? null
+	const currentUserName = castProps.user?.name ?? null
+
 	return (
-		<>
+		<JamSessionProvider
+			currentUserId={currentUserId}
+			currentUserName={currentUserName}
+		>
 			<div className="min-w-screen h-screen bg-black flex flex-col">
 				<Navbar onMobileMenuToggle={() => setIsMobileSidebarOpen(true)} />
 				<main className="flex-1 overflow-hidden">
@@ -96,13 +104,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 								{children}
 							</div>
 							<RightSidebar
-								currentUserId={
-									(page.props as InertiaPageProps).user?.id?.toString?.() ??
-									null
-								}
-								currentUserName={
-									(page.props as InertiaPageProps).user?.name ?? null
-								}
+								currentUserId={currentUserId}
+								currentUserName={currentUserName}
 							/>
 						</div>
 					</div>
@@ -124,6 +127,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 			</Sheet>
 
 			<ModalsProvider />
-		</>
+		</JamSessionProvider>
 	)
 }

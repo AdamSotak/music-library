@@ -236,6 +236,7 @@ export default function RadioShow({
 							trackName={track.name}
 							artistId={track.artist_id}
 							albumId={track.album_id}
+							fullTrack={queue[index] ?? toPlayerTrack(track)}
 						>
 							<div
 								className={cn(

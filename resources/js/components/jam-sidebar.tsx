@@ -70,12 +70,15 @@ export function JamSidebar({
 	}
 
 	const handlePlayFromHere = (trackId: string) => {
+		if (sessionId && !canControl) return
+
 		const index = queue.findIndex((track) => track.id === trackId)
 		if (index < 0) return
 		const track = queue[index]
 		player.setCurrentTrack(track, queue, index)
-		if (sessionId && (isHost || canControl)) {
-			sendPlaybackState(track, index, true)
+		if (sessionId && canControl) {
+			// Explicitly start from the beginning when jumping
+			sendPlaybackState(track, index, true, { offsetMs: 0 })
 		}
 	}
 

@@ -810,25 +810,34 @@ export default function AudioPlayer() {
 	)
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [isClosing, setIsClosing] = useState(false)
+	const pendingSeekMsRef = useRef<number | null>(null)
 
-	// Load and play track when currentTrack changes
+	// Load audio source when the current track changes
 	useEffect(() => {
-		if (!audioRef.current || !currentTrack) return
+		const audio = audioRef.current
+		if (!audio) return
+
+		// When there's no track, fully reset the element
+		if (!currentTrack) {
+			audio.pause()
+			audio.removeAttribute("src")
+			audio.load()
+			setCurrentTime(0)
+			setDuration(0)
+			pendingSeekMsRef.current = null
+			return
+		}
 
 		const url = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
+		audio.src = url
+		audio.load()
 
-		audioRef.current.src = url
-		audioRef.current.load()
-
-		if (isPlaying) {
-			audioRef.current.play().catch((err) => {
-				console.error("Playback failed:", err)
-				setIsPlaying(false)
-			})
-		} else {
-			audioRef.current.pause()
-		}
-	}, [isPlaying, currentTrack, setIsPlaying])
+		// Reset local timing state; actual play/pause is handled by the
+		// isPlaying effect so we don't double-call play() during switches.
+		setCurrentTime(0)
+		setDuration(0)
+		pendingSeekMsRef.current = null
+	}, [currentTrack])
 
 	// Handle play/pause state changes
 	useEffect(() => {
@@ -853,13 +862,38 @@ export default function AudioPlayer() {
 
 	const handleTimeUpdate = () => {
 		if (audioRef.current) {
-			setCurrentTime(audioRef.current.currentTime)
+			const seconds = audioRef.current.currentTime
+			setCurrentTime(seconds)
+			if (typeof window !== "undefined" && currentTrack) {
+				try {
+					window.dispatchEvent(
+						new CustomEvent("jam:position", {
+							detail: {
+								trackId: currentTrack.id,
+								currentTimeMs: seconds * 1000,
+							},
+						}),
+					)
+				} catch {
+					// ignore
+				}
+			}
 		}
 	}
 
 	const handleLoadedMetadata = () => {
 		if (audioRef.current) {
 			setDuration(audioRef.current.duration)
+			// Apply any pending seek from Jam when metadata becomes available
+			if (pendingSeekMsRef.current != null) {
+				try {
+					audioRef.current.currentTime = pendingSeekMsRef.current / 1000
+					setCurrentTime(audioRef.current.currentTime)
+				} catch {
+					// ignore failures
+				}
+				pendingSeekMsRef.current = null
+			}
 		}
 	}
 
@@ -887,6 +921,29 @@ export default function AudioPlayer() {
 		if (audioRef.current) {
 			audioRef.current.currentTime = time
 			setCurrentTime(time)
+			if (typeof window !== "undefined" && currentTrack) {
+				try {
+					window.dispatchEvent(
+						new CustomEvent("jam:position", {
+							detail: {
+								trackId: currentTrack.id,
+								currentTimeMs: time * 1000,
+							},
+						}),
+					)
+					// Explicit seek event so Jam logic can broadcast
+					window.dispatchEvent(
+						new CustomEvent("jam:seek", {
+							detail: {
+								trackId: currentTrack.id,
+								currentTimeMs: time * 1000,
+							},
+						}),
+					)
+				} catch {
+					// ignore
+				}
+			}
 		}
 	}
 
@@ -908,6 +965,40 @@ export default function AudioPlayer() {
 			setIsClosing(false)
 		}, 300) // Match animation duration
 	}, [])
+	// Apply Jam playback state coming from useJamSession
+	useEffect(() => {
+		if (typeof window === "undefined") return
+		const handler = (event: Event) => {
+			const custom = event as CustomEvent
+			const detail = custom.detail as
+				| { trackId?: string; offsetMs?: number; isPlaying?: boolean }
+				| undefined
+			if (!detail) return
+			const { offsetMs } = detail
+			if (typeof offsetMs === "number") {
+				pendingSeekMsRef.current = offsetMs
+			}
+			if (!audioRef.current) return
+			// If audio metadata is ready, we can apply immediately
+			if (audioRef.current.readyState >= 1) {
+				if (pendingSeekMsRef.current != null) {
+					try {
+						audioRef.current.currentTime = pendingSeekMsRef.current / 1000
+						setCurrentTime(audioRef.current.currentTime)
+					} catch {
+						// ignore
+					}
+					pendingSeekMsRef.current = null
+				}
+			}
+		}
+		window.addEventListener("jam:apply-playback", handler as EventListener)
+		return () =>
+			window.removeEventListener(
+				"jam:apply-playback",
+				handler as EventListener,
+			)
+	}, [setIsPlaying])
 
 	// Handle escape key to close modal
 	useEffect(() => {

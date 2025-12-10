@@ -16,7 +16,7 @@ const PORT = process.env.JAM_WS_PORT ? Number(process.env.JAM_WS_PORT) : 3002
  * }} Participant
  */
 
-const rooms = new Map() // jamId -> { participants: Map<socket, Participant>, queue: any[], playback: { index, offsetMs, isPlaying, trackId, updatedAt } }
+const rooms = new Map() // jamId -> { participants: Map<socket, Participant>, queue: any[], playback: { index, offsetMs, isPlaying, trackId, updatedAt }, hostUserId?: string }
 
 // Create raw HTTP server to handle both WS upgrades and internal broadcast API
 const server = createServer((req, res) => {
@@ -58,14 +58,16 @@ const server = createServer((req, res) => {
 
 					// Special handling: if backend sends queue/playback updates, we might want to 
 					// update our in-memory cache so subsequent joins get correct state.
-					if (payload.type === 'queue_snapshot' || payload.type === 'queue' || payload.type === 'queue_add') {
+					if (payload.type === "queue_snapshot" || payload.type === "queue" || payload.type === "queue_add") {
 						if (payload.tracks || payload.queue) room.queue = payload.tracks || payload.queue
 						if (payload.items) room.queue = room.queue.concat(payload.items.map(i => i.track || i))
 					}
-					if (payload.type === 'playback_state') {
-						if (typeof payload.index === 'number') room.playback.index = payload.index
-						if (typeof payload.isPlaying === 'boolean') room.playback.isPlaying = payload.isPlaying
-						if (typeof payload.trackId === 'string') room.playback.trackId = payload.trackId
+					if (payload.type === "playback_state") {
+						if (typeof payload.index === "number") room.playback.index = payload.index
+						if (typeof payload.offsetMs === "number") room.playback.offsetMs = payload.offsetMs
+						if (typeof payload.isPlaying === "boolean") room.playback.isPlaying = payload.isPlaying
+						if (typeof payload.trackId === "string") room.playback.trackId = payload.trackId
+						room.playback.updatedAt = Date.now()
 					}
 
 					broadcast(jamId, payload, null)
@@ -105,6 +107,7 @@ const upsertRoom = (jamId) => {
 			participants: new Map(),
 			queue: [],
 			playback: { index: 0, offsetMs: 0, isPlaying: false },
+			hostUserId: null,
 		})
 	}
 	return rooms.get(jamId)
@@ -134,6 +137,12 @@ wss.on("connection", (ws) => {
 					name: msg.name ?? "Guest",
 					role: msg.role === "host" ? "host" : "guest",
 				}
+
+				// Track which user is the authoritative host for playback.
+				if (!room.hostUserId && participant.role === "host") {
+					room.hostUserId = participant.userId
+				}
+
 				room.participants.set(ws, participant)
 				const list = Array.from(room.participants.values()).map((p) => ({
 					id: p.userId,
@@ -154,7 +163,15 @@ wss.on("connection", (ws) => {
 						}),
 					)
 					ws.send(
-						JSON.stringify({ type: "playback_state", jamId, playback: room.playback }),
+						JSON.stringify({
+							type: "playback_state",
+							jamId,
+							index: room.playback.index,
+							offsetMs: room.playback.offsetMs ?? 0,
+							isPlaying: room.playback.isPlaying ?? false,
+							trackId: room.playback.trackId,
+							ts: room.playback.updatedAt ?? Date.now(),
+						}),
 					)
 				}
 				break
@@ -185,7 +202,6 @@ wss.on("connection", (ws) => {
 				break
 			}
 			case "playback_state": {
-				// host authoritative; you may gate by role if needed
 				if (typeof msg.index === "number") room.playback.index = msg.index
 				if (typeof msg.offsetMs === "number") room.playback.offsetMs = msg.offsetMs
 				if (typeof msg.isPlaying === "boolean")
@@ -220,4 +236,3 @@ wss.on("connection", (ws) => {
 server.listen(PORT, () => {
 	console.log(`Jam WS server listening on ws://localhost:${PORT}`)
 })
-

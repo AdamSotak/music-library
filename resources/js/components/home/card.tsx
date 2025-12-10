@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 import { TrackContextMenu } from "@/components/track-context-menu"
 import { useLikedTracksStore } from "@/hooks/useLikedTracks"
+import { toPlayerTrack } from "@/utils/player"
 
 interface CardProps {
 	item: ShelfItem
@@ -155,6 +156,7 @@ export default function Card({
 				artistId={item.track.artist_id}
 				albumId={item.track.album_id}
 				isLiked={likedTrackIds.has(item.track.id.toString())}
+				fullTrack={toPlayerTrack(item.track)}
 			>
 				{cardBody}
 			</TrackContextMenu>

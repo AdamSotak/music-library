@@ -25,13 +25,14 @@ import {
 } from "lucide-react"
 import { useLikedTracksStore } from "@/hooks/useLikedTracks"
 import { useJamSession } from "@/hooks/useJamSession"
-import { usePlayer } from "@/hooks/usePlayer"
+import { usePlayer, type Track as PlayerTrack } from "@/hooks/usePlayer"
 
 type TrackContextMenuProps = {
 	trackId: string
 	trackName?: string
 	artistId?: string
 	albumId?: string
+	fullTrack?: PlayerTrack
 	isLiked?: boolean
 	onToggleLike?: (trackId: string) => void
 	afterAddToPlaylist?: (trackId: string, playlistId: string) => void
@@ -43,17 +44,17 @@ export function TrackContextMenu({
 	trackName,
 	artistId,
 	albumId,
+	fullTrack,
 	isLiked,
 	onToggleLike,
 	afterAddToPlaylist,
 	children,
 }: TrackContextMenuProps) {
-	const { playlists } = usePage().props as unknown as InertiaPageProps
+	const { playlists, user } = usePage().props as unknown as InertiaPageProps
 	const player = usePlayer()
 	const { sessionId, addToJamQueue } = useJamSession(
-		// safe fallbacks; JamPanel passes user ids
-		(usePage().props as any)?.user?.id?.toString?.() ?? null,
-		(usePage().props as any)?.user?.name ?? null,
+		user?.id?.toString?.() ?? null,
+		user?.name ?? null,
 	)
 	const userPlaylists =
 		(playlists as Playlist[] | undefined)?.filter((p) => !p.is_default) ?? []
@@ -78,45 +79,39 @@ export function TrackContextMenu({
 	}
 
 	const handleAddToQueue = () => {
+		// Prefer explicitly passed full track metadata when available
+		let resolvedTrack: PlayerTrack | null = fullTrack ?? null
+
 		const allPlaylists = (playlists as Playlist[] | undefined) ?? []
 
-		let fullTrack: {
-			id: string
-			name: string
-			artist: string
-			artist_id: string
-			album: string
-			album_id?: string
-			album_cover?: string
-			duration: number
-			audio: string | null
-		} | null = null
-
-		for (const playlist of allPlaylists) {
-			const fromPlaylist = playlist.tracks?.find(
-				(track) => track.id.toString() === trackId.toString(),
-			)
-			if (fromPlaylist) {
-				fullTrack = {
-					id: fromPlaylist.id.toString(),
-					name: fromPlaylist.name,
-					artist: fromPlaylist.artist,
-					artist_id: fromPlaylist.artist_id,
-					album: fromPlaylist.album ?? "",
-					album_id: fromPlaylist.album_id,
-					album_cover: fromPlaylist.album_cover,
-					duration: fromPlaylist.duration,
-					audio: fromPlaylist.audio,
+		if (!resolvedTrack) {
+			for (const playlist of allPlaylists) {
+				const fromPlaylist = playlist.tracks?.find(
+					(track) => track.id.toString() === trackId.toString(),
+				)
+				if (fromPlaylist) {
+					resolvedTrack = {
+						id: fromPlaylist.id.toString(),
+						name: fromPlaylist.name,
+						artist: fromPlaylist.artist,
+						artist_id: fromPlaylist.artist_id,
+						album: fromPlaylist.album ?? "",
+						album_id: fromPlaylist.album_id,
+						album_cover: fromPlaylist.album_cover,
+						duration: fromPlaylist.duration,
+						audio: fromPlaylist.audio,
+					}
+					break
 				}
-				break
 			}
 		}
 
-		if (!fullTrack) {
-			fullTrack = {
+		if (!resolvedTrack) {
+			// Last-resort fallback when we truly don't have metadata
+			resolvedTrack = {
 				id: trackId,
-				name: trackName ?? "Track",
-				artist: "",
+				name: trackName ?? "Unknown Track",
+				artist: trackName ? "" : "Unknown Artist",
 				artist_id: artistId ?? "",
 				album: "",
 				album_id: albumId,
@@ -126,7 +121,12 @@ export function TrackContextMenu({
 			}
 		}
 
-		player.addToQueue([fullTrack])
+		player.addToQueue([resolvedTrack])
+
+		// If a Jam is active, also push into the shared Jam queue
+		if (sessionId && addToJamQueue) {
+			addToJamQueue([resolvedTrack])
+		}
 	}
 
 	const handleToggleLike = () => {
@@ -218,19 +218,20 @@ export function TrackContextMenu({
 					<ContextMenuItem
 						onSelect={(event) => {
 							event.preventDefault()
-							addToJamQueue?.([
-								{
+							const trackForJam =
+								fullTrack ??
+								({
 									id: trackId,
-									name: trackName ?? "Track",
-									artist: "",
+									name: trackName ?? "Unknown Track",
+									artist: trackName ? "" : "Unknown Artist",
 									artist_id: artistId ?? "",
 									album: "",
 									album_id: albumId,
 									album_cover: undefined,
 									duration: 0,
 									audio: null,
-								},
-							])
+								} satisfies PlayerTrack)
+							addToJamQueue?.([trackForJam])
 						}}
 						className="flex items-center gap-2"
 					>

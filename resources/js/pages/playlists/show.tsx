@@ -590,6 +590,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 									artistId={track.artist_id}
 									albumId={track.album_id}
 									isLiked={likedTrackIds.has(track.id.toString())}
+									fullTrack={playerQueue[index] ?? toPlayerTrack(track)}
 								>
 									<div
 										className={`
