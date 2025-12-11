@@ -6,7 +6,11 @@ import type { Track } from "@/hooks/usePlayer"
 
 interface AudioEffectsProps {
 	currentTrack: Track | null
-	onProcessedAudio: (buffer: AudioBuffer, tempo?: number, pitch?: number) => void
+	onProcessedAudio: (
+		buffer: AudioBuffer,
+		tempo?: number,
+		pitch?: number,
+	) => void
 	onProcessingStart?: () => void
 	autoApplyEffects?: boolean
 	onToggleAutoApply?: () => void
@@ -58,7 +62,7 @@ export function AudioEffects({
 				handleApplyEffects()
 			}, 300)
 		}
-		
+
 		previousTrackRef.current = currentTrack
 	}, [currentTrack, autoApplyEffects])
 
@@ -131,32 +135,35 @@ export function AudioEffects({
 		<div
 			className={`p-4 bg-zinc-800/50 rounded-lg space-y-4 ${className || ""}`}
 		>
-		<div className="flex items-center justify-between">
-			<h3 className="text-sm font-medium text-white">Audio Effects</h3>
-			<div className="flex gap-2">
-				{onToggleAutoApply && (
+			<div className="flex items-center justify-between">
+				<h3 className="text-sm font-medium text-white">Audio Effects</h3>
+				<div className="flex gap-2">
+					{onToggleAutoApply && (
+						<Button
+							size="sm"
+							variant={autoApplyEffects ? "default" : "outline"}
+							onClick={onToggleAutoApply}
+							disabled={isProcessing || isLocalProcessing}
+							className={`text-xs font-medium ${autoApplyEffects ? "bg-spotify-green hover:bg-spotify-green/80 text-black border-spotify-green" : "bg-zinc-700 hover:bg-zinc-600 text-white border-zinc-600"}`}
+							title={
+								autoApplyEffects ? "Auto-apply enabled" : "Auto-apply disabled"
+							}
+						>
+							Auto
+						</Button>
+					)}
 					<Button
 						size="sm"
-						variant={autoApplyEffects ? "default" : "outline"}
-						onClick={onToggleAutoApply}
+						variant="outline"
+						onClick={handleReset}
 						disabled={isProcessing || isLocalProcessing}
-						className={`text-xs ${autoApplyEffects ? "bg-spotify-green hover:bg-spotify-green/80 text-black" : "text-white border-white/20 hover:bg-white/10"}`}
-						title={autoApplyEffects ? "Auto-apply enabled" : "Auto-apply disabled"}
+						className="text-xs font-medium bg-zinc-700 hover:bg-zinc-600 text-white border-zinc-600"
 					>
-						Auto
+						Reset
 					</Button>
-				)}
-				<Button
-					size="sm"
-					variant="outline"
-					onClick={handleReset}
-					disabled={isProcessing || isLocalProcessing}
-					className="text-xs text-white border-white/20 hover:bg-white/10"
-				>
-					Reset
-				</Button>
-			</div>
-		</div>			{/* Tempo Slider */}
+				</div>
+			</div>{" "}
+			{/* Tempo Slider */}
 			<div className="space-y-2">
 				<div className="flex items-center justify-between">
 					<span className="text-sm text-white/70">Tempo</span>
@@ -174,7 +181,6 @@ export function AudioEffects({
 					disabled={isProcessing || isLocalProcessing}
 				/>
 			</div>
-
 			{/* Pitch Slider */}
 			<div className="space-y-2">
 				<div className="flex items-center justify-between">
@@ -193,7 +199,6 @@ export function AudioEffects({
 					disabled={isProcessing || isLocalProcessing}
 				/>
 			</div>
-
 			{/* Apply Button */}
 			<Button
 				className="w-full bg-spotify-green hover:bg-spotify-green/80 text-black font-medium"
@@ -202,7 +207,6 @@ export function AudioEffects({
 			>
 				{isProcessing || isLocalProcessing ? "Processing..." : "Apply Effects"}
 			</Button>
-
 			{/* Info Text */}
 			<p className="text-xs text-white/50 text-center">
 				Adjust tempo and pitch, then click Apply to process the audio

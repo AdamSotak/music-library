@@ -580,7 +580,11 @@ function ExpandedPlayer({
 	formatTime: (seconds: number) => string
 	showEffects: boolean
 	setShowEffects: (value: boolean) => void
-	handleProcessedAudio: (buffer: AudioBuffer, tempo?: number, pitch?: number) => void
+	handleProcessedAudio: (
+		buffer: AudioBuffer,
+		tempo?: number,
+		pitch?: number,
+	) => void
 	handleProcessingStart: () => void
 	autoApplyEffects: boolean
 	setAutoApplyEffects: (value: boolean) => void
@@ -821,7 +825,9 @@ function ExpandedPlayer({
 				<div className="px-4 pb-4">
 					<AudioEffects
 						currentTrack={currentTrack}
-						onProcessedAudio={(buffer, tempo, pitch) => handleProcessedAudio(buffer, tempo, pitch)}
+						onProcessedAudio={(buffer, tempo, pitch) =>
+							handleProcessedAudio(buffer, tempo, pitch)
+						}
 						onProcessingStart={handleProcessingStart}
 						autoApplyEffects={autoApplyEffects}
 						onToggleAutoApply={() => setAutoApplyEffects(!autoApplyEffects)}
@@ -1163,7 +1169,6 @@ export default function AudioPlayer() {
 			>
 				<track kind="captions" />
 			</audio>
-
 			{/* Full-screen mobile player modal */}
 			{isExpanded && (
 				<div
@@ -1203,16 +1208,17 @@ export default function AudioPlayer() {
 						currentTrack={currentTrack}
 						playNext={playNext}
 						playPrevious={playPrevious}
-					formatTime={formatTime}
-					showEffects={showEffects}
-					setShowEffects={setShowEffects}
-					handleProcessedAudio={handleProcessedAudio}
-					handleProcessingStart={handleProcessingStart}
-					autoApplyEffects={autoApplyEffects}
-					setAutoApplyEffects={setAutoApplyEffects}
-				/>
-			</div>
-		)}			{/* Mobile layout (hidden on md and up) */}
+						formatTime={formatTime}
+						showEffects={showEffects}
+						setShowEffects={setShowEffects}
+						handleProcessedAudio={handleProcessedAudio}
+						handleProcessingStart={handleProcessingStart}
+						autoApplyEffects={autoApplyEffects}
+						setAutoApplyEffects={setAutoApplyEffects}
+					/>
+				</div>
+			)}{" "}
+			{/* Mobile layout (hidden on md and up) */}
 			<div className="lg:hidden w-full mt-1 bg-zinc-900/95 backdrop-blur-sm border-t border-white/10">
 				<MobilePlayer
 					isPlaying={isPlaying}
@@ -1221,7 +1227,6 @@ export default function AudioPlayer() {
 					currentTrack={currentTrack}
 				/>
 			</div>
-
 			{/* Desktop layout (hidden on mobile) */}
 			<div className="hidden lg:block">
 				<DesktopPlayer
@@ -1249,7 +1254,9 @@ export default function AudioPlayer() {
 					<div className="mt-4 mx-4">
 						<AudioEffects
 							currentTrack={currentTrack}
-							onProcessedAudio={(buffer, tempo, pitch) => handleProcessedAudio(buffer, tempo, pitch)}
+							onProcessedAudio={(buffer, tempo, pitch) =>
+								handleProcessedAudio(buffer, tempo, pitch)
+							}
 							onProcessingStart={handleProcessingStart}
 							autoApplyEffects={autoApplyEffects}
 							onToggleAutoApply={() => setAutoApplyEffects(!autoApplyEffects)}
