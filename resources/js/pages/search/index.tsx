@@ -169,7 +169,7 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 							) : null}
 						</div>
 					)}
-					
+
 					{/* Songs */}
 					{results.tracks.length > 0 && (
 						<div className="min-w-0">

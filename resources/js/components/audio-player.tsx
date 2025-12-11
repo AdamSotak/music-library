@@ -811,6 +811,7 @@ export default function AudioPlayer() {
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [isClosing, setIsClosing] = useState(false)
 	const pendingSeekMsRef = useRef<number | null>(null)
+	const lastSourceRef = useRef<"audio_url" | "deezer_id" | "name" | null>(null)
 
 	// Load audio source when the current track changes
 	useEffect(() => {
@@ -828,8 +829,26 @@ export default function AudioPlayer() {
 			return
 		}
 
-		const url = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
-		audio.src = url
+		// Build a stream URL that prefers a stable source:
+		// 1) Explicit audio URL from the track (proxied through our backend)
+		// 2) Deezer preview by track id
+		// 3) Fallback: search by track name
+		let streamUrl: string
+		if (currentTrack.audio && currentTrack.audio.startsWith("http")) {
+			streamUrl = `/api/audio/stream?audio_url=${encodeURIComponent(currentTrack.audio)}`
+			lastSourceRef.current = "audio_url"
+		} else if (
+			currentTrack.deezer_track_id &&
+			/^\d+$/.test(String(currentTrack.deezer_track_id))
+		) {
+			streamUrl = `/api/audio/stream?deezer_id=${encodeURIComponent(currentTrack.deezer_track_id)}`
+			lastSourceRef.current = "deezer_id"
+		} else {
+			streamUrl = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
+			lastSourceRef.current = "name"
+		}
+
+		audio.src = streamUrl
 		audio.load()
 
 		// Reset local timing state; actual play/pause is handled by the
@@ -844,9 +863,23 @@ export default function AudioPlayer() {
 		if (!audioRef.current || !currentTrack) return
 
 		if (isPlaying) {
-			audioRef.current.play().catch((err) => {
-				console.error("Playback failed:", err)
-				setIsPlaying(false)
+			audioRef.current.play().catch((err: any) => {
+				console.warn("Playback start failed (non-fatal):", err)
+				// If we failed while using a specific source (audio_url or deezer_id),
+				// attempt a last-resort fallback to name search, then retry play once.
+				if (lastSourceRef.current !== "name") {
+					const fallbackUrl = `/api/audio/stream?q=${encodeURIComponent(
+						currentTrack.name,
+					)}`
+					lastSourceRef.current = "name"
+					audioRef.current!.src = fallbackUrl
+					audioRef.current!.load()
+					audioRef.current!
+						.play()
+						.catch((e: any) =>
+							console.warn("Fallback playback failed (non-fatal):", e),
+						)
+				}
 			})
 		} else {
 			audioRef.current.pause()
@@ -994,10 +1027,7 @@ export default function AudioPlayer() {
 		}
 		window.addEventListener("jam:apply-playback", handler as EventListener)
 		return () =>
-			window.removeEventListener(
-				"jam:apply-playback",
-				handler as EventListener,
-			)
+			window.removeEventListener("jam:apply-playback", handler as EventListener)
 	}, [setIsPlaying])
 
 	// Handle escape key to close modal

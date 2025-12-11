@@ -178,6 +178,7 @@ class JamService
                 'seed_type' => $data['seed_type'],
                 'seed_id' => $data['seed_id'],
                 'allow_controls' => $data['allow_controls'] ?? true,
+                'queue_version' => 0,
             ]);
 
             JamParticipant::create([
@@ -190,6 +191,7 @@ class JamService
             foreach ($data['tracks'] as $index => $trackData) {
                 $this->syncTrack($trackData);
                 JamQueueItem::create([
+                    'id' => (string) Str::uuid(),
                     'jam_id' => $jam->id,
                     'position' => $index,
                     'track_id' => $trackData['id'],
@@ -197,6 +199,10 @@ class JamService
                     'source' => $data['seed_type'],
                 ]);
             }
+
+            // Initial queue version after first population.
+            $jam->queue_version = 1;
+            $jam->save();
 
             JamPlaybackState::create([
                 'jam_id' => $jam->id,
@@ -209,14 +215,13 @@ class JamService
             // initial snapshot so that the WS relay has a complete view of
             // the Jam queue from the moment it is created.
             $jam->load(['queueItems.track.artist', 'queueItems.track.album']);
-            $queue = $jam->queueItems->sortBy('position')->values()->map(
-                fn ($item) => $item->track
-            );
+            $queue = $this->formatQueueForBroadcast($jam);
 
             $this->broadcast($jam->id, [
                 'type' => 'queue_snapshot',
                 'tracks' => $queue,
                 'index' => 0,
+                'version' => $jam->queue_version,
             ]);
 
             return $jam;
@@ -253,6 +258,7 @@ class JamService
             foreach ($tracks as $index => $trackData) {
                 $this->syncTrack($trackData);
                 $item = JamQueueItem::create([
+                    'id' => (string) Str::uuid(),
                     'jam_id' => $jam->id,
                     'position' => $index,
                     'track_id' => $trackData['id'],
@@ -262,13 +268,18 @@ class JamService
                 $newItems[] = $item;
             }
 
+            // Bump queue version after mutation.
+            $jam->queue_version = (int) $jam->queue_version + 1;
+            $jam->save();
+
             // Fetch full track data to broadcast
             $jam->load(['queueItems.track.artist', 'queueItems.track.album']);
-            $queue = $jam->queueItems->map(fn ($item) => $item->track);
+            $queue = $this->formatQueueForBroadcast($jam);
 
             $this->broadcast($jam->id, [
                 'type' => 'queue_snapshot',
                 'tracks' => $queue,
+                'version' => $jam->queue_version,
             ]);
         });
     }
@@ -283,6 +294,7 @@ class JamService
             foreach ($tracks as $trackData) {
                 $this->syncTrack($trackData);
                 $item = JamQueueItem::create([
+                    'id' => (string) Str::uuid(),
                     'jam_id' => $jam->id,
                     'position' => $position++,
                     'track_id' => $trackData['id'],
@@ -294,19 +306,43 @@ class JamService
 
             // We need to reload relation to get track details for broadcast
             // A bit inefficient but simplest handling for now
+            $jam->queue_version = (int) $jam->queue_version + 1;
+            $jam->save();
+
             $jam->load(['queueItems.track.artist', 'queueItems.track.album']);
 
-            // Filter out just the added ones or send full snapshot?
-            // "queue_add" optimization:
-            $broadcastItems = collect($addedItems)->map(function ($item) {
+            // "queue_add" optimisation with proper queue_item_id metadata.
+            $broadcastItems = collect($addedItems)->map(function (JamQueueItem $item) {
                 $item->load(['track.artist', 'track.album']);
 
-                return ['track' => $item->track];
+                $track = $item->track;
+                $artist = $track?->artist;
+                $album = $track?->album;
+
+                $artistName = $artist?->name ?: ($track?->artist_id ?: 'Unknown Artist');
+                $albumName = $album?->name ?: ($track?->album_id ?: 'Unknown Album');
+
+                return [
+                    'position' => $item->position,
+                    'queue_item_id' => $item->id,
+                    'track' => [
+                        'id' => $track?->id,
+                        'name' => $track?->name ?? 'Unknown Track',
+                        'artist' => $artistName,
+                        'artist_id' => $track?->artist_id,
+                        'album' => $albumName,
+                        'album_id' => $track?->album_id,
+                        'album_cover' => $album?->image_url ?? null,
+                        'duration' => $track?->duration ?? 0,
+                        'audio' => $track?->audio_url ?? $track?->audio,
+                    ],
+                ];
             })->toArray();
 
             $this->broadcast($jam->id, [
                 'type' => 'queue_add',
                 'items' => $broadcastItems,
+                'version' => $jam->queue_version,
             ]);
         });
     }
@@ -335,9 +371,7 @@ class JamService
     public function removeFromQueue(JamSession $jam, string $trackId, string $userId): void
     {
         DB::transaction(function () use ($jam, $trackId) {
-            // Find the item to remove (first occurrence or specific?)
-            // For now, let's remove the *first* occurrence of this track in the queue
-            // A better UI would pass the specific queue_item_id or position, but trackId is what we have for now.
+            // Remove the first occurrence of the track in the queue.
             $item = JamQueueItem::where('jam_id', $jam->id)
                 ->where('track_id', $trackId)
                 ->orderBy('position', 'asc')
@@ -346,18 +380,77 @@ class JamService
             if ($item) {
                 $item->delete();
 
-                // Re-index subsequent items?
-                // Not strictly necessary if frontend sorts by position, but cleaner.
-                // Let's just broadcast the new snapshot for simplicity and correctness.
+                // Bump version and broadcast a fresh snapshot.
+                $jam->queue_version = (int) $jam->queue_version + 1;
+                $jam->save();
 
                 $jam->load(['queueItems.track.artist', 'queueItems.track.album']);
-                $queue = $jam->queueItems->sortBy('position')->values()->map(fn ($item) => $item->track);
+                $queue = $this->formatQueueForBroadcast($jam);
 
                 $this->broadcast($jam->id, [
                     'type' => 'queue_snapshot',
                     'tracks' => $queue,
+                    'version' => $jam->queue_version,
                 ]);
             }
         });
+    }
+
+    /**
+     * Build a normalised queue payload with queue_item_id metadata for API/WS.
+     *
+     * @return array<int, array<string,mixed>>
+     */
+    protected function formatQueueForBroadcast(JamSession $jam): array
+    {
+        return $jam->queueItems
+            ->sortBy('position')
+            ->values()
+            ->map(function (JamQueueItem $item): array {
+                $track = $item->track;
+
+                if (! $track) {
+                    return [
+                        'position' => $item->position,
+                        'queue_item_id' => $item->id,
+                        'track' => [
+                            'id' => $item->track_id,
+                            'name' => 'Unknown Track',
+                            'artist' => 'Unknown Artist',
+                            'artist_id' => '',
+                            'album' => 'Unknown Album',
+                            'album_id' => null,
+                            'album_cover' => null,
+                            'duration' => 0,
+                            'audio' => null,
+                            'deezer_track_id' => null,
+                        ],
+                    ];
+                }
+
+                $artist = $track->artist;
+                $album = $track->album;
+
+                $artistName = $artist?->name ?: ($track->artist_id ?: 'Unknown Artist');
+                $albumName = $album?->name ?: ($track->album_id ?: 'Unknown Album');
+
+                return [
+                    'position' => $item->position,
+                    'queue_item_id' => $item->id,
+                    'track' => [
+                        'id' => $track->id,
+                        'name' => $track->name ?? 'Unknown Track',
+                        'artist' => $artistName,
+                        'artist_id' => $track->artist_id,
+                        'album' => $albumName,
+                        'album_id' => $track->album_id,
+                        'album_cover' => $album?->image_url ?? null,
+                        'duration' => $track->duration,
+                        'audio' => $track->audio_url ?? $track->audio,
+                        'deezer_track_id' => $track->deezer_track_id ?? null,
+                    ],
+                ];
+            })
+            ->all();
     }
 }

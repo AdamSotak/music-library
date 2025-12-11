@@ -10,6 +10,11 @@ export interface Track {
 	album_cover?: string
 	duration: number
 	audio: string | null
+	// When participating in a Jam session, each queue entry has a stable id.
+	// This is attached by the backend as queue_item_id and used only for sync.
+	queue_item_id?: string
+	position?: number
+	deezer_track_id?: string
 }
 
 export const getTrackCover = (track?: Track | null) => {

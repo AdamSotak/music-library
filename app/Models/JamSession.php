@@ -21,6 +21,7 @@ class JamSession extends Model
         'seed_type',
         'seed_id',
         'allow_controls',
+        'queue_version',
     ];
 
     public function participants(): HasMany

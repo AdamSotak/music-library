@@ -52,24 +52,28 @@ const server = createServer((req, res) => {
 				// If strictly necessary, we could upsert it, but usually broadcast is adequate.
 				const room = rooms.get(jamId)
 				if (room && room.participants.size > 0) {
-					// We use the existing broadcast logic.
-					// Note: 'broadcast' function sends to ALL except 'except'.
-					// Passing null for 'except' means send to everyone.
-
-					// Special handling: if backend sends queue/playback updates, we might want to 
-					// update our in-memory cache so subsequent joins get correct state.
-					if (payload.type === "queue_snapshot" || payload.type === "queue" || payload.type === "queue_add") {
-						if (payload.tracks || payload.queue) room.queue = payload.tracks || payload.queue
-						if (payload.items) room.queue = room.queue.concat(payload.items.map(i => i.track || i))
+					// Keep an in-memory mirror of the latest queue/playback state
+					// using whatever the backend considers canonical.
+					if (payload.type === "queue_snapshot" || payload.type === "queue") {
+						if (payload.tracks || payload.queue) {
+							room.queue = payload.tracks || payload.queue
+						}
+					}
+					if (payload.type === "queue_add") {
+						if (Array.isArray(payload.items)) {
+							room.queue = room.queue.concat(payload.items)
+						}
 					}
 					if (payload.type === "playback_state") {
 						if (typeof payload.index === "number") room.playback.index = payload.index
 						if (typeof payload.offsetMs === "number") room.playback.offsetMs = payload.offsetMs
-						if (typeof payload.isPlaying === "boolean") room.playback.isPlaying = payload.isPlaying
+						if (typeof payload.isPlaying === "boolean")
+							room.playback.isPlaying = payload.isPlaying
 						if (typeof payload.trackId === "string") room.playback.trackId = payload.trackId
 						room.playback.updatedAt = Date.now()
 					}
 
+					// Fan out the backend event to all connected clients.
 					broadcast(jamId, payload, null)
 				}
 

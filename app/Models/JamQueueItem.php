@@ -12,11 +12,12 @@ class JamQueueItem extends Model
 
     public $incrementing = false;
 
-    protected $primaryKey = null;
+    protected $primaryKey = 'id';
 
     protected $table = 'jam_queue_items';
 
     protected $fillable = [
+        'id',
         'jam_id',
         'position',
         'track_id',

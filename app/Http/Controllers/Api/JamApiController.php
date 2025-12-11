@@ -165,6 +165,7 @@ class JamApiController extends Controller
             if (! $track) {
                 return [
                     'position' => $item->position,
+                    'queue_item_id' => $item->id,
                     'track' => [
                         'id' => $item->track_id,
                         'name' => 'Unknown Track',
@@ -175,6 +176,7 @@ class JamApiController extends Controller
                         'album_cover' => null,
                         'duration' => 0,
                         'audio' => null,
+                        'deezer_track_id' => null,
                     ],
                 ];
             }
@@ -187,6 +189,7 @@ class JamApiController extends Controller
 
             return [
                 'position' => $item->position,
+                'queue_item_id' => $item->id,
                 'track' => [
                     'id' => $track->id,
                     'name' => $track->name ?? 'Unknown Track',
@@ -198,6 +201,7 @@ class JamApiController extends Controller
                     'album_cover' => $album?->image_url ?? null,
                     'duration' => $track->duration,
                     'audio' => $track->audio_url ?? $track->audio,
+                    'deezer_track_id' => $track->deezer_track_id ?? null,
                 ],
             ];
         });
@@ -209,6 +213,7 @@ class JamApiController extends Controller
                 'seed_id' => $jam->seed_id,
                 'allow_controls' => $jam->allow_controls,
                 'host_user_id' => $jam->host_user_id,
+                'queue_version' => $jam->queue_version,
             ],
             'participants' => $jam->participants->map(fn (JamParticipant $p) => [
                 'id' => $p->user_id,

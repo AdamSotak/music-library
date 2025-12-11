@@ -14,20 +14,30 @@ class AudioProxyController extends Controller
     public function stream(Request $request)
     {
         $deezerId = $request->query('deezer_id');
+        $audioUrlEncoded = $request->query('audio_url');
+        $audioUrl = $audioUrlEncoded ? urldecode((string) $audioUrlEncoded) : null;
         $q = $request->query('q');
         $redirect = $request->boolean('redirect', true);
 
-        if (! $deezerId && ! $q) {
-            return response()->json(['error' => 'deezer_id or q is required'], 400);
+        if (! $deezerId && ! $audioUrl && ! $q) {
+            return response()->json(['error' => 'deezer_id, audio_url or q is required'], 400);
         }
 
         if ($deezerId && ! preg_match('/^\d+$/', (string) $deezerId)) {
             return response()->json(['error' => 'deezer_id must be numeric'], 400);
         }
 
-        $url = $deezerId
-            ? $this->deezer->getPreviewUrl((string) $deezerId)
-            : $this->deezer->searchPreviewUrl((string) $q);
+        // Highest priority: explicit audio URL if provided (and looks like http/https).
+        if ($audioUrl) {
+            if (! filter_var($audioUrl, FILTER_VALIDATE_URL)) {
+                return response()->json(['error' => 'audio_url must be a valid URL'], 400);
+            }
+            $url = $audioUrl;
+        } else {
+            $url = $deezerId
+                ? $this->deezer->getPreviewUrl((string) $deezerId)
+                : $this->deezer->searchPreviewUrl((string) $q);
+        }
 
         if (! $url) {
             return response()->json(['error' => 'preview not found'], 404);
