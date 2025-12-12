@@ -57,6 +57,18 @@ type ApiQueueItem = {
 	track: any
 }
 
+type JamPlaybackState = {
+	queue_item_id: string | null
+	offset_ms: number
+	is_playing: boolean
+	ts_ms: number
+}
+
+export type JamCommand =
+	| { type: "REQUEST_SEEK"; queue_item_id: string; offset_ms: number }
+	| { type: "REQUEST_PLAY_QUEUE_ITEM"; queue_item_id: string }
+	| { type: "REQUEST_PLAY_PAUSE"; is_playing: boolean }
+
 // Normalise track objects coming from various backends (API, WS relay, storage)
 // into the flat Player Track shape used by the player and Jam UI.
 const normalizeTrackFromWire = (input: any): Track => {
@@ -117,7 +129,8 @@ const normalizeTrackFromWire = (input: any): Track => {
 			: undefined
 
 	const deezerTrackId =
-		typeof raw.deezer_track_id === "string" || typeof raw.deezer_track_id === "number"
+		typeof raw.deezer_track_id === "string" ||
+		typeof raw.deezer_track_id === "number"
 			? raw.deezer_track_id.toString()
 			: undefined
 
@@ -169,6 +182,7 @@ type JamSessionValue = {
 	startJam: (options?: StartJamOptions) => Promise<void> | void
 	endJam: () => void
 	joinJam: (id: string) => Promise<boolean>
+	sendCommand: (cmd: JamCommand) => void
 	sendPlaybackState: (
 		track: Track | null,
 		index: number | undefined,
@@ -208,6 +222,7 @@ function useJamSessionInternal(
 	const lastPlaybackTsRef = useRef<number>(0)
 	const lastPositionMsRef = useRef<number>(0)
 	const player = usePlayer()
+	const currentQueueItemIdRef = useRef<string | null>(null)
 
 	// Wrapper used by UI to toggle the "allow others to control playback"
 	// switch. This updates local state and broadcasts the new mode to other
@@ -287,73 +302,37 @@ function useJamSessionInternal(
 	const broadcastQueue = (queue: Track[]) =>
 		emit({ type: "queue_snapshot", jamId: sessionId, tracks: queue, index: 0 })
 
-	const applyIncomingPlayback = (raw: any) => {
-		const msg = raw ?? {}
-		if (msg.clientId && msg.clientId === clientIdRef.current) return
-		if (typeof msg.ts === "number" && msg.ts < lastPlaybackTsRef.current) return
-		lastPlaybackTsRef.current = msg.ts ?? Date.now()
+	const sendCommand = (cmd: JamCommand) => {
+		if (!sessionId) return
+		emit({ type: "jam_command", jamId: sessionId, cmd })
+	}
+
+	const applyPlaybackState = (state: JamPlaybackState) => {
+		if (state.ts_ms <= lastPlaybackTsRef.current) return
+		lastPlaybackTsRef.current = state.ts_ms
+		if (!state.queue_item_id) return
 
 		const queue = sharedQueueRef.current
 		if (!queue.length) return
 
-		let idx = -1
-
-		const queueItemId =
-			typeof msg.queueItemId === "string"
-				? msg.queueItemId
-				: typeof msg.queue_item_id === "string"
-					? msg.queue_item_id
-					: undefined
-
-		if (queueItemId) {
-			idx = queue.findIndex((t) => t.queue_item_id === queueItemId)
-		}
-
-		if (idx < 0) {
-			const trackId = typeof msg.trackId === "string" ? msg.trackId : undefined
-			if (trackId) {
-				idx = queue.findIndex((t) => t.id === trackId)
-			}
-		}
-
-		if (idx < 0 && typeof msg.index === "number" && msg.index >= 0) {
-			const safeIndex = Math.floor(msg.index)
-			if (safeIndex >= 0 && safeIndex < queue.length) {
-				idx = safeIndex
-			}
-		}
-
-		if (idx < 0 || !queue[idx]) return
+		const idx = queue.findIndex((t) => t.queue_item_id === state.queue_item_id)
+		if (idx === -1) return
 
 		currentIndexRef.current = idx
+		currentQueueItemIdRef.current = state.queue_item_id
 		const track = queue[idx]
 
 		player.setCurrentTrack(track, queue, idx, {
 			suppressListeners: true,
 		})
+		player.setIsPlaying(state.is_playing, { suppressListeners: true })
 
-		if (typeof msg.isPlaying === "boolean") {
-			player.setIsPlaying(msg.isPlaying, { suppressListeners: true })
+		let offsetMs = Math.max(0, state.offset_ms)
+		if (state.is_playing) {
+			const drift = Date.now() - state.ts_ms
+			if (drift > 0) offsetMs += drift
 		}
 
-		let offsetMs =
-			typeof msg.offsetMs === "number"
-				? msg.offsetMs
-				: typeof msg.offset_ms === "number"
-					? msg.offset_ms
-					: 0
-
-		// If playback is running and we know when the state was produced, adjust
-		// the offset by the elapsed wall-clock time so that late joiners land
-		// closer to the host's current position.
-		if (msg.isPlaying && typeof msg.ts === "number") {
-			const drift = Date.now() - msg.ts
-			if (drift > 0) {
-				offsetMs += drift
-			}
-		}
-
-		// Clamp to the track duration to avoid seeking beyond the end.
 		const trackDurationMs =
 			typeof track.duration === "number" && track.duration > 0
 				? track.duration * 1000
@@ -369,13 +348,39 @@ function useJamSessionInternal(
 						detail: {
 							trackId: track.id,
 							offsetMs,
-							isPlaying: Boolean(msg.isPlaying),
+							isPlaying: state.is_playing,
+							tsMs: state.ts_ms,
 						},
 					}),
 				)
 			} catch {
 				// ignore
 			}
+		}
+	}
+
+	const handleIncomingCommand = (cmd: JamCommand, fromUserId?: string) => {
+		if (!isHost) return
+		if (!allowControls && fromUserId && fromUserId !== currentUserId) return
+
+		switch (cmd.type) {
+			case "REQUEST_SEEK":
+				sendPlaybackState(null, undefined, true, {
+					queueItemId: cmd.queue_item_id,
+					offsetMs: cmd.offset_ms,
+				})
+				break
+			case "REQUEST_PLAY_QUEUE_ITEM":
+				sendPlaybackState(null, undefined, true, {
+					queueItemId: cmd.queue_item_id,
+					offsetMs: 0,
+				})
+				break
+			case "REQUEST_PLAY_PAUSE":
+				sendPlaybackState(null, undefined, cmd.is_playing, {})
+				break
+			default:
+				break
 		}
 	}
 
@@ -454,8 +459,11 @@ function useJamSessionInternal(
 					return normalizeTrackFromWire(merged)
 				})
 				setSharedQueue((prev) => [...prev, ...items])
-			} else if (msg?.type === "playback_state") {
-				applyIncomingPlayback(msg)
+			} else if (msg?.type === "playback_state" && msg.state) {
+				const state = msg.state as JamPlaybackState
+				applyPlaybackState(state)
+			} else if (msg?.type === "jam_command" && msg.cmd) {
+				handleIncomingCommand(msg.cmd as JamCommand, msg.fromUserId as string)
 			}
 		}
 
@@ -577,8 +585,10 @@ function useJamSessionInternal(
 							return normalizeTrackFromWire(merged)
 						})
 						setSharedQueue((prev) => [...prev, ...items])
-					} else if (msg.type === "playback_state") {
-						applyIncomingPlayback(msg)
+					} else if (msg.type === "playback_state" && msg.state) {
+						applyPlaybackState(msg.state as JamPlaybackState)
+					} else if (msg.type === "jam_command" && msg.cmd) {
+						handleIncomingCommand(msg.cmd as JamCommand, msg.fromUserId as string)
 					}
 				} catch (err) {
 					console.warn("Bad WS message", err)
@@ -628,8 +638,9 @@ function useJamSessionInternal(
 			setAllowControlsState(Boolean(data.jam.allow_controls))
 			setParticipants(
 				dedupeParticipants(
-					(data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ??
-						[self]) as JamParticipant[],
+					(data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ?? [
+						self,
+					]) as JamParticipant[],
 				),
 			)
 			const apiQueueItems = (data.queue as ApiQueueItem[] | undefined) ?? []
@@ -713,8 +724,9 @@ function useJamSessionInternal(
 			setAllowControlsState(Boolean(data.jam.allow_controls))
 			setParticipants(
 				dedupeParticipants(
-					(data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ??
-						[self]) as JamParticipant[],
+					(data.participants?.map((p: ApiParticipant) => mapParticipant(p)) ?? [
+						self,
+					]) as JamParticipant[],
 				),
 			)
 			const apiQueueItems = (data.queue as ApiQueueItem[] | undefined) ?? []
@@ -729,42 +741,8 @@ function useJamSessionInternal(
 						)
 					: []
 			setSharedQueue(queueFromApi)
-			if (queueFromApi.length) {
-				const playbackIndex =
-					typeof data.playback?.position === "number"
-						? data.playback.position
-						: 0
-				const safeIndex =
-					playbackIndex >= 0 && playbackIndex < queueFromApi.length
-						? playbackIndex
-						: 0
-				currentIndexRef.current = safeIndex
-				const activeTrack = queueFromApi[safeIndex]
-				player.setCurrentTrack(activeTrack, queueFromApi, safeIndex)
-				const offsetMs =
-					typeof data.playback?.offset_ms === "number"
-						? data.playback.offset_ms
-						: 0
-				const isPlaying =
-					typeof data.playback?.is_playing === "boolean"
-						? data.playback.is_playing
-						: false
-				if (typeof window !== "undefined") {
-					try {
-						window.dispatchEvent(
-							new CustomEvent("jam:apply-playback", {
-								detail: {
-									trackId: activeTrack.id,
-									offsetMs,
-									isPlaying,
-								},
-							}),
-						)
-					} catch {
-						// ignore
-					}
-				}
-			}
+			// Do not auto-start playback on join; wait for the next PLAYBACK_STATE
+			// from the host so we avoid offset drift.
 			connectWebSocket(id, "guest", self)
 			if (typeof window !== "undefined") {
 				try {
@@ -869,12 +847,34 @@ function useJamSessionInternal(
 		track: Track | null,
 		index: number | undefined,
 		isPlaying = true,
-		options?: { offsetMs?: number },
+		options?: { offsetMs?: number; queueItemId?: string | null },
 	) => {
-		if (!sessionId) return
+		if (!sessionId || !isHost) return
 
-		const effectiveIndex =
+		const queue = sharedQueueRef.current
+		let effectiveIndex =
 			typeof index === "number" && index >= 0 ? index : currentIndexRef.current
+
+		let queueItemId =
+			options?.queueItemId ?? track?.queue_item_id ?? currentQueueItemIdRef.current
+
+		if (!queueItemId && track) {
+			const byId = queue.find((t) => t.id === track.id && t.queue_item_id)
+			if (byId?.queue_item_id) queueItemId = byId.queue_item_id
+		}
+
+		if (!queueItemId && typeof effectiveIndex === "number") {
+			if (effectiveIndex >= 0 && effectiveIndex < queue.length) {
+				queueItemId = queue[effectiveIndex]?.queue_item_id
+			}
+		}
+
+		if (queueItemId) {
+			const idx = queue.findIndex((t) => t.queue_item_id === queueItemId)
+			if (idx >= 0) effectiveIndex = idx
+			currentQueueItemIdRef.current = queueItemId
+		}
+
 		currentIndexRef.current = effectiveIndex ?? 0
 		const hasExplicitOffset =
 			typeof options?.offsetMs === "number" && options.offsetMs >= 0
@@ -886,40 +886,24 @@ function useJamSessionInternal(
 				: 0
 		const ts = Date.now()
 
-		// Prefer a stable queue_item_id for Jam identity, but fall back to
-		// matching by track id + index when necessary.
-		let queueItemId: string | undefined
-		if (track?.queue_item_id) {
-			queueItemId = track.queue_item_id
-		} else if (track) {
-			const queue = sharedQueueRef.current
-			const byId = queue.find((t) => t.id === track.id && t.queue_item_id)
-			if (byId?.queue_item_id) queueItemId = byId.queue_item_id
-			else if (
-				typeof effectiveIndex === "number" &&
-				effectiveIndex >= 0 &&
-				effectiveIndex < queue.length
-			) {
-				queueItemId = queue[effectiveIndex]?.queue_item_id
-			}
+		const payload: JamPlaybackState & { index?: number; trackId?: string } = {
+			queue_item_id: queueItemId ?? null,
+			offset_ms: offsetMs,
+			is_playing: isPlaying,
+			ts_ms: ts,
+			index: typeof effectiveIndex === "number" ? effectiveIndex : undefined,
+			trackId: queueItemId
+				? queue.find((t) => t.queue_item_id === queueItemId)?.id
+				: track?.id,
 		}
 
 		emit({
 			type: "playback_state",
 			jamId: sessionId,
-			queueItemId: queueItemId,
-			queue_item_id: queueItemId,
-			trackId: track?.id,
-			index: effectiveIndex,
-			offsetMs,
-			isPlaying,
-			ts,
+			state: payload,
 			clientId: clientIdRef.current,
 		})
 
-		// Persist canonical playback state only from the host; guests still
-		// participate in realtime playback via WebSocket but do not touch the
-		// DB snapshot used for late joiners.
 		if (isHost) {
 			axios
 				.post(`/api/jams/${sessionId}/playback`, {
@@ -947,14 +931,25 @@ function useJamSessionInternal(
 			if (!state.currentTrack || state.currentTrack.id !== detail.trackId)
 				return
 			if (!canControl) return
-			sendPlaybackState(
-				state.currentTrack,
-				state.currentIndex,
-				state.isPlaying,
-				{
-					offsetMs: detail.currentTimeMs,
-				},
-			)
+			if (isHost) {
+				sendPlaybackState(
+					state.currentTrack,
+					state.currentIndex,
+					state.isPlaying,
+					{
+						offsetMs: detail.currentTimeMs,
+					},
+				)
+			} else {
+				// Guests send a command; host will emit the canonical playback_state
+				if (currentQueueItemIdRef.current) {
+					sendCommand({
+						type: "REQUEST_SEEK",
+						queue_item_id: currentQueueItemIdRef.current,
+						offset_ms: detail.currentTimeMs,
+					})
+				}
+			}
 		}
 		window.addEventListener("jam:seek", handler as EventListener)
 		return () =>
@@ -969,7 +964,7 @@ function useJamSessionInternal(
 		}
 
 		const onTrackChange = async (track: Track | null, index: number) => {
-			if (!track || !canControl) return
+			if (!track || !isHost) return
 
 			let effectiveTrack: Track = track
 			let effectiveIndex = index
@@ -1015,7 +1010,7 @@ function useJamSessionInternal(
 		}
 
 		const onPlayStateChange = (isPlaying: boolean) => {
-			if (!canControl) return
+			if (!isHost) return
 			const state = usePlayer.getState()
 			sendPlaybackState(state.currentTrack, state.currentIndex, isPlaying)
 		}
@@ -1066,8 +1061,8 @@ function useJamSessionInternal(
 						normalizeTrackFromWire(it.track ?? it),
 					)
 					setSharedQueue((prev) => [...prev, ...items])
-				} else if (msg.type === "playback_state") {
-					applyIncomingPlayback(msg)
+				} else if (msg.type === "playback_state" && msg.state) {
+					applyPlaybackState(msg.state as JamPlaybackState)
 				}
 			} catch {
 				// ignore bad payload
@@ -1103,6 +1098,7 @@ function useJamSessionInternal(
 		startJam,
 		endJam,
 		joinJam,
+		sendCommand,
 		sendPlaybackState,
 		canControl,
 		removeFromQueue,

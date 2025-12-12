@@ -206,13 +206,37 @@ wss.on("connection", (ws) => {
 				break
 			}
 			case "playback_state": {
-				if (typeof msg.index === "number") room.playback.index = msg.index
-				if (typeof msg.offsetMs === "number") room.playback.offsetMs = msg.offsetMs
-				if (typeof msg.isPlaying === "boolean")
-					room.playback.isPlaying = msg.isPlaying
-				if (typeof msg.trackId === "string") room.playback.trackId = msg.trackId
+				const state = msg.state ?? msg
+				if (typeof state.index === "number") room.playback.index = state.index
+				if (typeof state.offset_ms === "number")
+					room.playback.offsetMs = state.offset_ms
+				if (typeof state.offsetMs === "number") room.playback.offsetMs = state.offsetMs
+				if (typeof state.is_playing === "boolean")
+					room.playback.isPlaying = state.is_playing
+				if (typeof state.isPlaying === "boolean")
+					room.playback.isPlaying = state.isPlaying
+				if (typeof state.trackId === "string") room.playback.trackId = state.trackId
+				if (typeof state.queue_item_id === "string")
+					room.playback.queue_item_id = state.queue_item_id
 				room.playback.updatedAt = Date.now()
 				broadcast(jamId, msg, ws)
+				break
+			}
+			case "jam_command": {
+				// Forward commands only to the host socket for this room
+				const hostEntry = Array.from(room.participants.entries()).find(
+					([, p]) => p.userId === room.hostUserId,
+				)
+				if (hostEntry && hostEntry[0].readyState === hostEntry[0].OPEN) {
+					hostEntry[0].send(
+						JSON.stringify({
+							type: "jam_command",
+							jamId,
+							fromUserId: room.participants.get(ws)?.userId,
+							cmd: msg.cmd,
+						}),
+					)
+				}
 				break
 			}
 			default:

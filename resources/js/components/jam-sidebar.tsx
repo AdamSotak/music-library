@@ -33,6 +33,7 @@ export function JamSidebar({
 		endJam,
 		addToJamQueue,
 		sendPlaybackState,
+		sendCommand,
 		canControl,
 		allowControls,
 		setAllowControls,
@@ -70,16 +71,23 @@ export function JamSidebar({
 	}
 
 	const handlePlayFromHere = (trackId: string) => {
-		if (sessionId && !canControl) return
-
 		const index = queue.findIndex((track) => track.id === trackId)
 		if (index < 0) return
 		const track = queue[index]
-		player.setCurrentTrack(track, queue, index)
-		if (sessionId && canControl) {
-			// Explicitly start from the beginning when jumping
-			sendPlaybackState(track, index, true, { offsetMs: 0 })
+		if (sessionId) {
+			if (!canControl) return
+			const queueItemId = track.queue_item_id ?? null
+			if (isHost) {
+				sendPlaybackState(track, index, true, { offsetMs: 0 })
+			} else if (queueItemId) {
+				sendCommand({
+					type: "REQUEST_PLAY_QUEUE_ITEM",
+					queue_item_id: queueItemId,
+				})
+			}
+			return
 		}
+		player.setCurrentTrack(track, queue, index)
 	}
 
 	const handleCopyLink = async () => {

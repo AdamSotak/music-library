@@ -834,7 +834,7 @@ export default function AudioPlayer() {
 		// 2) Deezer preview by track id
 		// 3) Fallback: search by track name
 		let streamUrl: string
-		if (currentTrack.audio && currentTrack.audio.startsWith("http")) {
+		if (currentTrack.audio?.startsWith("http")) {
 			streamUrl = `/api/audio/stream?audio_url=${encodeURIComponent(currentTrack.audio)}`
 			lastSourceRef.current = "audio_url"
 		} else if (
@@ -873,9 +873,9 @@ export default function AudioPlayer() {
 					)}`
 					lastSourceRef.current = "name"
 					audioRef.current!.src = fallbackUrl
-					audioRef.current!.load()
-					audioRef.current!
-						.play()
+					audioRef.current?.load()
+					audioRef.current
+						?.play()
 						.catch((e: any) =>
 							console.warn("Fallback playback failed (non-fatal):", e),
 						)
