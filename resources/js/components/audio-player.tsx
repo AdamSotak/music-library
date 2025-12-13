@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "./ui/button"
 import { Slider } from "./ui/slider"
-import { ChevronDown, ChevronUp, Settings } from "lucide-react"
+import { ChevronDown, ChevronUp, WandSparkles } from "lucide-react"
 import { usePlayer, type Track } from "@/hooks/usePlayer"
 import { router } from "@inertiajs/react"
 import { AudioEffects } from "./audio-effects"
+import { cn } from "@/lib/utils"
 
 // Mobile compact player component
 function MobilePlayer({
@@ -378,10 +379,11 @@ function DesktopPlayer({
 					className="group w-4 h-4"
 					onClick={() => setShowEffects(!showEffects)}
 				>
-					<Settings
-						className={`max-w-4 max-h-4 transition-colors duration-300 group-hover:fill-white ${
-							showEffects ? "fill-spotify-green" : "fill-gray-500"
-						}`}
+					<WandSparkles
+						className={cn(
+							"max-w-4 max-h-4 transition-colors duration-300 text-zinc-400 group-hover:text-white",
+							showEffects && "text-white",
+						)}
 					/>
 				</Button>
 
@@ -608,9 +610,7 @@ function ExpandedPlayer({
 					className="w-10 h-10"
 					onClick={() => setShowEffects(!showEffects)}
 				>
-					<Settings
-						className={`w-6 h-6 ${showEffects ? "text-spotify-green" : ""}`}
-					/>
+					<WandSparkles className="w-6 h-6 text-zinc-400 group-hover:text-white" />
 				</Button>
 			</div>
 
@@ -1210,7 +1210,10 @@ export default function AudioPlayer() {
 						playPrevious={playPrevious}
 						formatTime={formatTime}
 						showEffects={showEffects}
-						setShowEffects={setShowEffects}
+						setShowEffects={() => {
+							if (!currentTrack && !showEffects) return
+							setShowEffects((prev) => !prev)
+						}}
 						handleProcessedAudio={handleProcessedAudio}
 						handleProcessingStart={handleProcessingStart}
 						autoApplyEffects={autoApplyEffects}
@@ -1246,12 +1249,15 @@ export default function AudioPlayer() {
 					playPrevious={playPrevious}
 					formatTime={formatTime}
 					showEffects={showEffects}
-					setShowEffects={setShowEffects}
+					setShowEffects={() => {
+						if (!currentTrack && !showEffects) return
+						setShowEffects((prev) => !prev)
+					}}
 				/>
 
 				{/* Desktop Audio Effects Panel */}
-				{showEffects && (
-					<div className="mt-4 mx-4">
+				{showEffects && currentTrack && (
+					<div className="mt-4 m-4">
 						<AudioEffects
 							currentTrack={currentTrack}
 							onProcessedAudio={(buffer, tempo, pitch) =>
