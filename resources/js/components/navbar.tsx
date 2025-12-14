@@ -7,7 +7,6 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
 import { Utils } from "@/utils"
@@ -21,22 +20,22 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 	const [isSearchOpen, setIsSearchOpen] = useState(false)
 	const [isAnimating, setIsAnimating] = useState(false)
 	const [searchQuery, setSearchQuery] = useState("")
+	const [_scannerOpen, _setScannerOpen] = useState(false)
 	const searchInputRef = useRef<HTMLInputElement>(null)
-	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const { user } = usePage().props as unknown as InertiaPageProps
 
 	const isHome = window.location.pathname === "/"
 	const isCategoriesOpen = window.location.pathname === "/categories"
+	const isFriendsOpen = window.location.pathname === "/friends"
 
 	const handleSearchChange = (value: string) => {
 		setSearchQuery(value)
 
-		// Clear previous timeout
 		if (searchTimeoutRef.current) {
 			clearTimeout(searchTimeoutRef.current)
 		}
 
-		// Debounce search for 300ms
 		searchTimeoutRef.current = setTimeout(() => {
 			if (value.trim().length >= 2) {
 				router.visit(`/search?q=${encodeURIComponent(value.trim())}`, {
@@ -53,21 +52,18 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 		}, 300)
 	}
 
-	// Handle popup opening animation
 	const openSearchPopup = () => {
 		setIsSearchOpen(true)
 		setIsAnimating(false)
 	}
 
-	// Handle popup closing animation
 	const closeSearchPopup = useCallback(() => {
 		setIsAnimating(false)
 		setTimeout(() => {
 			setIsSearchOpen(false)
-		}, 300) // Match animation duration
+		}, 300)
 	}, [])
 
-	// Focus search input when popup opens and handle animation
 	useEffect(() => {
 		if (isSearchOpen) {
 			setTimeout(() => {
@@ -82,7 +78,6 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 		}
 	}, [isSearchOpen])
 
-	// Close search popup when clicking outside
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			const target = event.target as Element
@@ -103,7 +98,6 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 		<>
 			<div className="flex justify-between items-center pl-5 pr-4 h-16">
 				<div className="flex items-center">
-					{/* Mobile Menu Button */}
 					<Button
 						size="icon"
 						variant="spotifyTransparent"
@@ -170,7 +164,6 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 							)}
 						</Button>
 
-						{/* Desktop Search Bar - Hidden on mobile */}
 						<div
 							tabIndex={-1}
 							className={cn(
@@ -267,7 +260,6 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 							</div>
 						</div>
 
-						{/* Mobile Search Button - Visible only on mobile */}
 						<Button
 							size={"icon"}
 							className="lg:hidden rounded-full w-10 h-10 mobile-search-button"
@@ -290,6 +282,16 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 				</div>
 
 				<div className="flex items-center gap-1.5">
+					{/* Scanner Button */}
+					{/* <Button
+						size={"icon"}
+						variant={"spotifyTransparent"}
+						className="group rounded-full"
+						onClick={() => setScannerOpen(true)}
+					>
+						<QrCode className="min-w-6 min-h-6 text-gray-400 transition-colors duration-300 group-hover:text-white" />
+					</Button> */}
+
 					<Button
 						size={"icon"}
 						variant={"spotifyTransparent"}
@@ -311,46 +313,55 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 						size={"icon"}
 						variant={"spotifyTransparent"}
 						className="group rounded-full"
+						onClick={() => router.visit("/friends")}
 					>
 						<svg
 							data-encore-id="icon"
 							role="img"
 							aria-hidden="true"
 							viewBox="0 0 16 16"
-							fill="gray"
+							fill={isFriendsOpen ? "white" : "gray"}
 							className="min-w-2 min-h-2 transition-colors duration-300 group-hover:fill-white"
 						>
 							<path d="M3.849 10.034c-.021-.465.026-.93.139-1.381H1.669c.143-.303.375-.556.665-.724l.922-.532a1.63 1.63 0 0 0 .436-2.458 1.8 1.8 0 0 1-.474-1.081q-.014-.287.057-.563a1.12 1.12 0 0 1 .627-.7 1.2 1.2 0 0 1 .944 0q.225.1.392.281c.108.12.188.263.237.417q.074.276.057.561a1.8 1.8 0 0 1-.475 1.084 1.6 1.6 0 0 0-.124 1.9c.36-.388.792-.702 1.272-.927v-.015c.48-.546.768-1.233.821-1.958a3.2 3.2 0 0 0-.135-1.132 2.657 2.657 0 0 0-5.04 0c-.111.367-.157.75-.135 1.133.053.724.341 1.41.821 1.955A.13.13 0 0 1 2.565 6a.13.13 0 0 1-.063.091l-.922.532A3.2 3.2 0 0 0-.004 9.396v.75h3.866c.001-.033-.01-.071-.013-.112m10.568-3.4-.922-.532a.13.13 0 0 1-.064-.091.12.12 0 0 1 .028-.1c.48-.546.768-1.233.821-1.958a3.3 3.3 0 0 0-.135-1.135A2.64 2.64 0 0 0 12.7 1.233a2.67 2.67 0 0 0-3.042.64 2.65 2.65 0 0 0-.554.948c-.11.367-.156.75-.134 1.133.053.724.341 1.41.821 1.955.005.006 0 .011 0 .018.48.225.911.54 1.272.927a1.6 1.6 0 0 0-.125-1.907 1.8 1.8 0 0 1-.474-1.081q-.015-.287.057-.563a1.12 1.12 0 0 1 .627-.7 1.2 1.2 0 0 1 .944 0q.225.1.392.281.162.182.236.413c.05.184.07.375.058.565a1.8 1.8 0 0 1-.475 1.084 1.633 1.633 0 0 0 .438 2.456l.922.532c.29.169.52.421.664.724h-2.319c.113.452.16.918.139 1.383 0 .04-.013.078-.017.117h3.866v-.75a3.2 3.2 0 0 0-1.58-2.778v.004zm-3.625 6-.922-.532a.13.13 0 0 1-.061-.144.1.1 0 0 1 .025-.047 3.33 3.33 0 0 0 .821-1.958 3.2 3.2 0 0 0-.135-1.132 2.657 2.657 0 0 0-5.041 0c-.11.367-.156.75-.134 1.133.053.724.341 1.41.821 1.955a.13.13 0 0 1 .028.106.13.13 0 0 1-.063.091l-.922.532a3.2 3.2 0 0 0-1.584 2.773v.75h8.75v-.75a3.2 3.2 0 0 0-1.583-2.781zm-5.5 2.023c.143-.303.375-.556.665-.724l.922-.532a1.63 1.63 0 0 0 .436-2.458 1.8 1.8 0 0 1-.474-1.081q-.015-.287.057-.563a1.12 1.12 0 0 1 .627-.7 1.2 1.2 0 0 1 .944 0q.225.1.392.281c.108.12.188.263.237.417q.073.276.057.561a1.8 1.8 0 0 1-.475 1.084 1.632 1.632 0 0 0 .438 2.456l.922.532c.29.169.52.421.664.724z"></path>
 						</svg>
 					</Button>
 
-					<DropdownMenu>
-						<DropdownMenuTrigger className="outline-none">
-							<div
-								className={`${buttonVariants({ variant: "spotifyTransparent", size: "icon" })} group rounded-full ml-1.5`}
-							>
-								<div className="min-w-10 max-w-10 min-h-10 max-h-10 rounded-full bg-zinc-900 flex items-center justify-center">
-									<div className="min-w-7 max-w-7 min-h-7 max-h-7 rounded-full bg-blue-400 flex items-center justify-center">
-										<span className="text-black font-medium text-sm">
-											{Utils.getInitialLetter(user?.name ?? "")}
-										</span>
+					{user ? (
+						<DropdownMenu>
+							<DropdownMenuTrigger className="outline-none">
+								<div
+									className={`${buttonVariants({ variant: "spotifyTransparent", size: "icon" })} group rounded-full ml-1.5`}
+								>
+									<div className="min-w-10 max-w-10 min-h-10 max-h-10 rounded-full bg-zinc-900 flex items-center justify-center">
+										<div className="min-w-7 max-w-7 min-h-7 max-h-7 rounded-full bg-blue-400 flex items-center justify-center">
+											<span className="text-black font-medium text-sm">
+												{Utils.getInitialLetter(user?.name ?? "")}
+											</span>
+										</div>
 									</div>
 								</div>
-							</div>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent className="w-44 mr-4">
-							<DropdownMenuItem onClick={() => router.visit("/account")}>
-								<span>Account</span>
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem onClick={() => router.post("/logout")}>
-								<span>Logout</span>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className="w-44 mr-4">
+								<DropdownMenuItem onClick={() => router.visit("/account")}>
+									<span>Account</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => router.post("/logout")}>
+									<span>Logout</span>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					) : (
+						<Button
+							variant={"default"}
+							className="group rounded-full w-20 cursor-pointer"
+							onClick={() => router.visit("/login")}
+						>
+							Login
+						</Button>
+					)}
 				</div>
 			</div>
-
 			{/* Mobile Search Popup */}
 			{isSearchOpen && (
 				<div
@@ -477,6 +488,16 @@ export default function Navbar({ onMobileMenuToggle }: NavbarProps = {}) {
 					</div>
 				</div>
 			)}
+
+			{/* Scanner Dialog */}
+			{/* <Dialog open={scannerOpen} onOpenChange={setScannerOpen}>
+				<DialogContent className="max-w-2xl bg-zinc-900 border-white/10">
+					<DialogHeader>
+						<DialogTitle className="text-white">Scan Music Code</DialogTitle>
+					</DialogHeader>
+					<BarcodeScanner />
+				</DialogContent>
+			</Dialog> */}
 		</>
 	)
 }

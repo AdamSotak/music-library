@@ -7,6 +7,7 @@ import type { Track, InertiaPageProps } from "@/types"
 import { router, usePage } from "@inertiajs/react"
 import { useMemo, useState, useEffect, type MouseEvent } from "react"
 import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
+import MusicBarcode from "@/components/musicbars"
 
 interface TrackShowProps {
 	track: Track
@@ -35,13 +36,11 @@ export default function TrackShow({ track }: TrackShowProps) {
 			setIsPlaying(!isPlaying)
 			return
 		}
-		// Track detail pages play a standalone queue with just this track.
 		setCurrentTrack(playerTrack, [playerTrack], 0)
 	}
 
 	const handleAddToLikedSongs = (event: MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation()
-		// First click: Add to Liked Songs
 		if (likedSongsPlaylist) {
 			router.post(
 				`/playlist/${likedSongsPlaylist.id}/tracks`,
@@ -155,6 +154,23 @@ export default function TrackShow({ track }: TrackShowProps) {
 						</svg>
 					</Button>
 				)}
+				<AddToPlaylistDropdown trackId={track.id} includeShared>
+					<Button size="icon" variant="spotifyTransparent" className="group">
+						<svg
+							className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
+							fill="gray"
+							viewBox="0 0 24 24"
+						>
+							<circle cx="5" cy="12" r="2" />
+							<circle cx="12" cy="12" r="2" />
+							<circle cx="19" cy="12" r="2" />
+						</svg>
+					</Button>
+				</AddToPlaylistDropdown>
+
+				{/* Music Barcode Button */}
+				<MusicBarcode trackId={track.id} trackName={track.name} />
+
 				<Button size="icon" variant="spotifyTransparent" className="group">
 					<svg
 						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"

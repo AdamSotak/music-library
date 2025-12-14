@@ -8,9 +8,15 @@ import axios from "axios"
 import { WaveformIndicator } from "@/components/waveform-indicator"
 import { Button } from "@/components/ui/button"
 import PlayButton from "@/components/home/play-button"
-import { Music } from "lucide-react"
+import { Music, Users, LogOut } from "lucide-react"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface PlaylistShowProps {
 	playlist: Playlist
@@ -29,6 +35,7 @@ interface SearchTrack {
 export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
+	const { setOpen: setShareModalOpen } = Modals.useSharePlaylistModal()
 	const { playlists } = usePage().props as unknown as InertiaPageProps
 	const likedSongsPlaylist = playlists.find((p) => p.is_default)
 	const [_likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
@@ -203,17 +210,38 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 					)}
 				</div>
 				<div className="flex flex-col justify-end pb-2 text-center md:text-left w-full md:w-auto">
-					<p className="text-xs md:text-sm font-bold mb-1 md:mb-2">
-						Public Playlist
-					</p>
+					<div className="flex items-center gap-2 mb-1 md:mb-2">
+						<p className="text-xs md:text-sm font-bold">
+							{playlist.is_shared ? "Collaborative Playlist" : "Playlist"}
+						</p>
+						{playlist.is_shared && (
+							<div className="flex items-center gap-1 px-2 py-0.5 bg-green-500/20 rounded-full">
+								<Users className="w-3 h-3 text-green-500" />
+								<span className="text-xs text-green-500 font-medium">
+									Shared
+								</span>
+							</div>
+						)}
+					</div>
 					<h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-black mb-3 md:mb-6 leading-tight md:leading-none">
 						{playlist.name}
 					</h1>
 					<p className="text-zinc-300 text-xs md:text-sm mb-2">
 						{playlist.description}
 					</p>
-					<div className="flex items-center justify-center md:justify-start gap-1 text-xs md:text-sm mt-2">
-						<span className="font-bold">Spotify</span>
+					<div className="flex items-center justify-center md:justify-start gap-1 text-xs md:text-sm mt-2 flex-wrap">
+						<span className="font-bold">{playlist.owner_name || "You"}</span>
+						{playlist.is_shared &&
+							playlist.shared_with &&
+							playlist.shared_with.length > 0 && (
+								<span className="text-zinc-400">
+									{" "}
+									+ {playlist.shared_with.length}{" "}
+									{playlist.shared_with.length === 1
+										? "collaborator"
+										: "collaborators"}
+								</span>
+							)}
 						<span>•</span>
 						<span>
 							{playlist.tracks.length}{" "}
@@ -244,18 +272,65 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							: undefined
 					}
 				/>
-				<Button size="icon" variant="spotifyTransparent" className="group">
-					<svg
-						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
-						fill="gray"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<circle cx="5" cy="12" r="2" />
-						<circle cx="12" cy="12" r="2" />
-						<circle cx="19" cy="12" r="2" />
-					</svg>
-				</Button>
+				{!playlist.is_default && (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								size="icon"
+								variant="spotifyTransparent"
+								className="group"
+							>
+								<svg
+									className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
+									fill="gray"
+									viewBox="0 0 24 24"
+									aria-hidden="true"
+								>
+									<circle cx="5" cy="12" r="2" />
+									<circle cx="12" cy="12" r="2" />
+									<circle cx="19" cy="12" r="2" />
+								</svg>
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="start" className="w-56">
+							{/* Share option - only for owner */}
+							{playlist.is_owner && (
+								<DropdownMenuItem
+									onClick={() => setShareModalOpen(true, playlist)}
+									className="flex items-center gap-2"
+								>
+									<Users className="w-4 h-4" />
+									<span>
+										{playlist.is_shared
+											? "Manage collaborators"
+											: "Make collaborative"}
+									</span>
+								</DropdownMenuItem>
+							)}
+
+							{/* Show shared status for non-owners */}
+							{!playlist.is_owner && playlist.is_shared && (
+								<DropdownMenuItem
+									onClick={() => {
+										setConfirmModalOpen(
+											true,
+											"Leave shared playlist?",
+											`You will no longer have access to "${playlist.name}".`,
+											"Leave",
+											() => {
+												router.post(`/playlist/${playlist.id}/leave`)
+											},
+										)
+									}}
+									className="flex items-center gap-2 text-red-400 focus:text-red-400"
+								>
+									<LogOut className="w-4 h-4" />
+									<span>Leave playlist</span>
+								</DropdownMenuItem>
+							)}
+						</DropdownMenuContent>
+					</DropdownMenu>
+				)}
 			</div>
 
 			{/* Track List or Search */}
@@ -289,9 +364,9 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 								<div
 									key={track.id}
 									className={`
-										flex flex-col md:grid md:grid-cols-[16px_6fr_4fr_3fr_minmax(120px,1fr)] 
+										flex flex-col md:grid md:grid-cols-[16px_6fr_4fr_3fr_minmax(120px,1fr)]
                                         md:items-center
-										gap-2 md:gap-4 md:px-4 py-2 md:py-0 md:h-14 
+										gap-2 md:gap-4 md:px-4 py-2 md:py-0 md:h-14
 										rounded-md group cursor-pointer
 										${isCurrentTrack ? "bg-white/10" : "hover:bg-white/10"}
 									`}

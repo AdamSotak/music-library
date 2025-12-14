@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "./ui/button"
+import Equalizer from "./equalizer"
 import { Slider } from "./ui/slider"
 import { ChevronDown, ChevronUp, WandSparkles } from "lucide-react"
 import { usePlayer, type Track } from "@/hooks/usePlayer"
@@ -102,6 +103,8 @@ function DesktopPlayer({
 	formatTime,
 	showEffects,
 	setShowEffects,
+	audio,
+	trackKey,
 }: {
 	isPlaying: boolean
 	togglePlay: () => void
@@ -126,6 +129,8 @@ function DesktopPlayer({
 	formatTime: (seconds: number) => string
 	showEffects: boolean
 	setShowEffects: (value: boolean) => void
+	audio?: HTMLAudioElement | null
+	trackKey?: string | number | null
 }) {
 	return (
 		<div className="flex justify-between items-center w-full h-20 px-4">
@@ -355,6 +360,11 @@ function DesktopPlayer({
 			</div>
 
 			<div className="flex items-center gap-4">
+				{/* Equalizer control */}
+				<div className="relative">
+					<Equalizer audio={audio ?? null} trackKey={trackKey ?? null} />
+				</div>
+
 				<Button
 					size={"icon"}
 					variant={"spotifyTransparent"}
@@ -883,6 +893,13 @@ export default function AudioPlayer() {
 
 		audioRef.current.src = url
 		audioRef.current.load()
+
+		if (isPlaying) {
+			audioRef.current.play().catch((err) => {
+				console.error("Playback failed:", err)
+				setIsPlaying(false)
+			})
+		}
 	}, [currentTrack])
 
 	// Handle play/pause state changes
@@ -1166,6 +1183,7 @@ export default function AudioPlayer() {
 				onLoadedMetadata={handleLoadedMetadata}
 				onEnded={handleEnded}
 				aria-label="Audio player"
+				crossOrigin="anonymous"
 			>
 				<track kind="captions" />
 			</audio>
@@ -1253,6 +1271,8 @@ export default function AudioPlayer() {
 						if (!currentTrack && !showEffects) return
 						setShowEffects((prev) => !prev)
 					}}
+					audio={audioRef.current}
+					trackKey={currentTrack?.id ?? currentTrack?.name ?? null}
 				/>
 
 				{/* Desktop Audio Effects Panel */}

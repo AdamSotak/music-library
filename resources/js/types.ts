@@ -4,10 +4,15 @@ export type InertiaPageProps = {
 		name: string
 		email: string
 		createdAt: string
+		twoFactorEnabled: boolean
 	} | null
 	playlists: Playlist[]
+	sharedPlaylists: Playlist[]
 	savedAlbums: SavedAlbum[]
 	followedArtists: FollowedArtist[]
+	friends: Friend[]
+	sentFriendRequests: SentFriendRequest[]
+	receivedFriendRequests: ReceivedFriendRequest[]
 }
 
 export type SavedAlbum = {
@@ -27,6 +32,27 @@ export type FollowedArtist = {
 	monthly_listeners?: number
 	is_verified?: boolean
 	followed_at: string
+}
+
+export type Friend = {
+	id: number
+	name: string
+	email: string
+	created_at: string
+}
+
+export type SentFriendRequest = {
+	id: number
+	name: string
+	email: string
+	requested_at: string
+}
+
+export type ReceivedFriendRequest = {
+	id: number
+	name: string
+	email: string
+	requested_at: string
 }
 
 export type Artist = {
@@ -77,9 +103,20 @@ export type Playlist = {
 	image: string
 	tracks: Track[]
 	is_default?: boolean
+	is_shared?: boolean
+	is_owner?: boolean
+	owner_id?: number
+	owner_name?: string | null
+	shared_with?: SharedUser[]
 	created_at?: string
 	updated_at?: string
-	owner_name?: string | null
+}
+
+export type SharedUser = {
+	id: number
+	name: string
+	email: string
+	added_at: string
 }
 
 export type ShelfItem = {
@@ -89,4 +126,10 @@ export type ShelfItem = {
 	type?: "album" | "track" | "artist"
 	image?: string
 	track?: Track
+}
+
+export type FriendRecommendation = {
+	friend_name: string
+	friend_id: number
+	tracks: Track[]
 }

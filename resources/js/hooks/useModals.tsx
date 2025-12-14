@@ -57,8 +57,21 @@ const useAddToPlaylistModal = create<AddToPlaylistModalState>((set) => ({
 	setOpen: (open, trackIds = []) => set({ open, trackIds }),
 }))
 
+interface SharePlaylistModalState {
+	open: boolean
+	playlist: Playlist | null
+	setOpen: (open: boolean, playlist?: Playlist | null) => void
+}
+
+const useSharePlaylistModal = create<SharePlaylistModalState>((set) => ({
+	open: false,
+	playlist: null,
+	setOpen: (open, playlist = null) => set({ open, playlist }),
+}))
+
 export const Modals = {
 	useConfirmationModal,
 	useEditPlaylistDetailsModal,
 	useAddToPlaylistModal,
+	useSharePlaylistModal,
 }
