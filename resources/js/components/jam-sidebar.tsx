@@ -32,8 +32,6 @@ export function JamSidebar({
 		startJam,
 		endJam,
 		addToJamQueue,
-		sendPlaybackState,
-		sendCommand,
 		canControl,
 		allowControls,
 		setAllowControls,
@@ -76,15 +74,7 @@ export function JamSidebar({
 		const track = queue[index]
 		if (sessionId) {
 			if (!canControl) return
-			const queueItemId = track.queue_item_id ?? null
-			if (isHost) {
-				sendPlaybackState(track, index, true, { offsetMs: 0 })
-			} else if (queueItemId) {
-				sendCommand({
-					type: "REQUEST_PLAY_QUEUE_ITEM",
-					queue_item_id: queueItemId,
-				})
-			}
+			player.setCurrentTrack(track, queue, index)
 			return
 		}
 		player.setCurrentTrack(track, queue, index)

@@ -15,6 +15,12 @@ class JamSession extends Model
 
     protected $keyType = 'string';
 
+    protected $casts = [
+        'host_user_id' => 'integer',
+        'allow_controls' => 'boolean',
+        'queue_version' => 'integer',
+    ];
+
     protected $fillable = [
         'id',
         'host_user_id',

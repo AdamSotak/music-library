@@ -169,7 +169,7 @@ class JamService
         }
     }
 
-    public function createJam(string $userId, array $data): JamSession
+    public function createJam(int $userId, array $data): JamSession
     {
         return DB::transaction(function () use ($userId, $data) {
             $jam = JamSession::create([
@@ -228,7 +228,7 @@ class JamService
         });
     }
 
-    public function joinJam(string $jamId, string $userId, string $role = 'guest'): void
+    public function joinJam(string $jamId, int $userId, string $role = 'guest'): void
     {
         $jam = JamSession::findOrFail($jamId);
 
@@ -260,7 +260,7 @@ class JamService
         ]);
     }
 
-    public function updateQueue(JamSession $jam, array $tracks, string $userId): void
+    public function updateQueue(JamSession $jam, array $tracks, int $userId): void
     {
         DB::transaction(function () use ($jam, $tracks, $userId) {
             JamQueueItem::where('jam_id', $jam->id)->delete();
@@ -295,7 +295,7 @@ class JamService
         });
     }
 
-    public function addToQueue(JamSession $jam, array $tracks, string $userId): void
+    public function addToQueue(JamSession $jam, array $tracks, int $userId): void
     {
         DB::transaction(function () use ($jam, $tracks, $userId) {
             $currentMax = JamQueueItem::where('jam_id', $jam->id)->max('position');
@@ -373,13 +373,21 @@ class JamService
                 'is_playing' => $isPlaying,
             ]
         );
-        // Realtime playback synchronisation is driven by the WebSocket clients.
-        // We persist the canonical state here for late joiners, but do not
-        // rebroadcast a separate playback_state event from the backend to avoid
-        // competing with client-originated playback_state messages.
+
+        // Broadcast canonical playback state for real-time sync.
+        $this->broadcast($jam->id, [
+            'type' => 'playback_state',
+            'state' => [
+                'position' => (int) $position,
+                'offset_ms' => (int) $offsetMs,
+                'is_playing' => (bool) $isPlaying,
+                'ts_ms' => (int) round(microtime(true) * 1000),
+                'allow_controls' => (bool) $jam->allow_controls,
+            ],
+        ]);
     }
 
-    public function removeFromQueue(JamSession $jam, string $trackId, string $userId): void
+    public function removeFromQueue(JamSession $jam, string $trackId, int $userId): void
     {
         DB::transaction(function () use ($jam, $trackId) {
             // Remove the first occurrence of the track in the queue.

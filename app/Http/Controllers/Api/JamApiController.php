@@ -21,9 +21,56 @@ class JamApiController extends Controller
     }
 
     /**
-     * Ensure the current user is allowed to mutate the Jam state.
+     * Ensure the current user is a participant in this Jam.
      */
-    protected function assertCanControlJam(JamSession $jam, Request $request): void
+    protected function assertIsParticipant(JamSession $jam, Request $request): void
+    {
+        $userId = $request->user()->id ?? null;
+        if (! $userId) {
+            abort(Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($jam->host_user_id === $userId) {
+            return;
+        }
+
+        $isParticipant = JamParticipant::where('jam_id', $jam->id)
+            ->where('user_id', $userId)
+            ->exists();
+
+        if ($isParticipant) {
+            return;
+        }
+
+        abort(Response::HTTP_FORBIDDEN, 'You must join this Jam.');
+    }
+
+    /**
+     * Ensure the current user may update playback state.
+     */
+    protected function assertCanUpdatePlayback(JamSession $jam, Request $request): void
+    {
+        $userId = $request->user()->id ?? null;
+        if (! $userId) {
+            abort(Response::HTTP_UNAUTHORIZED);
+        }
+
+        $this->assertIsParticipant($jam, $request);
+
+        if ($jam->host_user_id === $userId) {
+            return;
+        }
+        if ($jam->allow_controls) {
+            return;
+        }
+
+        abort(Response::HTTP_FORBIDDEN, 'Only the host can control playback in this Jam.');
+    }
+
+    /**
+     * Ensure the current user is the Jam host.
+     */
+    protected function assertIsHost(JamSession $jam, Request $request): void
     {
         $userId = $request->user()->id ?? null;
         if (! $userId) {
@@ -32,10 +79,7 @@ class JamApiController extends Controller
         if ($jam->host_user_id === $userId) {
             return;
         }
-        if ($jam->allow_controls) {
-            return;
-        }
-        abort(Response::HTTP_FORBIDDEN, 'You are not allowed to control this Jam.');
+        abort(Response::HTTP_FORBIDDEN, 'Only the host can update this Jam.');
     }
 
     public function store(Request $request): JsonResponse
@@ -109,7 +153,7 @@ class JamApiController extends Controller
         ]);
 
         $jam = JamSession::findOrFail($id);
-        $this->assertCanControlJam($jam, $request);
+        $this->assertIsHost($jam, $request);
 
         $this->jamService->updateQueue($jam, $request->input('tracks'), $request->user()->id);
 
@@ -127,7 +171,7 @@ class JamApiController extends Controller
         ]);
 
         $jam = JamSession::findOrFail($id);
-        $this->assertCanControlJam($jam, $request);
+        $this->assertIsParticipant($jam, $request);
 
         $this->jamService->addToQueue($jam, $request->input('tracks'), $request->user()->id);
 
@@ -146,7 +190,7 @@ class JamApiController extends Controller
         ]);
 
         $jam = JamSession::findOrFail($id);
-        $this->assertCanControlJam($jam, $request);
+        $this->assertCanUpdatePlayback($jam, $request);
 
         $this->jamService->updatePlayback($jam, $validated);
 
@@ -167,7 +211,7 @@ class JamApiController extends Controller
         ]);
 
         $jam = JamSession::findOrFail($id);
-        $this->assertCanControlJam($jam, $request);
+        $this->assertIsParticipant($jam, $request);
 
         $this->jamService->removeFromQueue($jam, $validated['track_id'], $request->user()->id);
 

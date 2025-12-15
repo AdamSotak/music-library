@@ -78,7 +78,7 @@ export function JamModal({
 				>
 					<div className="flex gap-2">
 						<Button
-							onClick={startJam}
+							onClick={() => startJam()}
 							disabled={status === "connecting"}
 							className="flex-1"
 						>

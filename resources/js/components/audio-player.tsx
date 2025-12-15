@@ -7,15 +7,6 @@ import { router } from "@inertiajs/react"
 import { useUiLayout } from "@/hooks/useUiLayout"
 import { useJamSession } from "@/hooks/useJamSession"
 
-const isJamDebugEnabled = () => {
-	if (typeof window === "undefined") return false
-	try {
-		return window.localStorage.getItem("jamDebug") === "1"
-	} catch {
-		return false
-	}
-}
-
 // Mobile compact player component
 function MobilePlayer({
 	isPlaying,
@@ -102,6 +93,7 @@ function DesktopPlayer({
 	currentTime,
 	duration,
 	handleSeek,
+	handleSeekCommit,
 	isShuffle,
 	setIsShuffle,
 	repeatMode,
@@ -134,6 +126,7 @@ function DesktopPlayer({
 	playNext: () => void
 	playPrevious: () => void
 	formatTime: (seconds: number) => string
+	handleSeekCommit: (value: number[]) => void
 }) {
 	const { toggleRightSidebar, isRightSidebarOpen } = useUiLayout()
 
@@ -356,13 +349,14 @@ function DesktopPlayer({
 
 				<div className="flex items-center gap-2">
 					<span className="text-xs">{formatTime(currentTime)}</span>
-					<Slider
-						className="w-[23rem]"
-						max={duration || 100}
-						hideThumb
-						value={[currentTime]}
-						onValueChange={handleSeek}
-					/>
+						<Slider
+							className="w-[23rem]"
+							max={duration || 100}
+							hideThumb
+							value={[currentTime]}
+							onValueChange={handleSeek}
+							onValueCommit={handleSeekCommit}
+						/>
 					<span className="text-xs">{formatTime(duration)}</span>
 				</div>
 			</div>
@@ -536,18 +530,19 @@ function DesktopPlayer({
 }
 
 // Expanded mobile player modal
-function ExpandedPlayer({
-	isPlaying,
-	togglePlay,
-	setIsExpanded,
-	currentTime,
-	duration,
-	handleSeek,
-	isShuffle,
-	setIsShuffle,
-	repeatMode,
-	setRepeatMode,
-	volume,
+	function ExpandedPlayer({
+		isPlaying,
+		togglePlay,
+		setIsExpanded,
+		currentTime,
+		duration,
+		handleSeek,
+		handleSeekCommit,
+		isShuffle,
+		setIsShuffle,
+		repeatMode,
+		setRepeatMode,
+		volume,
 	setVolume,
 	currentTrack,
 	playNext,
@@ -573,10 +568,11 @@ function ExpandedPlayer({
 	volume: number
 	setVolume: (value: number | ((prev: number) => number)) => void
 	currentTrack: Track | null
-	playNext: () => void
-	playPrevious: () => void
-	formatTime: (seconds: number) => string
-}) {
+		playNext: () => void
+		playPrevious: () => void
+		formatTime: (seconds: number) => string
+		handleSeekCommit: (value: number[]) => void
+	}) {
 	return (
 		<div className="flex flex-col h-full w-full text-white p-4 safe-area-inset overflow-y-auto">
 			{/* Header with close button */}
@@ -622,12 +618,13 @@ function ExpandedPlayer({
 
 			{/* Progress bar */}
 			<div className="mb-8 px-4">
-				<Slider
-					className="w-full mb-3"
-					max={duration || 100}
-					value={[currentTime]}
-					onValueChange={handleSeek}
-				/>
+					<Slider
+						className="w-full mb-3"
+						max={duration || 100}
+						value={[currentTime]}
+						onValueChange={handleSeek}
+						onValueCommit={handleSeekCommit}
+					/>
 				<div className="flex justify-between text-sm text-white/70">
 					<span>{formatTime(currentTime)}</span>
 					<span>{formatTime(duration)}</span>
@@ -807,12 +804,12 @@ function ExpandedPlayer({
 	)
 }
 
-export default function AudioPlayer() {
-	const audioRef = useRef<HTMLAudioElement>(null)
-	const { currentTrack, isPlaying, setIsPlaying, playNext, playPrevious } =
-		usePlayer()
-	const { sessionId, isHost, canControl, sendCommand } = useJamSession(null, null)
-	const [currentTime, setCurrentTime] = useState(0)
+	export default function AudioPlayer() {
+		const audioRef = useRef<HTMLAudioElement>(null)
+		const { currentTrack, isPlaying, setIsPlaying, playNext, playPrevious } =
+			usePlayer()
+		const { sessionId, isHost, canControl } = useJamSession(null, null)
+		const [currentTime, setCurrentTime] = useState(0)
 	const [duration, setDuration] = useState(0)
 	const [volume, setVolume] = useState(50)
 	const [isShuffle, setIsShuffle] = useState(false)
@@ -823,6 +820,34 @@ export default function AudioPlayer() {
 	const [isClosing, setIsClosing] = useState(false)
 	const pendingSeekMsRef = useRef<number | null>(null)
 	const lastSourceRef = useRef<"audio_url" | "deezer_id" | "name" | null>(null)
+	const endedGuardRef = useRef<{ trackId: string | null; ts: number }>({
+		trackId: null,
+		ts: 0,
+	})
+	const autoplayRetryBoundRef = useRef(false)
+
+	const bindAutoplayRetryOnce = useCallback(() => {
+		if (autoplayRetryBoundRef.current) return
+		autoplayRetryBoundRef.current = true
+
+		const attempt = () => {
+			const audio = audioRef.current
+			if (!audio) return
+			if (!usePlayer.getState().isPlaying) return
+			audio
+				.play()
+				.catch(() => {
+					// Still blocked; keep waiting for the next user gesture.
+				})
+		}
+
+		const handler = () => {
+			attempt()
+		}
+
+		window.addEventListener("pointerdown", handler, { passive: true })
+		window.addEventListener("keydown", handler)
+	}, [])
 
 	// Load audio source when the current track changes
 	useEffect(() => {
@@ -859,6 +884,7 @@ export default function AudioPlayer() {
 			lastSourceRef.current = "name"
 		}
 
+		endedGuardRef.current = { trackId: currentTrack.id, ts: 0 }
 		audio.src = streamUrl
 		audio.load()
 
@@ -876,6 +902,18 @@ export default function AudioPlayer() {
 		if (isPlaying) {
 			audioRef.current.play().catch((err: any) => {
 				console.warn("Playback start failed (non-fatal):", err)
+				if (err?.name === "NotAllowedError") {
+					// Autoplay blocked by browser policy; retry on next user gesture.
+					try {
+						if (window.localStorage.getItem("jamDebug") === "1") {
+							console.warn("[jam] autoplay blocked; click/tap to start playback")
+						}
+					} catch {
+						// ignore
+					}
+					bindAutoplayRetryOnce()
+					return
+				}
 				// If we failed while using a specific source (audio_url or deezer_id),
 				// attempt a last-resort fallback to name search, then retry play once.
 				if (lastSourceRef.current !== "name") {
@@ -938,6 +976,16 @@ export default function AudioPlayer() {
 				}
 				pendingSeekMsRef.current = null
 			}
+
+			// If playback should be running, retry play once metadata is ready.
+			// This fixes cases where the initial play() promise was aborted while src/load changed.
+			if (usePlayer.getState().isPlaying && audioRef.current.paused) {
+				audioRef.current.play().catch((err: any) => {
+					if (err?.name === "NotAllowedError") {
+						bindAutoplayRetryOnce()
+					}
+				})
+			}
 		}
 	}
 
@@ -946,6 +994,20 @@ export default function AudioPlayer() {
 			// Guests do not advance playback locally; host will broadcast the next state.
 			return
 		}
+
+		// Guard against multiple rapid "ended" emissions when the source changes or
+		// the browser aborts/retries media loads.
+		const trackId = usePlayer.getState().currentTrack?.id ?? null
+		const now = Date.now()
+		if (
+			trackId &&
+			endedGuardRef.current.trackId === trackId &&
+			now - endedGuardRef.current.ts < 750
+		) {
+			return
+		}
+		endedGuardRef.current = { trackId, ts: now }
+
 		if (repeatMode === "track") {
 			audioRef.current?.play()
 			return
@@ -966,76 +1028,72 @@ export default function AudioPlayer() {
 
 	const handleSeek = (value: number[]) => {
 		const time = value[0]
-		if (sessionId && !isHost) {
-			if (!canControl) return
-			if (isJamDebugEnabled()) {
-				console.log("[jam] guest seek", { time, canControl })
+		if (sessionId && !canControl) {
+			try {
+				if (window.localStorage.getItem("jamDebug") === "1") {
+					console.log("[jam] blocked: seek (host controls)")
+				}
+			} catch {
+				// ignore
 			}
-			const queueItemId = currentTrack?.queue_item_id
-			if (!queueItemId) return
-			sendCommand({
-				type: "REQUEST_SEEK",
-				queue_item_id: queueItemId,
-				offset_ms: time * 1000,
-			})
 			return
 		}
 		if (audioRef.current) {
 			audioRef.current.currentTime = time
 			setCurrentTime(time)
-			if (typeof window !== "undefined" && currentTrack) {
-				try {
-					window.dispatchEvent(
-						new CustomEvent("jam:position", {
-							detail: {
-								trackId: currentTrack.id,
-								currentTimeMs: time * 1000,
-							},
-						}),
-					)
-					// Explicit seek event so Jam logic can broadcast
-					window.dispatchEvent(
-						new CustomEvent("jam:seek", {
-							detail: {
-								trackId: currentTrack.id,
-								currentTimeMs: time * 1000,
-							},
-						}),
-					)
-				} catch {
-					// ignore
+		}
+	}
+
+	const handleSeekCommit = (value: number[]) => {
+		const time = value[0]
+		if (sessionId && !canControl) {
+			try {
+				if (window.localStorage.getItem("jamDebug") === "1") {
+					console.log("[jam] blocked: seek/commit (host controls)")
 				}
+			} catch {
+				// ignore
+			}
+			return
+		}
+		if (typeof window !== "undefined" && currentTrack) {
+			try {
+				window.dispatchEvent(
+					new CustomEvent("jam:seek", {
+						detail: {
+							trackId: currentTrack.id,
+							currentTimeMs: time * 1000,
+						},
+					}),
+				)
+			} catch {
+				// ignore
 			}
 		}
 	}
 
 	const togglePlay = () => {
-		if (sessionId && !isHost) {
-			if (!canControl) return
-			if (isJamDebugEnabled()) {
-				console.log("[jam] guest play/pause", { next: !isPlaying, canControl })
+		if (sessionId && !canControl) {
+			try {
+				if (window.localStorage.getItem("jamDebug") === "1") {
+					console.log("[jam] blocked: play/pause (host controls)")
+				}
+			} catch {
+				// ignore
 			}
-			sendCommand({ type: "REQUEST_PLAY_PAUSE", is_playing: !isPlaying })
 			return
 		}
 		setIsPlaying(!isPlaying)
 	}
 
 	const playNextJamAware = () => {
-		if (sessionId && !isHost) {
-			if (!canControl) return
-			if (isJamDebugEnabled()) {
-				console.log("[jam] guest next", { canControl })
-			}
-			const state = usePlayer.getState()
-			const queue = state.queue
-			const idx = state.currentIndex
-			const next = idx >= 0 ? queue[idx + 1] : queue[0]
-			if (next?.queue_item_id) {
-				sendCommand({
-					type: "REQUEST_PLAY_QUEUE_ITEM",
-					queue_item_id: next.queue_item_id,
-				})
+		if (sessionId && !canControl) {
+			try {
+				if (window.localStorage.getItem("jamDebug") === "1") {
+					console.log("[jam] blocked: next (host controls)")
+				}
+			} catch {
+				// ignore
 			}
 			return
 		}
@@ -1043,20 +1101,13 @@ export default function AudioPlayer() {
 	}
 
 	const playPreviousJamAware = () => {
-		if (sessionId && !isHost) {
-			if (!canControl) return
-			if (isJamDebugEnabled()) {
-				console.log("[jam] guest prev", { canControl })
-			}
-			const state = usePlayer.getState()
-			const queue = state.queue
-			const idx = state.currentIndex
-			const prev = idx > 0 ? queue[idx - 1] : queue[0]
-			if (prev?.queue_item_id) {
-				sendCommand({
-					type: "REQUEST_PLAY_QUEUE_ITEM",
-					queue_item_id: prev.queue_item_id,
-				})
+		if (sessionId && !canControl) {
+			try {
+				if (window.localStorage.getItem("jamDebug") === "1") {
+					console.log("[jam] blocked: previous (host controls)")
+				}
+			} catch {
+				// ignore
 			}
 			return
 		}
@@ -1102,12 +1153,21 @@ export default function AudioPlayer() {
 					}
 					pendingSeekMsRef.current = null
 				}
+
+				// If Jam says we should be playing, ensure we retry play after seeking.
+				if (detail.isPlaying && audioRef.current.paused) {
+					audioRef.current.play().catch((err: any) => {
+						if (err?.name === "NotAllowedError") {
+							bindAutoplayRetryOnce()
+						}
+					})
+				}
 			}
 		}
 		window.addEventListener("jam:apply-playback", handler as EventListener)
 		return () =>
 			window.removeEventListener("jam:apply-playback", handler as EventListener)
-	}, [setIsPlaying])
+	}, [setIsPlaying, bindAutoplayRetryOnce])
 
 	// Handle escape key to close modal
 	useEffect(() => {
@@ -1171,6 +1231,7 @@ export default function AudioPlayer() {
 						currentTime={currentTime}
 						duration={duration}
 						handleSeek={handleSeek}
+						handleSeekCommit={handleSeekCommit}
 						isShuffle={isShuffle}
 						setIsShuffle={setIsShuffle}
 						repeatMode={repeatMode}
@@ -1203,6 +1264,7 @@ export default function AudioPlayer() {
 					currentTime={currentTime}
 					duration={duration}
 					handleSeek={handleSeek}
+					handleSeekCommit={handleSeekCommit}
 					isShuffle={isShuffle}
 					setIsShuffle={setIsShuffle}
 					repeatMode={repeatMode}

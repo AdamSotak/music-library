@@ -21,4 +21,10 @@ class JamPlaybackState extends Model
         'offset_ms',
         'is_playing',
     ];
+
+    protected $casts = [
+        'position' => 'integer',
+        'offset_ms' => 'integer',
+        'is_playing' => 'boolean',
+    ];
 }
