@@ -223,25 +223,25 @@ export function RightSidebar({
 			)}
 
 			{/* Jam Session Title */}
-				<div className="px-4 pb-3">
-					<h2 className="text-lg font-bold text-white">
-						{sessionId ? "Jam queue" : "Next in queue"}
-					</h2>
-					<p className="text-[11px] text-zinc-400">
-						{sessionId
-							? status === "connected"
-								? "Jam is live. Everyone hears this order."
-								: "Connecting Jam..."
-							: "Tracks that will play after the current song."}
+			<div className="px-4 pb-3">
+				<h2 className="text-lg font-bold text-white">
+					{sessionId ? "Jam queue" : "Next in queue"}
+				</h2>
+				<p className="text-[11px] text-zinc-400">
+					{sessionId
+						? status === "connected"
+							? "Jam is live. Everyone hears this order."
+							: "Connecting Jam..."
+						: "Tracks that will play after the current song."}
+				</p>
+				{sessionId && typeof window !== "undefined" && (
+					<p className="text-[10px] text-zinc-500">
+						{window.localStorage.getItem("jamDebug") === "1"
+							? `debug: status=${status} host=${isHost ? "1" : "0"} allow=${allowControls ? "1" : "0"} can=${canControl ? "1" : "0"}`
+							: null}
 					</p>
-					{sessionId && typeof window !== "undefined" && (
-						<p className="text-[10px] text-zinc-500">
-							{window.localStorage.getItem("jamDebug") === "1"
-								? `debug: status=${status} host=${isHost ? "1" : "0"} allow=${allowControls ? "1" : "0"} can=${canControl ? "1" : "0"}`
-								: null}
-						</p>
-					)}
-				</div>
+				)}
+			</div>
 
 			{/* Jam Controls Panel - Spotify style */}
 			{sessionId && (

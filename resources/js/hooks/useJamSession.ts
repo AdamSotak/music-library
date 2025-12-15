@@ -109,7 +109,8 @@ const coerceBoolean = (value: any): boolean => {
 	if (typeof value === "string") {
 		const normalized = value.trim().toLowerCase()
 		if (normalized === "true" || normalized === "1") return true
-		if (normalized === "false" || normalized === "0" || normalized === "") return false
+		if (normalized === "false" || normalized === "0" || normalized === "")
+			return false
 		return true
 	}
 	return Boolean(value)
@@ -183,7 +184,8 @@ const normalizeTrackFromWire = (input: any): Track => {
 			typeof raw.queue_item_id === "string" ? raw.queue_item_id : undefined,
 		position: typeof raw.position === "number" ? raw.position : undefined,
 		deezer_track_id:
-			typeof raw.deezer_track_id === "string" || typeof raw.deezer_track_id === "number"
+			typeof raw.deezer_track_id === "string" ||
+			typeof raw.deezer_track_id === "number"
 				? raw.deezer_track_id.toString()
 				: undefined,
 	}
@@ -208,7 +210,10 @@ function useJamSessionInternal(
 	const [allowControls, setAllowControlsState] = useState(false)
 	const [sharedQueue, setSharedQueue] = useState<Track[]>([])
 
-	const canControl = useMemo(() => isHost || allowControls, [isHost, allowControls])
+	const canControl = useMemo(
+		() => isHost || allowControls,
+		[isHost, allowControls],
+	)
 
 	const wsRef = useRef<WebSocket | null>(null)
 	const wsManualCloseRef = useRef(false)
@@ -455,9 +460,12 @@ function useJamSessionInternal(
 						const base = item?.track || item
 						return normalizeTrackFromWire({
 							...(base ?? {}),
-							queue_item_id: item?.queue_item_id ?? base?.queue_item_id ?? undefined,
+							queue_item_id:
+								item?.queue_item_id ?? base?.queue_item_id ?? undefined,
 							position:
-								typeof item?.position === "number" ? item.position : base?.position,
+								typeof item?.position === "number"
+									? item.position
+									: base?.position,
 						})
 					})
 					sharedQueueRef.current = incoming
@@ -480,7 +488,8 @@ function useJamSessionInternal(
 						const base = it?.track || it
 						return normalizeTrackFromWire({
 							...(base ?? {}),
-							queue_item_id: it?.queue_item_id ?? base?.queue_item_id ?? undefined,
+							queue_item_id:
+								it?.queue_item_id ?? base?.queue_item_id ?? undefined,
 							position:
 								typeof it?.position === "number" ? it.position : base?.position,
 						})
@@ -529,7 +538,9 @@ function useJamSessionInternal(
 									? raw.ts
 									: Date.now(),
 						allow_controls:
-							raw.allow_controls != null ? coerceBoolean(raw.allow_controls) : undefined,
+							raw.allow_controls != null
+								? coerceBoolean(raw.allow_controls)
+								: undefined,
 					}
 					applyPlaybackState(state)
 				}
@@ -549,9 +560,11 @@ function useJamSessionInternal(
 		const next = Boolean(value)
 		const prev = allowControls
 		setAllowControlsState(next)
-		axios.patch(`/api/jams/${sessionId}/controls`, { allow_controls: next }).catch(() => {
-			setAllowControlsState(prev)
-		})
+		axios
+			.patch(`/api/jams/${sessionId}/controls`, { allow_controls: next })
+			.catch(() => {
+				setAllowControlsState(prev)
+			})
 	}
 
 	const startJam = async (options?: StartJamOptions) => {
@@ -639,7 +652,8 @@ function useJamSessionInternal(
 				tracks: normalised,
 			})
 			const data = response.data as ApiJamResponse
-			queueVersionRef.current = Number(data.jam.queue_version ?? queueVersionRef.current) || 0
+			queueVersionRef.current =
+				Number(data.jam.queue_version ?? queueVersionRef.current) || 0
 			const apiQueueItems = (data.queue as ApiQueueItem[] | undefined) ?? []
 			const queue =
 				apiQueueItems.length > 0
@@ -666,7 +680,8 @@ function useJamSessionInternal(
 				track_id: trackId,
 			})
 			const data = response.data as ApiJamResponse
-			queueVersionRef.current = Number(data.jam.queue_version ?? queueVersionRef.current) || 0
+			queueVersionRef.current =
+				Number(data.jam.queue_version ?? queueVersionRef.current) || 0
 			const apiQueueItems = (data.queue as ApiQueueItem[] | undefined) ?? []
 			const queue =
 				apiQueueItems.length > 0
@@ -701,7 +716,11 @@ function useJamSessionInternal(
 			})
 		} catch (err: any) {
 			if (isJamDebugEnabled()) {
-				console.warn("[jam] playback update rejected", err?.response?.status, err)
+				console.warn(
+					"[jam] playback update rejected",
+					err?.response?.status,
+					err,
+				)
 			}
 			// Revert to last known Jam state.
 			applyPlaybackState(lastPlaybackRef.current)
@@ -728,7 +747,9 @@ function useJamSessionInternal(
 
 		const byQueueItemId =
 			current?.queue_item_id != null
-				? sharedQueue.findIndex((t) => t.queue_item_id === current.queue_item_id)
+				? sharedQueue.findIndex(
+						(t) => t.queue_item_id === current.queue_item_id,
+					)
 				: -1
 		const byId =
 			byQueueItemId === -1 && current?.id
@@ -795,7 +816,8 @@ function useJamSessionInternal(
 		}
 
 		window.addEventListener("jam:seek", handler as EventListener)
-		return () => window.removeEventListener("jam:seek", handler as EventListener)
+		return () =>
+			window.removeEventListener("jam:seek", handler as EventListener)
 	}, [sessionId, canControl])
 
 	// Global Jam playback guard: route local player actions into Jam HTTP calls
@@ -829,9 +851,7 @@ function useJamSessionInternal(
 					? queue.findIndex((t) => t.queue_item_id === track.queue_item_id)
 					: -1
 			const idxById =
-				idxByQueueItemId === -1
-					? queue.findIndex((t) => t.id === track.id)
-					: -1
+				idxByQueueItemId === -1 ? queue.findIndex((t) => t.id === track.id) : -1
 
 			const idx = idxByQueueItemId !== -1 ? idxByQueueItemId : idxById
 
@@ -864,7 +884,11 @@ function useJamSessionInternal(
 
 		const onPlayStateChange = (isPlaying: boolean) => {
 			if (isJamDebugEnabled()) {
-				console.log("[jam] local/play-state", { sessionId, isPlaying, canControl })
+				console.log("[jam] local/play-state", {
+					sessionId,
+					isPlaying,
+					canControl,
+				})
 			}
 			if (!canControl) {
 				player.setIsPlaying(lastPlaybackRef.current.is_playing, {
@@ -955,7 +979,7 @@ function useJamSessionInternal(
 						applyPlaybackState(next)
 					}
 				}
-			} catch (err) {
+			} catch (_err) {
 				// ignore poll errors (Jam may have ended)
 			}
 		}

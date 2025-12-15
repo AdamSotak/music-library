@@ -349,14 +349,14 @@ function DesktopPlayer({
 
 				<div className="flex items-center gap-2">
 					<span className="text-xs">{formatTime(currentTime)}</span>
-						<Slider
-							className="w-[23rem]"
-							max={duration || 100}
-							hideThumb
-							value={[currentTime]}
-							onValueChange={handleSeek}
-							onValueCommit={handleSeekCommit}
-						/>
+					<Slider
+						className="w-[23rem]"
+						max={duration || 100}
+						hideThumb
+						value={[currentTime]}
+						onValueChange={handleSeek}
+						onValueCommit={handleSeekCommit}
+					/>
 					<span className="text-xs">{formatTime(duration)}</span>
 				</div>
 			</div>
@@ -530,19 +530,19 @@ function DesktopPlayer({
 }
 
 // Expanded mobile player modal
-	function ExpandedPlayer({
-		isPlaying,
-		togglePlay,
-		setIsExpanded,
-		currentTime,
-		duration,
-		handleSeek,
-		handleSeekCommit,
-		isShuffle,
-		setIsShuffle,
-		repeatMode,
-		setRepeatMode,
-		volume,
+function ExpandedPlayer({
+	isPlaying,
+	togglePlay,
+	setIsExpanded,
+	currentTime,
+	duration,
+	handleSeek,
+	handleSeekCommit,
+	isShuffle,
+	setIsShuffle,
+	repeatMode,
+	setRepeatMode,
+	volume,
 	setVolume,
 	currentTrack,
 	playNext,
@@ -568,11 +568,11 @@ function DesktopPlayer({
 	volume: number
 	setVolume: (value: number | ((prev: number) => number)) => void
 	currentTrack: Track | null
-		playNext: () => void
-		playPrevious: () => void
-		formatTime: (seconds: number) => string
-		handleSeekCommit: (value: number[]) => void
-	}) {
+	playNext: () => void
+	playPrevious: () => void
+	formatTime: (seconds: number) => string
+	handleSeekCommit: (value: number[]) => void
+}) {
 	return (
 		<div className="flex flex-col h-full w-full text-white p-4 safe-area-inset overflow-y-auto">
 			{/* Header with close button */}
@@ -618,13 +618,13 @@ function DesktopPlayer({
 
 			{/* Progress bar */}
 			<div className="mb-8 px-4">
-					<Slider
-						className="w-full mb-3"
-						max={duration || 100}
-						value={[currentTime]}
-						onValueChange={handleSeek}
-						onValueCommit={handleSeekCommit}
-					/>
+				<Slider
+					className="w-full mb-3"
+					max={duration || 100}
+					value={[currentTime]}
+					onValueChange={handleSeek}
+					onValueCommit={handleSeekCommit}
+				/>
 				<div className="flex justify-between text-sm text-white/70">
 					<span>{formatTime(currentTime)}</span>
 					<span>{formatTime(duration)}</span>
@@ -804,12 +804,12 @@ function DesktopPlayer({
 	)
 }
 
-	export default function AudioPlayer() {
-		const audioRef = useRef<HTMLAudioElement>(null)
-		const { currentTrack, isPlaying, setIsPlaying, playNext, playPrevious } =
-			usePlayer()
-		const { sessionId, isHost, canControl } = useJamSession(null, null)
-		const [currentTime, setCurrentTime] = useState(0)
+export default function AudioPlayer() {
+	const audioRef = useRef<HTMLAudioElement>(null)
+	const { currentTrack, isPlaying, setIsPlaying, playNext, playPrevious } =
+		usePlayer()
+	const { sessionId, isHost, canControl } = useJamSession(null, null)
+	const [currentTime, setCurrentTime] = useState(0)
 	const [duration, setDuration] = useState(0)
 	const [volume, setVolume] = useState(50)
 	const [isShuffle, setIsShuffle] = useState(false)
@@ -834,11 +834,9 @@ function DesktopPlayer({
 			const audio = audioRef.current
 			if (!audio) return
 			if (!usePlayer.getState().isPlaying) return
-			audio
-				.play()
-				.catch(() => {
-					// Still blocked; keep waiting for the next user gesture.
-				})
+			audio.play().catch(() => {
+				// Still blocked; keep waiting for the next user gesture.
+			})
 		}
 
 		const handler = () => {
@@ -906,7 +904,9 @@ function DesktopPlayer({
 					// Autoplay blocked by browser policy; retry on next user gesture.
 					try {
 						if (window.localStorage.getItem("jamDebug") === "1") {
-							console.warn("[jam] autoplay blocked; click/tap to start playback")
+							console.warn(
+								"[jam] autoplay blocked; click/tap to start playback",
+							)
 						}
 					} catch {
 						// ignore
