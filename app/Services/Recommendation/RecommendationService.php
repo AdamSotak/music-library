@@ -10,7 +10,9 @@ use Illuminate\Support\Collection;
 class RecommendationService
 {
     private array $genericCategories = ['unknown', 'misc', 'other', 'music', 'various', 'various-artists'];
+
     private float $neighbourGenreThreshold = 0.45;
+
     private float $hardGenreFloor = 0.35;
 
     public function __construct(
