@@ -249,6 +249,17 @@ class JamService
         // For now, we rely on the client connecting WS to announce themselves.
     }
 
+    public function updateControls(JamSession $jam, bool $allowControls): void
+    {
+        $jam->allow_controls = $allowControls;
+        $jam->save();
+
+        $this->broadcast($jam->id, [
+            'type' => 'controls_mode',
+            'allow_controls' => $allowControls,
+        ]);
+    }
+
     public function updateQueue(JamSession $jam, array $tracks, string $userId): void
     {
         DB::transaction(function () use ($jam, $tracks, $userId) {

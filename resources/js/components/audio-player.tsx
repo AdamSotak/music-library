@@ -5,6 +5,16 @@ import { ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react"
 import { getTrackCover, usePlayer, type Track } from "@/hooks/usePlayer"
 import { router } from "@inertiajs/react"
 import { useUiLayout } from "@/hooks/useUiLayout"
+import { useJamSession } from "@/hooks/useJamSession"
+
+const isJamDebugEnabled = () => {
+	if (typeof window === "undefined") return false
+	try {
+		return window.localStorage.getItem("jamDebug") === "1"
+	} catch {
+		return false
+	}
+}
 
 // Mobile compact player component
 function MobilePlayer({
@@ -801,6 +811,7 @@ export default function AudioPlayer() {
 	const audioRef = useRef<HTMLAudioElement>(null)
 	const { currentTrack, isPlaying, setIsPlaying, playNext, playPrevious } =
 		usePlayer()
+	const { sessionId, isHost, canControl, sendCommand } = useJamSession(null, null)
 	const [currentTime, setCurrentTime] = useState(0)
 	const [duration, setDuration] = useState(0)
 	const [volume, setVolume] = useState(50)
@@ -931,6 +942,10 @@ export default function AudioPlayer() {
 	}
 
 	const handleEnded = () => {
+		if (sessionId && !isHost) {
+			// Guests do not advance playback locally; host will broadcast the next state.
+			return
+		}
 		if (repeatMode === "track") {
 			audioRef.current?.play()
 			return
@@ -951,6 +966,20 @@ export default function AudioPlayer() {
 
 	const handleSeek = (value: number[]) => {
 		const time = value[0]
+		if (sessionId && !isHost) {
+			if (!canControl) return
+			if (isJamDebugEnabled()) {
+				console.log("[jam] guest seek", { time, canControl })
+			}
+			const queueItemId = currentTrack?.queue_item_id
+			if (!queueItemId) return
+			sendCommand({
+				type: "REQUEST_SEEK",
+				queue_item_id: queueItemId,
+				offset_ms: time * 1000,
+			})
+			return
+		}
 		if (audioRef.current) {
 			audioRef.current.currentTime = time
 			setCurrentTime(time)
@@ -981,7 +1010,57 @@ export default function AudioPlayer() {
 	}
 
 	const togglePlay = () => {
+		if (sessionId && !isHost) {
+			if (!canControl) return
+			if (isJamDebugEnabled()) {
+				console.log("[jam] guest play/pause", { next: !isPlaying, canControl })
+			}
+			sendCommand({ type: "REQUEST_PLAY_PAUSE", is_playing: !isPlaying })
+			return
+		}
 		setIsPlaying(!isPlaying)
+	}
+
+	const playNextJamAware = () => {
+		if (sessionId && !isHost) {
+			if (!canControl) return
+			if (isJamDebugEnabled()) {
+				console.log("[jam] guest next", { canControl })
+			}
+			const state = usePlayer.getState()
+			const queue = state.queue
+			const idx = state.currentIndex
+			const next = idx >= 0 ? queue[idx + 1] : queue[0]
+			if (next?.queue_item_id) {
+				sendCommand({
+					type: "REQUEST_PLAY_QUEUE_ITEM",
+					queue_item_id: next.queue_item_id,
+				})
+			}
+			return
+		}
+		playNext()
+	}
+
+	const playPreviousJamAware = () => {
+		if (sessionId && !isHost) {
+			if (!canControl) return
+			if (isJamDebugEnabled()) {
+				console.log("[jam] guest prev", { canControl })
+			}
+			const state = usePlayer.getState()
+			const queue = state.queue
+			const idx = state.currentIndex
+			const prev = idx > 0 ? queue[idx - 1] : queue[0]
+			if (prev?.queue_item_id) {
+				sendCommand({
+					type: "REQUEST_PLAY_QUEUE_ITEM",
+					queue_item_id: prev.queue_item_id,
+				})
+			}
+			return
+		}
+		playPrevious()
 	}
 
 	const formatTime = (seconds: number) => {
@@ -1099,8 +1178,8 @@ export default function AudioPlayer() {
 						volume={volume}
 						setVolume={setVolume}
 						currentTrack={currentTrack}
-						playNext={playNext}
-						playPrevious={playPrevious}
+						playNext={playNextJamAware}
+						playPrevious={playPreviousJamAware}
 						formatTime={formatTime}
 					/>
 				</div>
@@ -1131,8 +1210,8 @@ export default function AudioPlayer() {
 					volume={volume}
 					setVolume={setVolume}
 					currentTrack={currentTrack}
-					playNext={playNext}
-					playPrevious={playPrevious}
+					playNext={playNextJamAware}
+					playPrevious={playPreviousJamAware}
 					formatTime={formatTime}
 				/>
 			</div>

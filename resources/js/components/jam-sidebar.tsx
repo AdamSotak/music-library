@@ -197,6 +197,13 @@ export function JamSidebar({
 								: "Connecting Jam..."
 							: "Tracks that will play after the current song."}
 					</p>
+					{sessionId && typeof window !== "undefined" && (
+						<p className="text-[10px] text-zinc-500 truncate">
+							{window.localStorage.getItem("jamDebug") === "1"
+								? `debug: status=${status} host=${isHost ? "1" : "0"} allow=${allowControls ? "1" : "0"} can=${canControl ? "1" : "0"}`
+								: null}
+						</p>
+					)}
 				</div>
 				<div className="flex flex-col items-end gap-1">
 					{sessionId ? (
@@ -247,14 +254,16 @@ export function JamSidebar({
 								{copied ? "Copied" : "Copy"}
 							</Button>
 						</div>
-						<label className="flex items-center gap-2 text-[11px] text-zinc-300">
-							<input
-								type="checkbox"
-								checked={allowControls}
-								onChange={(event) => setAllowControls(event.target.checked)}
-							/>
-							Allow others to control playback
-						</label>
+						{isHost && (
+							<label className="flex items-center gap-2 text-[11px] text-zinc-300">
+								<input
+									type="checkbox"
+									checked={allowControls}
+									onChange={(event) => setAllowControls(event.target.checked)}
+								/>
+								Allow others to control playback
+							</label>
+						)}
 					</div>
 					{qrUrl && (
 						<div className="flex items-center justify-between gap-3">
@@ -327,7 +336,7 @@ export function JamSidebar({
 								variant="ghost"
 								className="text-[11px] text-zinc-300"
 								onClick={handleAddCurrentToJam}
-								disabled={!canControl || !nowPlaying}
+								disabled={!nowPlaying}
 							>
 								Add current to Jam
 							</Button>

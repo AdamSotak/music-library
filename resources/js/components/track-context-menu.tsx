@@ -121,12 +121,14 @@ export function TrackContextMenu({
 			}
 		}
 
-		player.addToQueue([resolvedTrack])
-
-		// If a Jam is active, also push into the shared Jam queue
+		// When a Jam is active, treat "Add to queue" as adding to the Jam queue
+		// to avoid double-writes and confusing duplicates.
 		if (sessionId && addToJamQueue) {
 			addToJamQueue([resolvedTrack])
+			return
 		}
+
+		player.addToQueue([resolvedTrack])
 	}
 
 	const handleToggleLike = () => {

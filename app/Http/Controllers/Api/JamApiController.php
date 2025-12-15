@@ -73,6 +73,32 @@ class JamApiController extends Controller
     }
 
     /**
+     * Update whether guests are allowed to control playback for this Jam.
+     * Host-only; the new mode is broadcast to connected clients.
+     */
+    public function updateControls(string $id, Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'allow_controls' => 'required|boolean',
+        ]);
+
+        $jam = JamSession::findOrFail($id);
+        $userId = $request->user()->id ?? null;
+
+        if (! $userId) {
+            abort(Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($jam->host_user_id !== $userId) {
+            abort(Response::HTTP_FORBIDDEN, 'Only the host can update Jam controls.');
+        }
+
+        $this->jamService->updateControls($jam, (bool) $validated['allow_controls']);
+
+        return $this->formatJamResponse($jam->id, $userId);
+    }
+
+    /**
      * Replace the Jam queue with the provided ordered list of tracks.
      */
     public function updateQueue(string $id, Request $request): JsonResponse

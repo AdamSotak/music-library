@@ -103,6 +103,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/', 'store')->name('api.jams.store');
         Route::post('/{id}/join', 'join')->name('api.jams.join');
         Route::get('/{id}', 'show')->name('api.jams.show');
+        Route::patch('/{id}/controls', 'updateControls')->name('api.jams.controls.update');
         Route::post('/{id}/queue', 'updateQueue')->name('api.jams.queue.update');
         Route::post('/{id}/queue/add', 'addToQueue')->name('api.jams.queue.add');
         Route::post('/{id}/queue/remove', 'removeFromQueue')->name('api.jams.queue.remove');

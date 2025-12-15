@@ -43,7 +43,7 @@ interface PlayerState {
 		track: Track,
 		queue?: Track[],
 		index?: number,
-		options?: { suppressListeners?: boolean },
+		options?: { suppressListeners?: boolean; autoplay?: boolean },
 	) => void
 	setIsPlaying: (
 		isPlaying: boolean,
@@ -68,15 +68,16 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
 	setCurrentTrack: (track, queue = [], index = -1, options) =>
 		set((state) => {
+			const autoplay = options?.autoplay ?? true
 			const next = {
 				currentTrack: track,
 				queue: queue.length > 0 ? queue : [track],
 				currentIndex: index >= 0 ? index : 0,
-				isPlaying: true,
+				isPlaying: autoplay,
 			}
 			if (!options?.suppressListeners) {
 				state.onTrackChange?.(next.currentTrack, next.currentIndex)
-				state.onPlayStateChange?.(true)
+				state.onPlayStateChange?.(autoplay)
 			}
 			return next
 		}),

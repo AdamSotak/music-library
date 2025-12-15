@@ -16,7 +16,7 @@ const PORT = process.env.JAM_WS_PORT ? Number(process.env.JAM_WS_PORT) : 3002
  * }} Participant
  */
 
-const rooms = new Map() // jamId -> { participants: Map<socket, Participant>, queue: any[], playback: { index, offsetMs, isPlaying, trackId, updatedAt }, hostUserId?: string }
+const rooms = new Map() // jamId -> { participants: Map<socket, Participant>, queue: any[], playback: { index, offsetMs, isPlaying, trackId, queue_item_id, allow_controls, updatedAt }, hostUserId?: string }
 
 // Create raw HTTP server to handle both WS upgrades and internal broadcast API
 const server = createServer((req, res) => {
@@ -65,11 +65,21 @@ const server = createServer((req, res) => {
 						}
 					}
 					if (payload.type === "playback_state") {
-						if (typeof payload.index === "number") room.playback.index = payload.index
-						if (typeof payload.offsetMs === "number") room.playback.offsetMs = payload.offsetMs
-						if (typeof payload.isPlaying === "boolean")
-							room.playback.isPlaying = payload.isPlaying
-						if (typeof payload.trackId === "string") room.playback.trackId = payload.trackId
+						const state = payload.state ?? payload
+						if (typeof state.index === "number") room.playback.index = state.index
+						if (typeof state.offset_ms === "number")
+							room.playback.offsetMs = state.offset_ms
+						if (typeof state.offsetMs === "number")
+							room.playback.offsetMs = state.offsetMs
+						if (typeof state.is_playing === "boolean")
+							room.playback.isPlaying = state.is_playing
+						if (typeof state.isPlaying === "boolean")
+							room.playback.isPlaying = state.isPlaying
+						if (typeof state.trackId === "string") room.playback.trackId = state.trackId
+						if (typeof state.queue_item_id === "string")
+							room.playback.queue_item_id = state.queue_item_id
+						if (typeof state.allow_controls === "boolean")
+							room.playback.allow_controls = state.allow_controls
 						room.playback.updatedAt = Date.now()
 					}
 
@@ -143,7 +153,8 @@ wss.on("connection", (ws) => {
 				}
 
 				// Track which user is the authoritative host for playback.
-				if (!room.hostUserId && participant.role === "host") {
+				// Prefer the most recent host announcement (handles reconnects).
+				if (participant.role === "host") {
 					room.hostUserId = participant.userId
 				}
 
@@ -157,24 +168,45 @@ wss.on("connection", (ws) => {
 				broadcast(jamId, { type: "participants", jamId, participants: list }, ws)
 				// send state to this socket
 				if (ws.readyState === ws.OPEN) {
+					const index =
+						typeof room.playback.index === "number" && room.playback.index >= 0
+							? room.playback.index
+							: 0
+					const candidate = Array.isArray(room.queue) ? room.queue[index] : null
+					const derivedQueueItemId =
+						candidate?.queue_item_id ??
+						candidate?.queueItemId ??
+						candidate?.track?.queue_item_id ??
+						null
+					const derivedTrackId =
+						candidate?.track?.id ?? candidate?.id ?? room.playback.trackId ?? null
+
 					ws.send(JSON.stringify({ type: "participants", jamId, participants: list }))
 					ws.send(
 						JSON.stringify({
 							type: "queue_snapshot",
 							jamId,
 							tracks: room.queue,
-							index: room.playback.index,
+							index,
 						}),
 					)
 					ws.send(
 						JSON.stringify({
 							type: "playback_state",
 							jamId,
-							index: room.playback.index,
-							offsetMs: room.playback.offsetMs ?? 0,
-							isPlaying: room.playback.isPlaying ?? false,
-							trackId: room.playback.trackId,
-							ts: room.playback.updatedAt ?? Date.now(),
+							state: {
+								queue_item_id:
+									room.playback.queue_item_id ?? derivedQueueItemId ?? null,
+								offset_ms: room.playback.offsetMs ?? 0,
+								is_playing: room.playback.isPlaying ?? false,
+								ts_ms: room.playback.updatedAt ?? Date.now(),
+								allow_controls:
+									typeof room.playback.allow_controls === "boolean"
+										? room.playback.allow_controls
+										: undefined,
+								index,
+								trackId: derivedTrackId ?? undefined,
+							},
 						}),
 					)
 				}
@@ -218,25 +250,41 @@ wss.on("connection", (ws) => {
 				if (typeof state.trackId === "string") room.playback.trackId = state.trackId
 				if (typeof state.queue_item_id === "string")
 					room.playback.queue_item_id = state.queue_item_id
+				if (typeof state.allow_controls === "boolean")
+					room.playback.allow_controls = state.allow_controls
 				room.playback.updatedAt = Date.now()
 				broadcast(jamId, msg, ws)
 				break
 			}
-			case "jam_command": {
-				// Forward commands only to the host socket for this room
-				const hostEntry = Array.from(room.participants.entries()).find(
-					([, p]) => p.userId === room.hostUserId,
-				)
-				if (hostEntry && hostEntry[0].readyState === hostEntry[0].OPEN) {
-					hostEntry[0].send(
-						JSON.stringify({
-							type: "jam_command",
+			case "controls_mode": {
+				if (typeof msg.allow_controls === "boolean") {
+					broadcast(
+						jamId,
+						{
+							type: "controls_mode",
 							jamId,
-							fromUserId: room.participants.get(ws)?.userId,
-							cmd: msg.cmd,
-						}),
+							allow_controls: msg.allow_controls,
+						},
+						ws,
 					)
 				}
+				break
+			}
+			case "jam_command": {
+				// Broadcast commands to the whole room and let the host client apply them.
+				// This avoids silent drops when host socket selection drifts (reconnects,
+				// multiple tabs, or hostUserId mismatch).
+				const fromUserId = room.participants.get(ws)?.userId
+				broadcast(
+					jamId,
+					{
+						type: "jam_command",
+						jamId,
+						fromUserId,
+						cmd: msg.cmd,
+					},
+					ws,
+				)
 				break
 			}
 			default:
@@ -248,7 +296,16 @@ wss.on("connection", (ws) => {
 		if (!jamId) return
 		const room = rooms.get(jamId)
 		if (!room) return
+		const leaving = room.participants.get(ws)
 		room.participants.delete(ws)
+
+		// If the active host disconnected, attempt to elect another connected host.
+		if (leaving?.userId && room.hostUserId === leaving.userId) {
+			const nextHost = Array.from(room.participants.values()).find(
+				(p) => p.role === "host",
+			)
+			room.hostUserId = nextHost?.userId ?? null
+		}
 		const list = Array.from(room.participants.values()).map((p) => ({
 			id: p.userId,
 			name: p.name,

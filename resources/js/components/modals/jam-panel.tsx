@@ -66,15 +66,36 @@ export function JamPanel({
 		}
 	}, [sessionId, isHost, player.queue, sharedQueue, syncQueue])
 
-	useEffect(() => {
-		if (!sessionId || !sharedQueue.length) return
-		if (isHost) return
-		const localIds = player.queue.map((t) => t.id).join("|")
-		const sharedIds = sharedQueue.map((t) => t.id).join("|")
-		if (localIds !== sharedIds) {
-			player.setCurrentTrack(sharedQueue[0], sharedQueue, 0)
-		}
-	}, [sessionId, sharedQueue, isHost, player])
+		useEffect(() => {
+			if (!sessionId || !sharedQueue.length) return
+			if (isHost) return
+			const localFingerprint = player.queue
+				.map((t) => t.queue_item_id ?? t.id)
+				.join("|")
+			const sharedFingerprint = sharedQueue
+				.map((t) => t.queue_item_id ?? t.id)
+				.join("|")
+			if (localFingerprint === sharedFingerprint) return
+
+			const keepPlaying = player.isPlaying
+			const current = player.currentTrack
+			const byQueueItemId =
+				current?.queue_item_id != null
+					? sharedQueue.findIndex((t) => t.queue_item_id === current.queue_item_id)
+					: -1
+			const byId =
+				byQueueItemId === -1 && current?.id
+					? sharedQueue.findIndex((t) => t.id === current.id)
+					: -1
+			const idx = byQueueItemId !== -1 ? byQueueItemId : byId
+			const safeIndex = idx >= 0 ? idx : 0
+
+			player.setCurrentTrack(sharedQueue[safeIndex], sharedQueue, safeIndex, {
+				suppressListeners: true,
+				autoplay: keepPlaying,
+			})
+			player.setIsPlaying(keepPlaying, { suppressListeners: true })
+		}, [sessionId, sharedQueue, isHost, player.queue, player.currentTrack, player.isPlaying, player])
 
 	const handleCopy = async () => {
 		if (!inviteLink) return
