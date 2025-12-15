@@ -29,6 +29,11 @@ class SeedProfile
         return $this->track?->category_slug;
     }
 
+    public function radioGenreKey(): ?string
+    {
+        return $this->track?->radio_genre_key;
+    }
+
     public function genreId(): ?string
     {
         return $this->track?->deezer_genre_id;

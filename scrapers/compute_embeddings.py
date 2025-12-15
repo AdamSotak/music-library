@@ -41,6 +41,7 @@ def fetch_tracks(cur) -> Tuple[List[tuple], bool]:
     cur.execute("PRAGMA table_info(tracks)")
     cols = [row[1] for row in cur.fetchall()]
     has_bpm = "bpm" in cols
+    has_radio_key = "radio_genre_key" in cols
 
     cur.execute(
         f"""
@@ -49,6 +50,7 @@ def fetch_tracks(cur) -> Tuple[List[tuple], bool]:
                t.duration,
                t.category_slug,
                t.deezer_genre_id,
+               { 't.radio_genre_key,' if has_radio_key else "NULL as radio_genre_key," }
                a.name as album_name,
                a.release_date,
                a.genre as album_genre,
@@ -63,6 +65,20 @@ def fetch_tracks(cur) -> Tuple[List[tuple], bool]:
     )
     rows = cur.fetchall()
     return rows, has_bpm
+
+
+def to_float(value) -> float:
+    if value is None:
+        return 0.0
+    if isinstance(value, (int, float)):
+        return float(value)
+    try:
+        s = str(value).strip()
+        if s == "":
+            return 0.0
+        return float(s)
+    except Exception:
+        return 0.0
 
 
 def zscore(values: List[float]) -> Tuple[dict, float, float]:
@@ -106,8 +122,13 @@ def hash_tokens(tokens: List[str], dim: int) -> List[float]:
     return vec
 
 
-def resolve_slug(category_slug: Optional[str], deezer_genre_id: Optional[str], album_genre: Optional[str]) -> Optional[str]:
-    candidates = [category_slug, album_genre]
+def resolve_slug(
+    radio_genre_key: Optional[str],
+    category_slug: Optional[str],
+    deezer_genre_id: Optional[str],
+    album_genre: Optional[str],
+) -> Optional[str]:
+    candidates = [radio_genre_key, category_slug, album_genre]
     for cand in candidates:
         if cand:
             c = str(cand).strip().lower()
@@ -145,10 +166,13 @@ def main():
         print("No tracks found.")
         return
 
-    durations = [r[2] or 0 for r in rows]
-    years = [year_from_date(r[6]) for r in rows]
-    popularity = [r[8] or 0 for r in rows]
-    bpm_vals = [r[9] or 0 for r in rows] if has_bpm else None
+    # Row shape (with radio_genre_key):
+    # 0 id, 1 name, 2 duration, 3 category_slug, 4 deezer_genre_id, 5 radio_genre_key,
+    # 6 album_name, 7 release_date, 8 album_genre, 9 artist_name, 10 monthly_listeners, (11 bpm?)
+    durations = [to_float(r[2]) for r in rows]
+    years = [year_from_date(r[7]) for r in rows]
+    popularity = [to_float(r[10]) for r in rows]
+    bpm_vals = [to_float(r[-1]) for r in rows] if has_bpm else None
 
     duration_z, _, _ = zscore(durations)
     year_z, _, _ = zscore(years)
@@ -163,6 +187,7 @@ def main():
             duration,
             category_slug,
             deezer_genre_id,
+            radio_genre_key,
             album_name,
             release_date,
             album_genre,
@@ -171,7 +196,7 @@ def main():
             *rest,
         ) = row
 
-        slug = resolve_slug(category_slug, deezer_genre_id, album_genre) or "unknown"
+        slug = resolve_slug(radio_genre_key, category_slug, deezer_genre_id, album_genre) or "unknown"
         tokens = tokenize(" ".join(filter(None, [track_name, artist_name, album_name, slug])))
         text_vec = hash_tokens(tokens, text_dim)
 

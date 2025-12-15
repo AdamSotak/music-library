@@ -6,7 +6,7 @@ use App\Models\Track;
 
 class MetadataScorer
 {
-    private array $genericCategories = ['pop', 'unknown', 'misc', 'other'];
+    private array $genericCategories = ['pop', 'unknown', 'misc', 'other', 'music', 'various', 'various-artists'];
 
     public function __construct(
         private GenreGraph $genreGraph = new GenreGraph,
@@ -33,10 +33,11 @@ class MetadataScorer
             $score += $this->albumWeight;
         }
 
-        $genreSim = $this->genreGraph->similarity(
-            $this->genreKey($seed),
-            $candidate->category_slug ?? $candidate->deezer_genre_id,
-        );
+        $candidateGenreKey = $candidate->radio_genre_key
+            ?? $candidate->category_slug
+            ?? $candidate->deezer_genre_id;
+
+        $genreSim = $this->genreGraph->similarity($this->genreKey($seed), $candidateGenreKey);
 
         if ($genreSim > 0) {
             $score += $this->genreWeight * $genreSim;
@@ -109,6 +110,10 @@ class MetadataScorer
 
     private function genreKey(SeedProfile $seed): ?string
     {
+        if ($seed->radioGenreKey()) {
+            return $seed->radioGenreKey();
+        }
+
         $slug = $seed->categorySlug();
         if ($slug && ! in_array(strtolower($slug), $this->genericCategories, true)) {
             return $slug;

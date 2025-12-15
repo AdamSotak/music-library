@@ -9,7 +9,7 @@ import sqlite3
 from collections import Counter, defaultdict
 from typing import Optional
 
-GENERIC = {"unknown", "misc", "other", ""}
+GENERIC = {"unknown", "misc", "other", "", "music", "various", "various-artists"}
 
 GENRE_ID_TO_SLUG = {
     "132": "pop",
@@ -86,14 +86,20 @@ def main():
     updated = 0
     for track_id, cat_slug, genre_id, album_id, artist_id in rows:
         current_slug = normalize_slug(cat_slug) or slug_from_id(genre_id)
-        if current_slug and current_slug not in GENERIC:
+        if current_slug:
             continue  # already good enough
 
         album_slug = normalize_slug(album_genres.get(album_id))
         artist_slug = normalize_slug(artist_dominant.get(artist_id))
 
-        chosen = album_slug or artist_slug or "pop"  # final fallback to pop
-        chosen_id = SLUG_TO_ID.get(chosen, "132")
+        chosen = album_slug or artist_slug
+        if not chosen:
+            continue
+
+        chosen_id = SLUG_TO_ID.get(chosen)
+        if not chosen_id:
+            # Only write when we can map to a known coarse key.
+            continue
 
         cur.execute(
             "UPDATE tracks SET category_slug=?, deezer_genre_id=? WHERE id=?",

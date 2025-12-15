@@ -9,7 +9,9 @@ use Illuminate\Support\Collection;
 
 class RecommendationService
 {
-    private array $genericCategories = ['pop', 'unknown', 'misc', 'other'];
+    private array $genericCategories = ['unknown', 'misc', 'other', 'music', 'various', 'various-artists'];
+    private float $neighbourGenreThreshold = 0.45;
+    private float $hardGenreFloor = 0.35;
 
     public function __construct(
         private MetadataScorer $metadataScorer = new MetadataScorer,
@@ -31,6 +33,9 @@ class RecommendationService
         if ($ctx->seedType === 'track') {
             $excluded[] = $seed->track?->id;
         }
+
+        $seedCategory = $this->resolveSeedCategory($seed);
+        $allowedGenres = $this->allowedGenres($seedCategory);
 
         $pool = $this->buildCandidatePool($seed, array_filter($excluded), $ctx->limit);
 
@@ -79,6 +84,10 @@ class RecommendationService
         foreach ($sorted as $item) {
             /** @var Track $track */
             $track = $item['track'];
+
+            if (! $this->passesGenreGate($seedCategory, $allowedGenres, $seed, $track, $final->count())) {
+                continue;
+            }
 
             $recentRun = array_slice($recentArtists, -$maxSequential);
             if ($maxSequential > 0 && count($recentRun) === $maxSequential && count(array_unique(array_merge($recentRun, [$track->artist_id]))) === 1) {
@@ -148,14 +157,14 @@ class RecommendationService
             ->whereNotIn('id', $excluded);
 
         $seedCategory = $this->resolveSeedCategory($seed);
-        $seedGenre = $seed->genreId() ?? $seedCategory;
+        $allowedGenres = $this->allowedGenres($seedCategory);
         $pool = collect();
 
         // Tier 1: same artist
         if ($seed->artistId()) {
             $tier1 = $baseQuery()
                 ->where('artist_id', $seed->artistId())
-                ->limit(300)
+                ->limit(250)
                 ->get();
             $pool = $pool->merge($tier1);
         }
@@ -163,38 +172,44 @@ class RecommendationService
         // Tier 2: same category/genre slug (when not generic)
         if ($this->shouldFilterByCategory($seedCategory)) {
             $tier2 = $baseQuery()
-                ->where('category_slug', $seedCategory)
-                ->limit(300)
+                ->where('radio_genre_key', $seedCategory)
+                ->limit(450)
                 ->get();
             $pool = $pool->merge($tier2);
         }
 
         // Tier 3: neighbour genres
-        if ($seedGenre) {
-            $similarGenres = $this->similarGenres($seedGenre, 0.2);
-            if (count($similarGenres)) {
-                $tier3 = $baseQuery()
-                    ->whereIn('category_slug', $similarGenres)
-                    ->limit(300)
-                    ->get();
+        if (count($allowedGenres)) {
+            $neighbours = array_values(array_filter(
+                $allowedGenres,
+                fn ($g) => strtolower((string) $g) !== strtolower((string) $seedCategory),
+            ));
+            if (count($neighbours)) {
+                $tier3 = $baseQuery()->whereIn('radio_genre_key', $neighbours)->limit(450)->get();
                 $pool = $pool->merge($tier3);
             }
         }
 
-        // Fallback: general pool capped to keep responsiveness
+        // Deduplicate and cap total size (avoid ORDER BY RANDOM() on SQLite).
+        $pool = $pool->unique('id');
+
+        // If genre is unknown, last-resort fallback so radio still returns something.
         if ($pool->isEmpty()) {
-            $pool = $baseQuery()
-                ->inRandomOrder()
-                ->limit(800)
-                ->get();
+            if (count($allowedGenres)) {
+                $pool = $baseQuery()->whereIn('radio_genre_key', $allowedGenres)->limit(800)->get();
+            } else {
+                $pool = $baseQuery()->whereNotNull('radio_genre_key')->limit(800)->get();
+            }
         } else {
-            // Deduplicate and cap total size
-            $pool = $pool->unique('id');
-            if ($pool->count() < $limit) {
-                $extra = $baseQuery()
-                    ->inRandomOrder()
-                    ->limit(400)
-                    ->get();
+            $desiredPoolSize = max($limit * 25, 300);
+            if ($pool->count() < $desiredPoolSize) {
+                $extraQuery = $baseQuery();
+                if (count($allowedGenres)) {
+                    $extraQuery->whereIn('radio_genre_key', $allowedGenres);
+                } else {
+                    $extraQuery->whereNotNull('radio_genre_key');
+                }
+                $extra = $extraQuery->limit(600)->get();
                 $pool = $pool->merge($extra)->unique('id');
             }
         }
@@ -216,6 +231,12 @@ class RecommendationService
 
     private function resolveSeedCategory(SeedProfile $seed): ?string
     {
+        // 0) Prefer backfilled radio key when available.
+        $radio = $seed->radioGenreKey();
+        if ($this->shouldFilterByCategory($radio) && ! $this->isUntrustedRadioKey($seed, $radio)) {
+            return $radio;
+        }
+
         // 1) Use track category if it's not generic.
         $slug = $seed->categorySlug();
         if ($this->shouldFilterByCategory($slug)) {
@@ -228,22 +249,33 @@ class RecommendationService
             return $albumGenre;
         }
 
-        // 3) Fallback: first non-generic category for this artist.
+        // 3) Fallback: dominant album radio key.
+        $albumId = $seed->albumId();
+        if ($albumId) {
+            $albumKey = Track::where('album_id', $albumId)
+                ->whereNotNull('radio_genre_key')
+                ->selectRaw('radio_genre_key, COUNT(*) as c')
+                ->groupBy('radio_genre_key')
+                ->orderByDesc('c')
+                ->value('radio_genre_key');
+
+            if ($this->shouldFilterByCategory($albumKey)) {
+                return $albumKey;
+            }
+        }
+
+        // 4) Fallback: dominant artist radio key.
         $artistId = $seed->artistId();
         if ($artistId) {
-            $candidateSlug = Track::where('artist_id', $artistId)
-                ->whereNotNull('category_slug')
-                ->get()
-                ->pluck('category_slug')
-                ->filter(function ($s) {
-                    $s = strtolower((string) $s);
+            $artistKey = Track::where('artist_id', $artistId)
+                ->whereNotNull('radio_genre_key')
+                ->selectRaw('radio_genre_key, COUNT(*) as c')
+                ->groupBy('radio_genre_key')
+                ->orderByDesc('c')
+                ->value('radio_genre_key');
 
-                    return $s && ! in_array($s, $this->genericCategories, true);
-                })
-                ->first();
-
-            if ($candidateSlug) {
-                return $candidateSlug;
+            if ($this->shouldFilterByCategory($artistKey)) {
+                return $artistKey;
             }
         }
 
@@ -319,5 +351,66 @@ class RecommendationService
         }
 
         return $normalized;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function allowedGenres(?string $seedCategory): array
+    {
+        if (! $this->shouldFilterByCategory($seedCategory)) {
+            return [];
+        }
+
+        $genres = $this->similarGenres($seedCategory, $this->neighbourGenreThreshold);
+        $genres[] = strtolower((string) $seedCategory);
+
+        return array_values(array_unique(array_filter($genres)));
+    }
+
+    private function passesGenreGate(?string $seedCategory, array $allowedGenres, SeedProfile $seed, Track $track, int $alreadySelected): bool
+    {
+        if (! $this->shouldFilterByCategory($seedCategory)) {
+            return true;
+        }
+
+        // Always allow same-artist tracks (even if metadata is messy).
+        if ($seed->artistId() && $track->artist_id === $seed->artistId()) {
+            return true;
+        }
+
+        $candidateKey = $track->radio_genre_key ?? $track->category_slug ?? $track->deezer_genre_id;
+        if (! $candidateKey) {
+            return false;
+        }
+
+        // If we have an explicit allowlist, use it (fast).
+        if (count($allowedGenres)) {
+            $key = strtolower((string) $candidateKey);
+            if (in_array($key, $allowedGenres, true)) {
+                return true;
+            }
+        }
+
+        // Otherwise, fall back to a similarity floor to prevent teleports.
+        $minSim = $alreadySelected < 25 ? max($this->hardGenreFloor, 0.45) : $this->hardGenreFloor;
+        $sim = $this->genreGraph->similarity((string) $seedCategory, (string) $candidateKey);
+
+        return $sim >= $minSim;
+    }
+
+    private function isUntrustedRadioKey(SeedProfile $seed, string $radioKey): bool
+    {
+        $radio = strtolower($radioKey);
+        if ($radio !== 'pop') {
+            return false;
+        }
+
+        // If the only evidence is a placeholder slug + Deezer "pop" (132),
+        // treat it as a poisoned default and let album/artist context decide.
+        $slug = strtolower((string) ($seed->categorySlug() ?? ''));
+        $genreId = (string) ($seed->genreId() ?? '');
+
+        return $genreId === '132' && ($slug === '' || in_array($slug, $this->genericCategories, true));
     }
 }

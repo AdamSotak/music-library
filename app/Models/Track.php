@@ -23,6 +23,7 @@ class Track extends Model
         'audio_url',
         'category_slug',
         'deezer_genre_id',
+        'radio_genre_key',
     ];
 
     public function artist(): BelongsTo
