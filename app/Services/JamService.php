@@ -157,15 +157,16 @@ class JamService
 
             $track = \App\Models\Track::find($trackData['id']);
 
-            if ($track) {
-                // Only update the name when we have a concrete title; otherwise keep the existing one.
-                $track->update($payload);
-            } else {
-                $payload['id'] = $trackData['id'];
-                $payload['name'] = $payload['name'] ?? 'Unknown Track';
-
-                \App\Models\Track::create($payload);
+            if (!$track) {
+                // Do not create or update global Track records from untrusted client data.
+                // Optionally, log or handle the missing track case.
+                logger()->warning('Attempt to reference non-existent track ID from client payload', [
+                    'track_id' => $trackData['id'],
+                ]);
+                // Optionally, return or throw here if referencing a missing track is not allowed.
+                return;
             }
+            // Only allow referencing existing tracks. Do not update global catalog data.
         }
     }
 
