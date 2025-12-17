@@ -12,26 +12,32 @@ class PlaylistController extends Controller
 {
     public function show(string $id)
     {
-        $playlist = Playlist::with(['tracks.artist', 'tracks.album', 'collaborators', 'user'])
+        $playlist = Playlist::with(['tracks.artist', 'tracks.album', 'collaborators', 'user', 'sharedWith'])
             ->findOrFail($id);
 
-        $collaborators = $playlist->collaborators->map(fn (User $user) => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'role' => $user->pivot->role,
-        ]);
+        $user = auth()->user();
 
-        $currentUserId = auth()->id();
-        $currentRole = null;
-        if ($currentUserId) {
-            $current = $playlist->collaborators->firstWhere('id', $currentUserId);
-            if ($current) {
-                $currentRole = $current->pivot->role;
-            }
+        $canView = $playlist->user_id === $user->id
+            || $playlist->isSharedWithUser($user)
+            || $playlist->collaborators->contains('id', $user->id);
+
+        if (! $canView) {
+            abort(403, 'Unauthorized action.');
         }
 
-        $owner = $playlist->collaborators->firstWhere('pivot.role', 'owner') ?? $playlist->user;
-        $ownerName = $owner?->name;
+        $collaborators = $playlist->collaborators->map(fn (User $collaborator) => [
+            'id' => (string) $collaborator->id,
+            'name' => $collaborator->name,
+            'role' => $collaborator->pivot->role,
+        ]);
+
+        $currentRole = null;
+        $current = $playlist->collaborators->firstWhere('id', $user->id);
+        if ($current) {
+            $currentRole = $current->pivot->role;
+        } elseif ($playlist->user_id === $user->id) {
+            $currentRole = 'owner';
+        }
 
         return Inertia::render('playlists/show', [
             'playlist' => [
@@ -42,9 +48,18 @@ class PlaylistController extends Controller
                 'is_default' => $playlist->is_default,
                 'is_collaborative' => $playlist->is_collaborative,
                 'invite_token' => $playlist->invite_token,
-                'owner_name' => $ownerName,
                 'current_role' => $currentRole,
                 'collaborators' => $collaborators,
+                'is_shared' => $playlist->is_shared,
+                'is_owner' => $playlist->user_id === $user->id,
+                'owner_id' => $playlist->user_id,
+                'owner_name' => $playlist->user->name,
+                'shared_with' => $playlist->sharedWith->map(fn ($sharedUser) => [
+                    'id' => $sharedUser->id,
+                    'name' => $sharedUser->name,
+                    'email' => $sharedUser->email,
+                    'added_at' => $sharedUser->pivot->added_at,
+                ]),
                 'tracks' => $playlist->tracks->map(fn ($track) => [
                     'id' => $track->id,
                     'name' => $track->name,
@@ -71,6 +86,7 @@ class PlaylistController extends Controller
             'name' => $validated['name'],
             'description' => $validated['description'] ?? '',
             'is_default' => false,
+            'is_shared' => false,
             'user_id' => auth()->id(),
             'is_collaborative' => (bool) $request->input('is_collaborative', false),
         ]);
@@ -89,7 +105,7 @@ class PlaylistController extends Controller
 
         $playlist = Playlist::findOrFail($id);
 
-        if (! $this->canManage($playlist)) {
+        if ($playlist->user_id !== auth()->id() && ! $this->isOwner($playlist)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -105,13 +121,12 @@ class PlaylistController extends Controller
     {
         $playlist = Playlist::findOrFail($id);
 
-        if (! $this->isOwner($playlist)) {
+        if ($playlist->user_id !== auth()->id() && ! $this->isOwner($playlist)) {
             abort(403, 'Unauthorized action.');
         }
 
         $playlist->delete();
 
-        // Send the user to a safe page (home) to avoid 404 if they were on the playlist page
         return redirect('/');
     }
 
@@ -123,8 +138,9 @@ class PlaylistController extends Controller
         ]);
 
         $playlist = Playlist::findOrFail($id);
+        $user = auth()->user();
 
-        if (! $this->canEditTracks($playlist)) {
+        if (! ($playlist->canUserEdit($user) || $this->canEditTracks($playlist))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -142,8 +158,9 @@ class PlaylistController extends Controller
     public function removeTrack(string $playlistId, string $trackId)
     {
         $playlist = Playlist::findOrFail($playlistId);
+        $user = auth()->user();
 
-        if (! $this->canEditTracks($playlist)) {
+        if (! ($playlist->canUserEdit($user) || $this->canEditTracks($playlist))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -276,5 +293,146 @@ class PlaylistController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * Toggle sharing on a playlist and optionally add/remove users
+     */
+    public function share(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'is_shared' => 'required|boolean',
+            'user_ids' => 'nullable|array',
+            'user_ids.*' => 'exists:users,id',
+        ]);
+
+        $playlist = Playlist::findOrFail($id);
+        $user = auth()->user();
+
+        if (! $playlist->canUserManageSharing($user)) {
+            abort(403, 'Only the playlist owner can manage sharing.');
+        }
+
+        if ($playlist->is_default) {
+            abort(400, 'Cannot share the Liked Songs playlist.');
+        }
+
+        $playlist->update(['is_shared' => $validated['is_shared']]);
+
+        // remove all shared users if sharing is dsabled
+        if (! $validated['is_shared']) {
+            $playlist->sharedWith()->detach();
+
+            return redirect()->back();
+        }
+
+        if (isset($validated['user_ids'])) {
+            $friends = $user->getFriends()->pluck('id')->toArray();
+            $validUserIds = array_intersect($validated['user_ids'], $friends);
+
+            $syncData = [];
+            foreach ($validUserIds as $userId) {
+                $syncData[$userId] = [
+                    'added_by' => $user->id,
+                    'added_at' => now(),
+                ];
+            }
+
+            $playlist->sharedWith()->sync($syncData);
+        }
+
+        return redirect()->back();
+    }
+
+    // add users to a shared playlist
+    public function addSharedUsers(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'exists:users,id',
+        ]);
+
+        $playlist = Playlist::findOrFail($id);
+        $user = auth()->user();
+
+        // only owner can add users
+        if (! $playlist->canUserManageSharing($user)) {
+            abort(403, 'Only the playlist owner can add users.');
+        }
+
+        if (! $playlist->is_shared) {
+            abort(400, 'Playlist is not shared. Enable sharing first.');
+        }
+
+        $friends = $user->getFriends()->pluck('id')->toArray();
+        $validUserIds = array_intersect($validated['user_ids'], $friends);
+
+        foreach ($validUserIds as $userId) {
+            if (! $playlist->sharedWith()->where('user_id', $userId)->exists()) {
+                $playlist->sharedWith()->attach($userId, [
+                    'added_by' => $user->id,
+                    'added_at' => now(),
+                ]);
+            }
+        }
+
+        return redirect()->back();
+    }
+
+    // remove user from shared playlist
+
+    public function removeSharedUser(string $playlistId, int $userId)
+    {
+        $playlist = Playlist::findOrFail($playlistId);
+        $user = auth()->user();
+
+        // only owner can remove users
+        if (! $playlist->canUserManageSharing($user)) {
+            abort(403, 'Only the playlist owner can remove users.');
+        }
+
+        $playlist->sharedWith()->detach($userId);
+
+        return redirect()->back();
+    }
+
+    // leave shared playlist
+
+    public function leaveSharedPlaylist(string $id)
+    {
+        $playlist = Playlist::findOrFail($id);
+        $user = auth()->user();
+
+        if ($playlist->isOwner($user)) {
+            abort(400, 'You cannot leave your own playlist.');
+        }
+
+        if (! $playlist->isSharedWithUser($user)) {
+            abort(403, 'You are not a member of this shared playlist.');
+        }
+
+        $playlist->sharedWith()->detach($user->id);
+
+        return redirect('/');
+    }
+
+    // list users with whom the playlist is sharedd
+    public function getSharedUsers(string $id)
+    {
+        $playlist = Playlist::with('sharedWith')->findOrFail($id);
+        $user = auth()->user();
+
+        if (! $playlist->canUserEdit($user)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return response()->json([
+            'shared_users' => $playlist->sharedWith->map(fn ($sharedUser) => [
+                'id' => $sharedUser->id,
+                'name' => $sharedUser->name,
+                'email' => $sharedUser->email,
+                'added_at' => $sharedUser->pivot->added_at,
+            ]),
+        ]);
     }
 }

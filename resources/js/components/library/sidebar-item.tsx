@@ -1,4 +1,4 @@
-import { Music } from "lucide-react"
+import { Music, Users } from "lucide-react"
 import { router } from "@inertiajs/react"
 import {
 	ContextMenu,
@@ -19,11 +19,12 @@ interface SidebarItemProps {
 	image?: string
 	href?: string
 	isLikedSongs?: boolean
+	isShared?: boolean
 	isCollapsed?: boolean
 	onClose?: () => void
 	isMobile?: boolean
 	tracks?: Track[]
-	viewMode?: "list" | "compact" | "grid"
+	viewMode?: "list" | "compact" | "grid" | "large-grid"
 	type?: "playlist" | "artist" | "album"
 }
 
@@ -35,6 +36,7 @@ export const SidebarItem = ({
 	tracks,
 	href,
 	isLikedSongs = false,
+	isShared = false,
 	isCollapsed = false,
 	onClose,
 	isMobile = false,
@@ -356,16 +358,28 @@ export const SidebarItem = ({
 							className={`${imageSize} rounded-[4px]`}
 						/>
 					) : showImage && image ? (
-						<img
-							src={image}
-							alt={title}
-							className={`${imageSize} rounded-[4px] object-cover`}
-						/>
+						<div className="relative">
+							<img
+								src={image}
+								alt={title}
+								className={`${imageSize} rounded-[4px] object-cover`}
+							/>
+							{isShared && (
+								<div className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+									<Users className="w-2.5 h-2.5 text-black" />
+								</div>
+							)}
+						</div>
 					) : showImage ? (
 						<div
-							className={`${imageSize} rounded-[4px] bg-zinc-800 flex items-center justify-center`}
+							className={`${imageSize} rounded-[4px] bg-zinc-800 flex items-center justify-center relative`}
 						>
 							<Music className="w-5 h-5" />
+							{isShared && (
+								<div className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+									<Users className="w-2.5 h-2.5 text-black" />
+								</div>
+							)}
 						</div>
 					) : null}
 

@@ -1,5 +1,5 @@
 import { usePage, router } from "@inertiajs/react"
-import { Music } from "lucide-react"
+import { Music, Users } from "lucide-react"
 import type { InertiaPageProps } from "@/types"
 import { useState, useMemo, useEffect, type ReactNode } from "react"
 import { Button } from "./ui/button"
@@ -9,19 +9,23 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 	DropdownMenuSeparator,
+	DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
 import { Modals } from "@/hooks/useModals"
 
 interface AddToPlaylistDropdownProps {
 	trackId: string
 	children: ReactNode | ((state: { isOpen: boolean }) => ReactNode)
+	includeShared?: boolean
 }
 
 export const AddToPlaylistDropdown = ({
 	trackId,
 	children,
+	includeShared = false,
 }: AddToPlaylistDropdownProps) => {
-	const { playlists } = usePage().props as unknown as InertiaPageProps
+	const { playlists, sharedPlaylists } = usePage()
+		.props as unknown as InertiaPageProps
 	const { setOpen: setCreatePlaylistOpen } =
 		Modals.useEditPlaylistDetailsModal()
 	const [searchQuery, setSearchQuery] = useState("")
@@ -32,9 +36,16 @@ export const AddToPlaylistDropdown = ({
 					isOpen,
 				})
 			: children
+	const allPlaylists = useMemo(() => {
+		if (includeShared && sharedPlaylists) {
+			return [...playlists, ...sharedPlaylists]
+		}
+		return playlists
+	}, [playlists, sharedPlaylists, includeShared])
+
 	const membershipLookup = useMemo(() => {
 		const next = new Set<string>()
-		playlists.forEach((playlist) => {
+		allPlaylists.forEach((playlist) => {
 			if (
 				playlist.tracks?.some((track) => String(track.id) === String(trackId))
 			) {
@@ -42,7 +53,7 @@ export const AddToPlaylistDropdown = ({
 			}
 		})
 		return next
-	}, [playlists, trackId])
+	}, [allPlaylists, trackId])
 	const [memberships, setMemberships] = useState<Set<string>>(
 		new Set(membershipLookup),
 	)
@@ -57,6 +68,14 @@ export const AddToPlaylistDropdown = ({
 			playlist.name.toLowerCase().includes(searchQuery.toLowerCase()),
 		)
 	}, [playlists, searchQuery])
+
+	const filteredSharedPlaylists = useMemo(() => {
+		if (!includeShared || !sharedPlaylists) return []
+		if (!searchQuery.trim()) return sharedPlaylists
+		return sharedPlaylists.filter((playlist) =>
+			playlist.name.toLowerCase().includes(searchQuery.toLowerCase()),
+		)
+	}, [sharedPlaylists, searchQuery, includeShared])
 
 	const handleTogglePlaylist = (playlistId: string, isMember: boolean) => {
 		if (isMember) {
@@ -189,7 +208,8 @@ export const AddToPlaylistDropdown = ({
 												{playlist.name}
 											</div>
 											<div className="text-[#b3b3b3] text-[12px] leading-4">
-												Playlist • {playlist.tracks?.length || 0} songs
+												{playlist.is_shared ? "Shared • " : "Playlist • "}
+												{playlist.tracks?.length || 0} songs
 											</div>
 										</div>
 										<div className="flex-shrink-0">
@@ -214,6 +234,78 @@ export const AddToPlaylistDropdown = ({
 						<p className="text-[#b3b3b3] text-center py-6 text-[13px]">
 							{searchQuery ? "No playlists found" : "No playlists available"}
 						</p>
+					)}
+
+					{/* Shared Playlists Section */}
+					{includeShared && filteredSharedPlaylists.length > 0 && (
+						<>
+							<DropdownMenuSeparator className="bg-[#ffffff1a] my-2 h-px" />
+							<DropdownMenuLabel className="text-[#a7a7a7] text-[11px] px-2 py-1 flex items-center gap-1.5">
+								<Users className="w-3 h-3" />
+								Shared with you
+							</DropdownMenuLabel>
+							<div className="space-y-0">
+								{filteredSharedPlaylists.map((playlist) => {
+									const playlistId = String(playlist.id)
+									const isMember = memberships.has(playlistId)
+
+									return (
+										<DropdownMenuItem
+											key={playlist.id}
+											onSelect={(event) => {
+												event.preventDefault()
+												handleTogglePlaylist(playlistId, isMember)
+											}}
+											className={`flex items-center gap-3 px-2 py-2 rounded-sm cursor-pointer focus:bg-white/10 data-[highlighted]:bg-white/10 ${
+												isMember
+													? "bg-white/10 hover:bg-white/10"
+													: "hover:bg-white/10"
+											}`}
+										>
+											<div className="relative">
+												{playlist.image ? (
+													<img
+														src={playlist.image}
+														alt={playlist.name}
+														className="w-12 h-12 rounded object-cover flex-shrink-0"
+													/>
+												) : (
+													<div className="w-12 h-12 rounded bg-[#282828] flex items-center justify-center flex-shrink-0 shadow-inner">
+														<Music className="w-6 h-6 text-[#b3b3b3]" />
+													</div>
+												)}
+												<div className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+													<Users className="w-2.5 h-2.5 text-black" />
+												</div>
+											</div>
+											<div className="flex-1 min-w-0">
+												<div className="text-white font-normal text-[14px] leading-5 truncate">
+													{playlist.name}
+												</div>
+												<div className="text-[#b3b3b3] text-[12px] leading-4">
+													by {playlist.owner_name} •{" "}
+													{playlist.tracks?.length || 0} songs
+												</div>
+											</div>
+											<div className="flex-shrink-0">
+												{isMember ? (
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														viewBox="0 0 16 16"
+														fill="#1ed760"
+														className="w-4 h-4"
+													>
+														<path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0"></path>
+													</svg>
+												) : (
+													<div className="w-4 h-4 rounded-full border border-white/40" />
+												)}
+											</div>
+										</DropdownMenuItem>
+									)
+								})}
+							</div>
+						</>
 					)}
 				</div>
 			</DropdownMenuContent>

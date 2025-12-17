@@ -67,9 +67,22 @@ const useJamModal = create<JamModalState>((set) => ({
 	setOpen: (open) => set({ open }),
 }))
 
+interface SharePlaylistModalState {
+	open: boolean
+	playlist: Playlist | null
+	setOpen: (open: boolean, playlist?: Playlist | null) => void
+}
+
+const useSharePlaylistModal = create<SharePlaylistModalState>((set) => ({
+	open: false,
+	playlist: null,
+	setOpen: (open, playlist = null) => set({ open, playlist }),
+}))
+
 export const Modals = {
 	useConfirmationModal,
 	useEditPlaylistDetailsModal,
 	useAddToPlaylistModal,
 	useJamModal,
+	useSharePlaylistModal,
 }

@@ -3,7 +3,14 @@ import Shelf from "@/components/home/shelf"
 import { cn } from "@/lib/utils"
 import { usePlayer } from "@/hooks/usePlayer"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
-import type { Album, Artist, InertiaPageProps, ShelfItem, Track } from "@/types"
+import type {
+	Album,
+	Artist,
+	FriendRecommendation,
+	InertiaPageProps,
+	ShelfItem,
+	Track,
+} from "@/types"
 import { router, usePage } from "@inertiajs/react"
 import { useEffect, useMemo, useState } from "react"
 
@@ -11,9 +18,15 @@ interface IndexProps {
 	albums: Album[]
 	artists: Artist[]
 	tracks: Track[]
+	friendRecommendation: FriendRecommendation | null
 }
 
-export default function Index({ albums, artists, tracks }: IndexProps) {
+export default function Index({
+	albums,
+	artists,
+	tracks,
+	friendRecommendation,
+}: IndexProps) {
 	const { user } = usePage().props as unknown as InertiaPageProps
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
 	const trackQueue = useMemo(() => toPlayerQueue(tracks), [tracks])
@@ -55,6 +68,36 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 			return
 		}
 		setCurrentTrack(queueTrack, trackQueue, index)
+	}
+
+	// Friend tracks need their own queue and handler
+	const friendTrackQueue = useMemo(
+		() =>
+			friendRecommendation ? toPlayerQueue(friendRecommendation.tracks) : [],
+		[friendRecommendation],
+	)
+
+	const friendTrackShelfItems = useMemo(
+		() =>
+			friendRecommendation?.tracks.map((track) => ({
+				id: track.id,
+				title: track.name,
+				subtitle: track.artist,
+				type: "track" as const,
+				image: track.album_cover,
+				track,
+			})) || [],
+		[friendRecommendation],
+	)
+
+	const handlePlayFriendTrack = (item: ShelfItem, index: number) => {
+		if (!item.track) return
+		const queueTrack = friendTrackQueue[index] ?? toPlayerTrack(item.track)
+		if (currentTrack?.id === queueTrack.id) {
+			setIsPlaying(!isPlaying)
+			return
+		}
+		setCurrentTrack(queueTrack, friendTrackQueue, index)
 	}
 
 	useEffect(() => {
@@ -132,6 +175,15 @@ export default function Index({ albums, artists, tracks }: IndexProps) {
 					onItemSelected={(item) => router.visit(`/tracks/${item.id}`)}
 					onPlayItem={handlePlayHomeTrack}
 				/>
+				{friendRecommendation && (
+					<Shelf
+						title={`${friendRecommendation.friend_name} is listening to`}
+						topTitle="Friend"
+						items={friendTrackShelfItems}
+						onItemSelected={(item) => router.visit(`/tracks/${item.id}`)}
+						onPlayItem={handlePlayFriendTrack}
+					/>
+				)}
 				<Shelf
 					title="Featured Charts"
 					items={albums.map((album) => ({

@@ -69,6 +69,7 @@ class HandleInertiaRequests extends Middleware
                         'description' => $playlist->description ?: null,
                         'is_default' => $playlist->is_default,
                         'is_collaborative' => $playlist->is_collaborative,
+                        'is_shared' => $playlist->is_shared,
                         'owner_name' => $playlist->user?->name,
                         'current_role' => $currentPivot->role ?? ($playlist->user_id === $userId ? 'owner' : null),
                         'image' => $firstTrack->image_url ?? null,
@@ -109,6 +110,72 @@ class HandleInertiaRequests extends Middleware
             })
             : [];
 
+        $friends = Auth::check()
+            ? Auth::user()->getFriends()->map(function ($friend) {
+                return [
+                    'id' => $friend->id,
+                    'name' => $friend->name,
+                    'email' => $friend->email,
+                    'created_at' => $friend->created_at,
+                ];
+            })
+            : [];
+
+        $sentFriendRequests = Auth::check()
+            ? Auth::user()->sentFriendRequests()->get()->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'requested_at' => $user->pivot->created_at,
+                ];
+            })
+            : [];
+
+        $receivedFriendRequests = Auth::check()
+            ? Auth::user()->receivedFriendRequests()->get()->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'requested_at' => $user->pivot->created_at,
+                ];
+            })
+            : [];
+
+        $sharedPlaylists = Auth::check()
+            ? Auth::user()->sharedPlaylists()->with([
+                'tracks:id',
+                'user:id,name',
+            ])
+                ->get()
+                ->map(function ($playlist) {
+                    $firstTrack = DB::table('playlist_tracks')
+                        ->join('tracks', 'playlist_tracks.track_id', '=', 'tracks.id')
+                        ->leftJoin('albums', 'tracks.album_id', '=', 'albums.id')
+                        ->where('playlist_tracks.playlist_id', $playlist->id)
+                        ->select('albums.image_url')
+                        ->first();
+
+                    return [
+                        'id' => $playlist->id,
+                        'name' => $playlist->name,
+                        'description' => $playlist->description ?: null,
+                        'is_default' => $playlist->is_default,
+                        'is_shared' => $playlist->is_shared,
+                        'owner_id' => $playlist->user_id,
+                        'owner_name' => $playlist->user?->name,
+                        'image' => $firstTrack->image_url ?? null,
+                        'tracks' => $playlist->tracks
+                            ->map(fn ($track) => ['id' => $track->id])
+                            ->values(),
+                        'created_at' => $playlist->created_at,
+                        'updated_at' => $playlist->updated_at,
+                    ];
+                })
+                ->values()
+            : [];
+
         $user = Auth::user();
 
         return [
@@ -118,10 +185,15 @@ class HandleInertiaRequests extends Middleware
                 'name' => $user->name,
                 'email' => $user->email,
                 'createdAt' => $user->created_at,
+                'twoFactorEnabled' => $user->two_factor_enabled,
             ] : null,
             'playlists' => $playlists,
+            'sharedPlaylists' => $sharedPlaylists,
             'savedAlbums' => $savedAlbums,
             'followedArtists' => $followedArtists,
+            'friends' => $friends,
+            'sentFriendRequests' => $sentFriendRequests,
+            'receivedFriendRequests' => $receivedFriendRequests,
         ];
     }
 }

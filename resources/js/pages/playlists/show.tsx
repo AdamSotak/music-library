@@ -19,17 +19,11 @@ import {
 	Users,
 	Copy,
 	Crown,
+	LogOut,
 } from "lucide-react"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
 import { TrackContextMenu } from "@/components/track-context-menu"
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
 	Dialog,
 	DialogContent,
@@ -38,6 +32,13 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useLikedTracksStore } from "@/hooks/useLikedTracks"
 
 interface PlaylistShowProps {
@@ -59,6 +60,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
 	const { setOpen: setEditPlaylistOpen } = Modals.useEditPlaylistDetailsModal()
+	const { setOpen: setShareModalOpen } = Modals.useSharePlaylistModal()
 	const { playlists, user } = usePage().props as unknown as InertiaPageProps
 	const likedTrackIds = useLikedTracksStore((state) => state.likedIds)
 	const { rgba } = useImageColor(
@@ -336,22 +338,40 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 					)}
 				</div>
 				<div className="flex flex-col justify-end pb-2 text-center md:text-left w-full md:w-auto">
-					<p className="text-xs md:text-sm font-bold mb-1 md:mb-2">
-						Public Playlist
-					</p>
+					<div className="flex items-center gap-2 mb-1 md:mb-2">
+						<p className="text-xs md:text-sm font-bold">
+							{playlist.is_shared ? "Collaborative Playlist" : "Playlist"}
+						</p>
+						{playlist.is_shared && (
+							<div className="flex items-center gap-1 px-2 py-0.5 bg-green-500/20 rounded-full">
+								<Users className="w-3 h-3 text-green-500" />
+								<span className="text-xs text-green-500 font-medium">
+									Shared
+								</span>
+							</div>
+						)}
+					</div>
 					<h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-black mb-3 md:mb-6 leading-tight md:leading-none">
 						{playlist.name}
 					</h1>
 					<p className="text-zinc-300 text-xs md:text-sm mb-2">
 						{playlist.description}
 					</p>
-					<div className="flex items-center justify-center md:justify-start gap-2 text-xs md:text-sm mt-2 flex-wrap">
+					<div className="flex items-center justify-center md:justify-start gap-1 text-xs md:text-sm mt-2 flex-wrap">
 						<span className="font-bold">
-							{playlist.owner_name ??
-								(playlist.is_default
-									? (user?.name ?? "You")
-									: (user?.name ?? "You"))}
+							{playlist.owner_name || user?.name || "You"}
 						</span>
+						{playlist.is_shared &&
+							playlist.shared_with &&
+							playlist.shared_with.length > 0 && (
+								<span className="text-zinc-400">
+									{" "}
+									+ {playlist.shared_with.length}{" "}
+									{playlist.shared_with.length === 1
+										? "collaborator"
+										: "collaborators"}
+								</span>
+							)}
 						<span>•</span>
 						<span>
 							{playlist.tracks.length}{" "}
@@ -548,11 +568,51 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							}}
 							className="gap-2 text-sm"
 						>
-							<Share2 className="w-4 h-4" />
-							Share
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+									<Share2 className="w-4 h-4" />
+									Share
+								</DropdownMenuItem>
+								{playlist.is_owner && (
+									<>
+										<DropdownMenuSeparator className="bg-white/10" />
+										<DropdownMenuItem
+											onSelect={(event) => {
+												event.preventDefault()
+												setShareModalOpen(true, playlist)
+											}}
+											className="gap-2 text-sm"
+										>
+											<Users className="w-4 h-4" />
+											{playlist.is_shared
+												? "Manage collaborators"
+												: "Make collaborative"}
+										</DropdownMenuItem>
+									</>
+								)}
+								{!playlist.is_owner && playlist.is_shared && (
+									<>
+										<DropdownMenuSeparator className="bg-white/10" />
+										<DropdownMenuItem
+											onSelect={(event) => {
+												event.preventDefault()
+												setConfirmModalOpen(
+													true,
+													"Leave shared playlist?",
+													`You will no longer have access to "${playlist.name}".`,
+													"Leave",
+													() => {
+														router.post(`/playlist/${playlist.id}/leave`)
+													},
+												)
+											}}
+											className="gap-2 text-sm text-red-400 focus:text-red-400"
+										>
+											<LogOut className="w-4 h-4" />
+											Leave playlist
+										</DropdownMenuItem>
+									</>
+								)}
+							</DropdownMenuContent>
+						</DropdownMenu>
 			</div>
 
 			{/* Track List or Search */}
@@ -596,7 +656,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 										className={`
 										flex flex-col md:grid md:grid-cols-[16px_6fr_4fr_3fr_minmax(120px,1fr)] 
                                         md:items-center
-										gap-2 md:gap-4 md:px-4 py-2 md:py-0 md:h-14 
+										gap-2 md:gap-4 md:px-4 py-2 md:py-0 md:h-14
 										rounded-md group cursor-pointer
 										${isCurrentTrack ? "bg-white/10" : "hover:bg-white/10"}
 									`}
