@@ -15,7 +15,10 @@ export default function ModalsProvider() {
 			<ConfirmationModal />
 			<EditPlaylistDetailsModal />
 			<AddToPlaylistModal />
-			<JamModal currentUserId={currentUserId} currentUserName={currentUserName} />
+			<JamModal
+				currentUserId={currentUserId}
+				currentUserName={currentUserName}
+			/>
 			<SharePlaylistModal />
 		</>
 	)

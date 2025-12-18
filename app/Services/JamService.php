@@ -157,12 +157,13 @@ class JamService
 
             $track = \App\Models\Track::find($trackData['id']);
 
-            if (!$track) {
+            if (! $track) {
                 // Do not create or update global Track records from untrusted client data.
                 // Optionally, log or handle the missing track case.
                 logger()->warning('Attempt to reference non-existent track ID from client payload', [
                     'track_id' => $trackData['id'],
                 ]);
+
                 // Optionally, return or throw here if referencing a missing track is not allowed.
                 return;
             }

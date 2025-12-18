@@ -568,51 +568,51 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							}}
 							className="gap-2 text-sm"
 						>
-									<Share2 className="w-4 h-4" />
-									Share
+							<Share2 className="w-4 h-4" />
+							Share
+						</DropdownMenuItem>
+						{playlist.is_owner && (
+							<>
+								<DropdownMenuSeparator className="bg-white/10" />
+								<DropdownMenuItem
+									onSelect={(event) => {
+										event.preventDefault()
+										setShareModalOpen(true, playlist)
+									}}
+									className="gap-2 text-sm"
+								>
+									<Users className="w-4 h-4" />
+									{playlist.is_shared
+										? "Manage collaborators"
+										: "Make collaborative"}
 								</DropdownMenuItem>
-								{playlist.is_owner && (
-									<>
-										<DropdownMenuSeparator className="bg-white/10" />
-										<DropdownMenuItem
-											onSelect={(event) => {
-												event.preventDefault()
-												setShareModalOpen(true, playlist)
-											}}
-											className="gap-2 text-sm"
-										>
-											<Users className="w-4 h-4" />
-											{playlist.is_shared
-												? "Manage collaborators"
-												: "Make collaborative"}
-										</DropdownMenuItem>
-									</>
-								)}
-								{!playlist.is_owner && playlist.is_shared && (
-									<>
-										<DropdownMenuSeparator className="bg-white/10" />
-										<DropdownMenuItem
-											onSelect={(event) => {
-												event.preventDefault()
-												setConfirmModalOpen(
-													true,
-													"Leave shared playlist?",
-													`You will no longer have access to "${playlist.name}".`,
-													"Leave",
-													() => {
-														router.post(`/playlist/${playlist.id}/leave`)
-													},
-												)
-											}}
-											className="gap-2 text-sm text-red-400 focus:text-red-400"
-										>
-											<LogOut className="w-4 h-4" />
-											Leave playlist
-										</DropdownMenuItem>
-									</>
-								)}
-							</DropdownMenuContent>
-						</DropdownMenu>
+							</>
+						)}
+						{!playlist.is_owner && playlist.is_shared && (
+							<>
+								<DropdownMenuSeparator className="bg-white/10" />
+								<DropdownMenuItem
+									onSelect={(event) => {
+										event.preventDefault()
+										setConfirmModalOpen(
+											true,
+											"Leave shared playlist?",
+											`You will no longer have access to "${playlist.name}".`,
+											"Leave",
+											() => {
+												router.post(`/playlist/${playlist.id}/leave`)
+											},
+										)
+									}}
+									className="gap-2 text-sm text-red-400 focus:text-red-400"
+								>
+									<LogOut className="w-4 h-4" />
+									Leave playlist
+								</DropdownMenuItem>
+							</>
+						)}
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</div>
 
 			{/* Track List or Search */}

@@ -871,7 +871,9 @@ export default function AudioPlayer() {
 	)
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [isClosing, setIsClosing] = useState(false)
-	const [processedBuffer, setProcessedBuffer] = useState<AudioBuffer | null>(null)
+	const [processedBuffer, setProcessedBuffer] = useState<AudioBuffer | null>(
+		null,
+	)
 	const [usingProcessedAudio, setUsingProcessedAudio] = useState(false)
 	const [showEffects, setShowEffects] = useState(false)
 	const [autoApplyEffects, setAutoApplyEffects] = useState(false)
