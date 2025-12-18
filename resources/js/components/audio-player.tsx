@@ -937,24 +937,12 @@ export default function AudioPlayer() {
 		setUsingProcessedAudio(false)
 		setProcessedBuffer(null)
 
-		// Build a stream URL that prefers a stable source:
-		// 1) Explicit audio URL from the track (proxied through our backend)
-		// 2) Deezer preview by track id
-		// 3) Fallback: search by track name
-		let streamUrl: string
-		if (currentTrack.audio?.startsWith("http")) {
-			streamUrl = `/api/audio/stream?audio_url=${encodeURIComponent(currentTrack.audio)}`
-			lastSourceRef.current = "audio_url"
-		} else if (
-			currentTrack.deezer_track_id &&
-			/^\d+$/.test(String(currentTrack.deezer_track_id))
-		) {
-			streamUrl = `/api/audio/stream?deezer_id=${encodeURIComponent(currentTrack.deezer_track_id)}`
-			lastSourceRef.current = "deezer_id"
-		} else {
-			streamUrl = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
-			lastSourceRef.current = "name"
-		}
+		// Always use canonical track id when possible to avoid ambiguous title searches
+		// and to allow the backend to refresh expiring Deezer preview URLs.
+		const streamUrl = `/api/audio/stream?track_id=${encodeURIComponent(
+			currentTrack.id,
+		)}`
+		lastSourceRef.current = "name"
 
 		endedGuardRef.current = { trackId: currentTrack.id, ts: 0 }
 		audio.src = streamUrl
@@ -988,21 +976,28 @@ export default function AudioPlayer() {
 					bindAutoplayRetryOnce()
 					return
 				}
-				// If we failed while using a specific source (audio_url or deezer_id),
-				// attempt a last-resort fallback to name search, then retry play once.
-				if (lastSourceRef.current !== "name") {
-					const fallbackUrl = `/api/audio/stream?q=${encodeURIComponent(
-						currentTrack.name,
-					)}`
-					lastSourceRef.current = "name"
-					audioRef.current!.src = fallbackUrl
-					audioRef.current?.load()
-					audioRef.current
-						?.play()
-						.catch((e: any) =>
-							console.warn("Fallback playback failed (non-fatal):", e),
-						)
-				}
+				// Fallback: if track_id resolution fails, try deezer_id, then title+artist.
+				const trackArtist =
+					typeof currentTrack.artist === "object"
+						? (currentTrack.artist as any)?.name
+						: currentTrack.artist
+				const fallbackQuery = `${trackArtist ?? ""} ${currentTrack.name}`.trim()
+
+				const fallbackUrl =
+					currentTrack.deezer_track_id &&
+					/^\d+$/.test(String(currentTrack.deezer_track_id))
+						? `/api/audio/stream?deezer_id=${encodeURIComponent(
+								currentTrack.deezer_track_id,
+							)}`
+						: `/api/audio/stream?q=${encodeURIComponent(fallbackQuery)}`
+
+				audioRef.current!.src = fallbackUrl
+				audioRef.current?.load()
+				audioRef.current
+					?.play()
+					.catch((e: any) =>
+						console.warn("Fallback playback failed (non-fatal):", e),
+					)
 			})
 		} else {
 			audioRef.current.pause()

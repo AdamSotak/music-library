@@ -98,7 +98,9 @@ export function AudioEffects({
 			await new Promise((resolve) => setTimeout(resolve, 0))
 
 			// Load and process the audio
-			const audioUrl = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
+			const audioUrl = `/api/audio/stream?track_id=${encodeURIComponent(
+				currentTrack.id,
+			)}`
 			const audioBuffer = await loadAudioFile(audioUrl)
 			const processedBuffer = await processAudio(
 				audioBuffer,
