@@ -9,6 +9,7 @@ import { useUiLayout } from "@/hooks/useUiLayout"
 import { useJamSession } from "@/hooks/useJamSession"
 import { AudioEffects } from "./audio-effects"
 import { cn } from "@/lib/utils"
+import { csrfFetch } from "@/utils/csrf"
 
 // Mobile compact player component
 function MobilePlayer({
@@ -879,6 +880,7 @@ export default function AudioPlayer() {
 	const [autoApplyEffects, setAutoApplyEffects] = useState(false)
 	const pendingSeekMsRef = useRef<number | null>(null)
 	const lastSourceRef = useRef<"audio_url" | "deezer_id" | "name" | null>(null)
+	const lastReportedPlayRef = useRef<string | null>(null)
 	const endedGuardRef = useRef<{ trackId: string | null; ts: number }>({
 		trackId: null,
 		ts: 0,
@@ -960,6 +962,22 @@ export default function AudioPlayer() {
 		if (!audioRef.current || !currentTrack || usingProcessedAudio) return
 
 		if (isPlaying) {
+			// Lightweight play telemetry for homepage personalization.
+			// Only report once per track selection to avoid flooding.
+			if (lastReportedPlayRef.current !== currentTrack.id) {
+				lastReportedPlayRef.current = currentTrack.id
+				void csrfFetch("/api/me/plays", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						track_id: currentTrack.id,
+						offset_ms: Math.max(0, Math.round(currentTime * 1000)),
+						context: sessionId ? "jam" : "player",
+					}),
+				}).catch(() => {
+					// ignore (guest/auth/network)
+				})
+			}
 			audioRef.current.play().catch((err: any) => {
 				console.warn("Playback start failed (non-fatal):", err)
 				if (err?.name === "NotAllowedError") {

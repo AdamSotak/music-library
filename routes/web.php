@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\Api\JamApiController;
+use App\Http\Controllers\Api\PlaybackApiController;
 use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\AudioProxyController;
 use App\Http\Controllers\AuthController;
@@ -132,6 +133,9 @@ Route::middleware(['auth', '2fa'])->group(function () {
         Route::post('/{id}/queue/remove', 'removeFromQueue')->name('api.jams.queue.remove');
         Route::post('/{id}/playback', 'updatePlayback')->name('api.jams.playback.update');
     });
+
+    // Playback telemetry (for personalized recommendations)
+    Route::post('/api/me/plays', [PlaybackApiController::class, 'storePlay'])->name('api.me.plays.store');
 
     // Friend management
     Route::post('/friends/{userId}', [FriendController::class, 'sendFriendRequest'])->name('friends.sendRequest');

@@ -19,6 +19,9 @@ interface IndexProps {
 	artists: Artist[]
 	tracks: Track[]
 	friendRecommendation: FriendRecommendation | null
+	recommendedTracks?: Track[] | null
+	recommendedAlbums?: Album[] | null
+	recommendedArtists?: Artist[] | null
 }
 
 export default function Index({
@@ -26,13 +29,23 @@ export default function Index({
 	artists,
 	tracks,
 	friendRecommendation,
+	recommendedTracks,
+	recommendedAlbums,
+	recommendedArtists,
 }: IndexProps) {
 	const { user } = usePage().props as unknown as InertiaPageProps
 	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
-	const trackQueue = useMemo(() => toPlayerQueue(tracks), [tracks])
+	const personalTracks = recommendedTracks?.length ? recommendedTracks : tracks
+	const personalAlbums = recommendedAlbums?.length ? recommendedAlbums : []
+	const personalArtists = recommendedArtists?.length ? recommendedArtists : []
+
+	const trackQueue = useMemo(
+		() => toPlayerQueue(personalTracks),
+		[personalTracks],
+	)
 	const trackShelfItems = useMemo(
 		() =>
-			tracks.map((track) => ({
+			personalTracks.map((track) => ({
 				id: track.id,
 				title: track.name,
 				subtitle: track.artist,
@@ -40,7 +53,7 @@ export default function Index({
 				image: track.album_cover,
 				track,
 			})),
-		[tracks],
+		[personalTracks],
 	)
 	const topGradientClasses = [
 		"from-purple-900/70",
@@ -175,6 +188,34 @@ export default function Index({
 					onItemSelected={(item) => router.visit(`/tracks/${item.id}`)}
 					onPlayItem={handlePlayHomeTrack}
 				/>
+				{personalAlbums.length > 0 && (
+					<Shelf
+						title="Recommended albums"
+						topTitle="For you"
+						items={personalAlbums.map((album) => ({
+							id: album.id,
+							title: album.name,
+							subtitle: album.artist,
+							type: "album",
+							artistId: album.artist_id,
+							image: album.cover,
+						}))}
+						onItemSelected={(item) => router.visit(`/albums/${item.id}`)}
+					/>
+				)}
+				{personalArtists.length > 0 && (
+					<Shelf
+						title="Recommended artists"
+						topTitle="For you"
+						items={personalArtists.map((artist) => ({
+							id: artist.id,
+							title: artist.name,
+							type: "artist",
+							image: artist.image,
+						}))}
+						onItemSelected={(item) => router.visit(`/artist/${item.id}`)}
+					/>
+				)}
 				{friendRecommendation && (
 					<Shelf
 						title={`${friendRecommendation.friend_name} is listening to`}
