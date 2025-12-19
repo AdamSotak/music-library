@@ -17,7 +17,7 @@ class MetadataScorer
         private float $durationWeight = 0.05,
     ) {}
 
-    public function score(Track $candidate, SeedProfile $seed, string $seedType = 'track'): float
+    public function score(Track $candidate, SeedProfile $seed, string $seedType = 'track', ?string $seedGenreKey = null): float
     {
         $score = $this->randomJitter();
 
@@ -33,11 +33,9 @@ class MetadataScorer
             $score += $this->albumWeight;
         }
 
-        $candidateGenreKey = $candidate->radio_genre_key
-            ?? $candidate->category_slug
-            ?? $candidate->deezer_genre_id;
+        $candidateGenreKey = $this->candidateGenreKey($candidate);
 
-        $genreSim = $this->genreGraph->similarity($this->genreKey($seed), $candidateGenreKey);
+        $genreSim = $this->genreGraph->similarity($seedGenreKey ?? $this->genreKey($seed), $candidateGenreKey);
 
         if ($genreSim > 0) {
             $score += $this->genreWeight * $genreSim;
@@ -120,5 +118,23 @@ class MetadataScorer
         }
 
         return $seed->genreId();
+    }
+
+    private function candidateGenreKey(Track $candidate): ?string
+    {
+        // Prefer curated/backfilled key (this is the field we intend to trust for Radio).
+        if ($candidate->radio_genre_key) {
+            return $candidate->radio_genre_key;
+        }
+
+        // Deezer 132 ("pop") has historically been used as a default placeholder in this repo.
+        // Treat it as untrusted unless we've backfilled radio_genre_key.
+        $deezer = $candidate->deezer_genre_id;
+        if ($deezer && (string) $deezer !== '132') {
+            return (string) $deezer;
+        }
+
+        // category_slug is known to be poisoned from ingestion; avoid using it here.
+        return null;
     }
 }

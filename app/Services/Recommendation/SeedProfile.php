@@ -12,6 +12,8 @@ class SeedProfile
         public ?Track $track = null,
         public ?Album $album = null,
         public ?Artist $artist = null,
+        /** @var array<int, float>|null */
+        public ?array $embedding = null,
     ) {}
 
     public function artistId(): ?string
@@ -56,5 +58,22 @@ class SeedProfile
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    /**
+     * @return array<int, float>|null
+     */
+    public function embeddingVector(): ?array
+    {
+        if (is_array($this->embedding)) {
+            return $this->embedding;
+        }
+
+        $trackVec = $this->track?->embedding?->embedding;
+        if (is_array($trackVec)) {
+            return $trackVec;
+        }
+
+        return null;
     }
 }

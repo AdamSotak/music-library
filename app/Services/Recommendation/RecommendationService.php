@@ -41,8 +41,8 @@ class RecommendationService
 
         $pool = $this->buildCandidatePool($seed, array_filter($excluded), $ctx->limit);
 
-        $scored = $pool->map(function (Track $track) use ($seed, $ctx) {
-            $metaScore = $this->metadataScorer->score($track, $seed, $ctx->seedType);
+        $scored = $pool->map(function (Track $track) use ($seed, $ctx, $seedCategory) {
+            $metaScore = $this->metadataScorer->score($track, $seed, $ctx->seedType, $seedCategory);
             $embedScore = $this->embeddingScore($seed, $track);
 
             return [
@@ -139,7 +139,9 @@ class RecommendationService
             return null;
         }
 
-        return new SeedProfile(album: $album, artist: $album->artist);
+        $embedding = $this->seedEmbeddingFromAlbum($album->id);
+
+        return new SeedProfile(album: $album, artist: $album->artist, embedding: $embedding);
     }
 
     private function seedFromArtist(string $id): ?SeedProfile
@@ -149,7 +151,9 @@ class RecommendationService
             return null;
         }
 
-        return new SeedProfile(artist: $artist);
+        $embedding = $this->seedEmbeddingFromArtist($artist->id);
+
+        return new SeedProfile(artist: $artist, embedding: $embedding);
     }
 
     private function buildCandidatePool(SeedProfile $seed, array $excluded, int $limit): Collection
@@ -295,7 +299,7 @@ class RecommendationService
 
     private function embeddingScore(SeedProfile $seed, Track $candidate): ?float
     {
-        $seedVec = $seed->track?->embedding?->embedding;
+        $seedVec = $seed->embeddingVector();
         $candVec = $candidate->embedding?->embedding;
 
         if (! is_array($seedVec) || ! is_array($candVec)) {
@@ -320,6 +324,89 @@ class RecommendationService
         }
 
         return $dot / $denom;
+    }
+
+    /**
+     * Compute an album-level seed embedding as the mean of its track embeddings.
+     *
+     * @return array<int, float>|null
+     */
+    private function seedEmbeddingFromAlbum(string $albumId): ?array
+    {
+        $tracks = Track::with('embedding')
+            ->where('album_id', $albumId)
+            ->whereNotNull('audio_url')
+            ->limit(60)
+            ->get();
+
+        return $this->meanEmbeddingFromTracks($tracks);
+    }
+
+    /**
+     * Compute an artist-level seed embedding as the mean of its track embeddings.
+     *
+     * @return array<int, float>|null
+     */
+    private function seedEmbeddingFromArtist(string $artistId): ?array
+    {
+        $tracks = Track::with('embedding')
+            ->where('artist_id', $artistId)
+            ->whereNotNull('audio_url')
+            ->limit(120)
+            ->get();
+
+        return $this->meanEmbeddingFromTracks($tracks);
+    }
+
+    /**
+     * @param  Collection<int, Track>  $tracks
+     * @return array<int, float>|null
+     */
+    private function meanEmbeddingFromTracks(Collection $tracks): ?array
+    {
+        $vectors = [];
+        $len = null;
+
+        foreach ($tracks as $track) {
+            $vec = $track->embedding?->embedding;
+            if (! is_array($vec) || empty($vec)) {
+                continue;
+            }
+            $len = $len === null ? count($vec) : min($len, count($vec));
+            $vectors[] = $vec;
+        }
+
+        if ($len === null || empty($vectors)) {
+            return null;
+        }
+
+        $avg = array_fill(0, $len, 0.0);
+        foreach ($vectors as $vec) {
+            for ($i = 0; $i < $len; $i++) {
+                $avg[$i] += (float) $vec[$i];
+            }
+        }
+
+        $count = (float) count($vectors);
+        for ($i = 0; $i < $len; $i++) {
+            $avg[$i] /= $count;
+        }
+
+        // Unit-normalize to preserve cosine similarity semantics.
+        $norm = 0.0;
+        for ($i = 0; $i < $len; $i++) {
+            $norm += $avg[$i] * $avg[$i];
+        }
+        $norm = sqrt($norm);
+        if ($norm <= 0.0) {
+            return null;
+        }
+
+        for ($i = 0; $i < $len; $i++) {
+            $avg[$i] /= $norm;
+        }
+
+        return $avg;
     }
 
     /**
@@ -381,7 +468,10 @@ class RecommendationService
             return true;
         }
 
-        $candidateKey = $track->radio_genre_key ?? $track->category_slug ?? $track->deezer_genre_id;
+        $candidateKey = $track->radio_genre_key ?: ((string) $track->deezer_genre_id ?: null);
+        if ($candidateKey === '132') {
+            $candidateKey = null;
+        }
         if (! $candidateKey) {
             return false;
         }
