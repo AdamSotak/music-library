@@ -59,6 +59,13 @@ class User extends Authenticatable
         return $this->hasMany(Playlist::class);
     }
 
+    public function collaborativePlaylists(): BelongsToMany
+    {
+        return $this->belongsToMany(Playlist::class, 'playlist_users', 'user_id', 'playlist_id')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
     public function savedAlbums(): BelongsToMany
     {
         return $this->belongsToMany(Album::class, 'user_albums', 'user_id', 'album_id')

@@ -96,6 +96,13 @@ export type Album = {
 	tracks: Track[]
 }
 
+export type SharedUser = {
+	id: number
+	name: string
+	email: string
+	added_at: string
+}
+
 export type Playlist = {
 	id: string
 	name: string
@@ -110,13 +117,14 @@ export type Playlist = {
 	shared_with?: SharedUser[]
 	created_at?: string
 	updated_at?: string
-}
-
-export type SharedUser = {
-	id: number
-	name: string
-	email: string
-	added_at: string
+	is_collaborative?: boolean
+	invite_token?: string | null
+	collaborators?: Array<{
+		id: string
+		name: string
+		role: string
+	}>
+	current_role?: string | null
 }
 
 export type ShelfItem = {
@@ -125,6 +133,7 @@ export type ShelfItem = {
 	subtitle?: string
 	type?: "album" | "track" | "artist"
 	image?: string
+	artistId?: string
 	track?: Track
 }
 

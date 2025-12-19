@@ -3,10 +3,13 @@ import { Button } from "./ui/button"
 import Equalizer from "./equalizer"
 import { Slider } from "./ui/slider"
 import { ChevronDown, ChevronUp, WandSparkles } from "lucide-react"
-import { usePlayer, type Track } from "@/hooks/usePlayer"
+import { getTrackCover, usePlayer, type Track } from "@/hooks/usePlayer"
 import { router } from "@inertiajs/react"
+import { useUiLayout } from "@/hooks/useUiLayout"
+import { useJamSession } from "@/hooks/useJamSession"
 import { AudioEffects } from "./audio-effects"
 import { cn } from "@/lib/utils"
+import { csrfFetch } from "@/utils/csrf"
 
 // Mobile compact player component
 function MobilePlayer({
@@ -26,7 +29,7 @@ function MobilePlayer({
 			<div className="flex items-center gap-3 flex-1 min-w-0">
 				<img
 					src={
-						currentTrack?.album_cover ||
+						getTrackCover(currentTrack) ||
 						`https://placehold.co/40x40/333/white?text=T`
 					}
 					alt="Album cover"
@@ -37,7 +40,10 @@ function MobilePlayer({
 						{currentTrack?.name || "No track"}
 					</span>
 					<span className="text-xs text-white/70 leading-none truncate">
-						{currentTrack?.artist || "Unknown artist"}
+						{/* Handle artist as object or string */}
+						{(typeof currentTrack?.artist === "object"
+							? (currentTrack.artist as any).name
+							: currentTrack?.artist) || "Unknown artist"}
 					</span>
 				</div>
 			</div>
@@ -91,6 +97,7 @@ function DesktopPlayer({
 	currentTime,
 	duration,
 	handleSeek,
+	handleSeekCommit,
 	isShuffle,
 	setIsShuffle,
 	repeatMode,
@@ -127,11 +134,14 @@ function DesktopPlayer({
 	playNext: () => void
 	playPrevious: () => void
 	formatTime: (seconds: number) => string
+	handleSeekCommit: (value: number[]) => void
 	showEffects: boolean
 	setShowEffects: (value: boolean) => void
 	audio?: HTMLAudioElement | null
 	trackKey?: string | number | null
 }) {
+	const { toggleRightSidebar, isRightSidebarOpen } = useUiLayout()
+
 	return (
 		<div className="flex justify-between items-center w-full h-20 px-4">
 			<div>
@@ -139,7 +149,7 @@ function DesktopPlayer({
 					<div>
 						<img
 							src={
-								currentTrack?.album_cover ||
+								getTrackCover(currentTrack) ||
 								`https://placehold.co/48x48/333/white?text=T`
 							}
 							alt="Album cover"
@@ -158,7 +168,10 @@ function DesktopPlayer({
 									router.visit(`/artist/${currentTrack?.artist_id}`)
 								}
 							>
-								{currentTrack?.artist || "Unknown artist"}
+								{/* Handle artist as object or string */}
+								{(typeof currentTrack?.artist === "object"
+									? (currentTrack.artist as any).name
+									: currentTrack?.artist) || "Unknown artist"}
 							</span>
 						</div>
 
@@ -354,6 +367,7 @@ function DesktopPlayer({
 						hideThumb
 						value={[currentTime]}
 						onValueChange={handleSeek}
+						onValueCommit={handleSeekCommit}
 					/>
 					<span className="text-xs">{formatTime(duration)}</span>
 				</div>
@@ -400,18 +414,22 @@ function DesktopPlayer({
 				<Button
 					size={"icon"}
 					variant={"spotifyTransparent"}
-					className="group w-4 h-4"
+					className="group w-4 h-4 relative"
+					onClick={toggleRightSidebar}
 				>
 					<svg
 						data-encore-id="icon"
 						role="img"
 						aria-hidden="true"
 						viewBox="0 0 16 16"
-						fill="gray"
-						className="max-w-4 max-h-4 transition-colors duration-300 group-hover:fill-white"
+						fill={isRightSidebarOpen ? "#1ed760" : "gray"}
+						className={`max-w-4 max-h-4 transition-colors duration-300 ${!isRightSidebarOpen ? "group-hover:fill-white" : ""}`}
 					>
 						<path d="M15 15H1v-1.5h14zm0-4.5H1V9h14zm-14-7A2.5 2.5 0 0 1 3.5 1h9a2.5 2.5 0 0 1 0 5h-9A2.5 2.5 0 0 1 1 3.5m2.5-1a1 1 0 0 0 0 2h9a1 1 0 1 0 0-2z"></path>
 					</svg>
+					{isRightSidebarOpen && (
+						<div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-spotify-green rounded-full" />
+					)}
 				</Button>
 
 				<Button
@@ -508,24 +526,6 @@ function DesktopPlayer({
 					<svg
 						data-encore-id="icon"
 						role="img"
-						aria-hidden="true"
-						viewBox="0 0 16 16"
-						fill="gray"
-						className="max-w-4 max-h-4 transition-colors duration-300 group-hover:fill-white"
-					>
-						<path d="M16 2.45c0-.8-.65-1.45-1.45-1.45H1.45C.65 1 0 1.65 0 2.45v11.1C0 14.35.65 15 1.45 15h5.557v-1.5H1.5v-11h13V7H16z"></path>
-						<path d="M15.25 9.007a.75.75 0 0 1 .75.75v4.493a.75.75 0 0 1-.75.75H9.325a.75.75 0 0 1-.75-.75V9.757a.75.75 0 0 1 .75-.75z"></path>
-					</svg>
-				</Button>
-
-				<Button
-					size={"icon"}
-					variant={"spotifyTransparent"}
-					className="group w-4 h-4"
-				>
-					<svg
-						data-encore-id="icon"
-						role="img"
 						viewBox="0 0 16 16"
 						fill="gray"
 						aria-hidden="true"
@@ -551,6 +551,7 @@ function ExpandedPlayer({
 	currentTime,
 	duration,
 	handleSeek,
+	handleSeekCommit,
 	isShuffle,
 	setIsShuffle,
 	repeatMode,
@@ -590,6 +591,7 @@ function ExpandedPlayer({
 	playNext: () => void
 	playPrevious: () => void
 	formatTime: (seconds: number) => string
+	handleSeekCommit: (value: number[]) => void
 	showEffects: boolean
 	setShowEffects: (value: boolean) => void
 	handleProcessedAudio: (
@@ -628,7 +630,7 @@ function ExpandedPlayer({
 			<div className="flex-1 flex items-center justify-center mb-6 px-4">
 				<img
 					src={
-						currentTrack?.album_cover ||
+						getTrackCover(currentTrack) ||
 						`https://placehold.co/400x400/333/white?text=T`
 					}
 					alt="Album cover"
@@ -642,7 +644,10 @@ function ExpandedPlayer({
 					{currentTrack?.name || "No track"}
 				</h1>
 				<p className="text-lg text-white/70 truncate">
-					{currentTrack?.artist || "Unknown artist"}
+					{/* Handle artist as object or string */}
+					{(typeof currentTrack?.artist === "object"
+						? (currentTrack.artist as any).name
+						: currentTrack?.artist) || "Unknown artist"}
 				</p>
 			</div>
 
@@ -653,6 +658,7 @@ function ExpandedPlayer({
 					max={duration || 100}
 					value={[currentTime]}
 					onValueChange={handleSeek}
+					onValueCommit={handleSeekCommit}
 				/>
 				<div className="flex justify-between text-sm text-white/70">
 					<span>{formatTime(currentTime)}</span>
@@ -856,6 +862,7 @@ export default function AudioPlayer() {
 	const gainNodeRef = useRef<GainNode | null>(null)
 	const { currentTrack, isPlaying, setIsPlaying, playNext, playPrevious } =
 		usePlayer()
+	const { sessionId, isHost, canControl } = useJamSession(null, null)
 	const [currentTime, setCurrentTime] = useState(0)
 	const [duration, setDuration] = useState(0)
 	const [volume, setVolume] = useState(50)
@@ -871,35 +878,83 @@ export default function AudioPlayer() {
 	const [usingProcessedAudio, setUsingProcessedAudio] = useState(false)
 	const [showEffects, setShowEffects] = useState(false)
 	const [autoApplyEffects, setAutoApplyEffects] = useState(false)
+	const pendingSeekMsRef = useRef<number | null>(null)
+	const lastSourceRef = useRef<"audio_url" | "deezer_id" | "name" | null>(null)
+	const lastReportedPlayRef = useRef<string | null>(null)
+	const endedGuardRef = useRef<{ trackId: string | null; ts: number }>({
+		trackId: null,
+		ts: 0,
+	})
+	const autoplayRetryBoundRef = useRef(false)
 
-	// Load track when currentTrack changes
+	const bindAutoplayRetryOnce = useCallback(() => {
+		if (autoplayRetryBoundRef.current) return
+		autoplayRetryBoundRef.current = true
+
+		const attempt = () => {
+			const audio = audioRef.current
+			if (!audio) return
+			if (!usePlayer.getState().isPlaying) return
+			audio.play().catch(() => {
+				// Still blocked; keep waiting for the next user gesture.
+			})
+		}
+
+		const handler = () => {
+			attempt()
+		}
+
+		window.addEventListener("pointerdown", handler, { passive: true })
+		window.addEventListener("keydown", handler)
+	}, [])
+
+	// Load audio source when the current track changes
 	useEffect(() => {
-		if (!audioRef.current || !currentTrack) return
+		const audio = audioRef.current
+		if (!audio) return
 
-		const url = `/api/audio/stream?q=${encodeURIComponent(currentTrack.name)}`
+		// When there's no track, fully reset the element
+		if (!currentTrack) {
+			audio.pause()
+			audio.removeAttribute("src")
+			audio.load()
+			setCurrentTime(0)
+			setDuration(0)
+			pendingSeekMsRef.current = null
+			setUsingProcessedAudio(false)
+			setProcessedBuffer(null)
+			return
+		}
 
 		// Stop any currently playing processed audio when switching tracks
 		if (sourceNodeRef.current) {
 			try {
 				sourceNodeRef.current.stop()
 				sourceNodeRef.current.disconnect()
-			} catch (_e) {
-				// Ignore if already stopped
+			} catch {
+				// ignore
 			}
 			sourceNodeRef.current = null
 		}
 		setUsingProcessedAudio(false)
 		setProcessedBuffer(null)
 
-		audioRef.current.src = url
-		audioRef.current.load()
+		// Always use canonical track id when possible to avoid ambiguous title searches
+		// and to allow the backend to refresh expiring Deezer preview URLs.
+		const streamUrl = `/api/audio/stream?track_id=${encodeURIComponent(
+			currentTrack.id,
+		)}`
+		lastSourceRef.current = "name"
 
-		if (isPlaying) {
-			audioRef.current.play().catch((err) => {
-				console.error("Playback failed:", err)
-				setIsPlaying(false)
-			})
-		}
+		endedGuardRef.current = { trackId: currentTrack.id, ts: 0 }
+		audio.src = streamUrl
+		audio.load()
+
+		// Reset local timing state; actual play/pause is handled by the
+		// isPlaying effect so we don't double-call play() during switches.
+		setCurrentTime(0)
+		setDuration(0)
+		pendingSeekMsRef.current = null
 	}, [currentTrack])
 
 	// Handle play/pause state changes
@@ -907,9 +962,60 @@ export default function AudioPlayer() {
 		if (!audioRef.current || !currentTrack || usingProcessedAudio) return
 
 		if (isPlaying) {
-			audioRef.current.play().catch((err) => {
-				console.error("Playback failed:", err)
-				setIsPlaying(false)
+			// Lightweight play telemetry for homepage personalization.
+			// Only report once per track selection to avoid flooding.
+			if (lastReportedPlayRef.current !== currentTrack.id) {
+				lastReportedPlayRef.current = currentTrack.id
+				void csrfFetch("/api/me/plays", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						track_id: currentTrack.id,
+						offset_ms: Math.max(0, Math.round(currentTime * 1000)),
+						context: sessionId ? "jam" : "player",
+					}),
+				}).catch(() => {
+					// ignore (guest/auth/network)
+				})
+			}
+			audioRef.current.play().catch((err: any) => {
+				console.warn("Playback start failed (non-fatal):", err)
+				if (err?.name === "NotAllowedError") {
+					// Autoplay blocked by browser policy; retry on next user gesture.
+					try {
+						if (window.localStorage.getItem("jamDebug") === "1") {
+							console.warn(
+								"[jam] autoplay blocked; click/tap to start playback",
+							)
+						}
+					} catch {
+						// ignore
+					}
+					bindAutoplayRetryOnce()
+					return
+				}
+				// Fallback: if track_id resolution fails, try deezer_id, then title+artist.
+				const trackArtist =
+					typeof currentTrack.artist === "object"
+						? (currentTrack.artist as any)?.name
+						: currentTrack.artist
+				const fallbackQuery = `${trackArtist ?? ""} ${currentTrack.name}`.trim()
+
+				const fallbackUrl =
+					currentTrack.deezer_track_id &&
+					/^\d+$/.test(String(currentTrack.deezer_track_id))
+						? `/api/audio/stream?deezer_id=${encodeURIComponent(
+								currentTrack.deezer_track_id,
+							)}`
+						: `/api/audio/stream?q=${encodeURIComponent(fallbackQuery)}`
+
+				audioRef.current!.src = fallbackUrl
+				audioRef.current?.load()
+				audioRef.current
+					?.play()
+					.catch((e: any) =>
+						console.warn("Fallback playback failed (non-fatal):", e),
+					)
 			})
 		} else {
 			audioRef.current.pause()
@@ -925,13 +1031,48 @@ export default function AudioPlayer() {
 
 	const handleTimeUpdate = () => {
 		if (audioRef.current) {
-			setCurrentTime(audioRef.current.currentTime)
+			const seconds = audioRef.current.currentTime
+			setCurrentTime(seconds)
+			if (typeof window !== "undefined" && currentTrack) {
+				try {
+					window.dispatchEvent(
+						new CustomEvent("jam:position", {
+							detail: {
+								trackId: currentTrack.id,
+								currentTimeMs: seconds * 1000,
+							},
+						}),
+					)
+				} catch {
+					// ignore
+				}
+			}
 		}
 	}
 
 	const handleLoadedMetadata = () => {
 		if (audioRef.current) {
 			setDuration(audioRef.current.duration)
+			// Apply any pending seek from Jam when metadata becomes available
+			if (pendingSeekMsRef.current != null) {
+				try {
+					audioRef.current.currentTime = pendingSeekMsRef.current / 1000
+					setCurrentTime(audioRef.current.currentTime)
+				} catch {
+					// ignore failures
+				}
+				pendingSeekMsRef.current = null
+			}
+
+			// If playback should be running, retry play once metadata is ready.
+			// This fixes cases where the initial play() promise was aborted while src/load changed.
+			if (usePlayer.getState().isPlaying && audioRef.current.paused) {
+				audioRef.current.play().catch((err: any) => {
+					if (err?.name === "NotAllowedError") {
+						bindAutoplayRetryOnce()
+					}
+				})
+			}
 		}
 	}
 
@@ -939,23 +1080,128 @@ export default function AudioPlayer() {
 		// Only handle ended for regular audio, not processed audio
 		if (usingProcessedAudio) return
 
+		if (sessionId && !isHost) {
+			// Guests do not advance playback locally; host will broadcast the next state.
+			return
+		}
+
+		// Guard against multiple rapid "ended" emissions when the source changes or
+		// the browser aborts/retries media loads.
+		const trackId = usePlayer.getState().currentTrack?.id ?? null
+		const now = Date.now()
+		if (
+			trackId &&
+			endedGuardRef.current.trackId === trackId &&
+			now - endedGuardRef.current.ts < 750
+		) {
+			return
+		}
+		endedGuardRef.current = { trackId, ts: now }
+
 		if (repeatMode === "track") {
 			audioRef.current?.play()
-		} else if (repeatMode === "playlist" || repeatMode === "off") {
+			return
+		}
+
+		const _before = usePlayer.getState()
+		if (repeatMode === "playlist" || repeatMode === "off") {
 			playNext()
+		}
+		const after = usePlayer.getState()
+		const isAtEnd = after.currentIndex >= after.queue.length - 1
+		if (isAtEnd) {
+			if (typeof window !== "undefined") {
+				window.dispatchEvent(new Event("player:end-of-queue"))
+			}
 		}
 	}
 
 	const handleSeek = (value: number[]) => {
 		const time = value[0]
+		if (sessionId && !canControl) {
+			try {
+				if (window.localStorage.getItem("jamDebug") === "1") {
+					console.log("[jam] blocked: seek (host controls)")
+				}
+			} catch {
+				// ignore
+			}
+			return
+		}
 		if (audioRef.current) {
 			audioRef.current.currentTime = time
 			setCurrentTime(time)
 		}
 	}
 
+	const handleSeekCommit = (value: number[]) => {
+		const time = value[0]
+		if (sessionId && !canControl) {
+			try {
+				if (window.localStorage.getItem("jamDebug") === "1") {
+					console.log("[jam] blocked: seek/commit (host controls)")
+				}
+			} catch {
+				// ignore
+			}
+			return
+		}
+		if (typeof window !== "undefined" && currentTrack) {
+			try {
+				window.dispatchEvent(
+					new CustomEvent("jam:seek", {
+						detail: {
+							trackId: currentTrack.id,
+							currentTimeMs: time * 1000,
+						},
+					}),
+				)
+			} catch {
+				// ignore
+			}
+		}
+	}
+
 	const togglePlay = () => {
+		if (sessionId && !canControl) {
+			try {
+				if (window.localStorage.getItem("jamDebug") === "1") {
+					console.log("[jam] blocked: play/pause (host controls)")
+				}
+			} catch {
+				// ignore
+			}
+			return
+		}
 		setIsPlaying(!isPlaying)
+	}
+
+	const playNextJamAware = () => {
+		if (sessionId && !canControl) {
+			try {
+				if (window.localStorage.getItem("jamDebug") === "1") {
+					console.log("[jam] blocked: next (host controls)")
+				}
+			} catch {
+				// ignore
+			}
+			return
+		}
+		playNext()
+	}
+
+	const playPreviousJamAware = () => {
+		if (sessionId && !canControl) {
+			try {
+				if (window.localStorage.getItem("jamDebug") === "1") {
+					console.log("[jam] blocked: previous (host controls)")
+				}
+			} catch {
+				// ignore
+			}
+			return
+		}
+		playPrevious()
 	}
 
 	const formatTime = (seconds: number) => {
@@ -972,6 +1218,46 @@ export default function AudioPlayer() {
 			setIsClosing(false)
 		}, 300) // Match animation duration
 	}, [])
+	// Apply Jam playback state coming from useJamSession
+	useEffect(() => {
+		if (typeof window === "undefined") return
+		const handler = (event: Event) => {
+			const custom = event as CustomEvent
+			const detail = custom.detail as
+				| { trackId?: string; offsetMs?: number; isPlaying?: boolean }
+				| undefined
+			if (!detail) return
+			const { offsetMs } = detail
+			if (typeof offsetMs === "number") {
+				pendingSeekMsRef.current = offsetMs
+			}
+			if (!audioRef.current) return
+			// If audio metadata is ready, we can apply immediately
+			if (audioRef.current.readyState >= 1) {
+				if (pendingSeekMsRef.current != null) {
+					try {
+						audioRef.current.currentTime = pendingSeekMsRef.current / 1000
+						setCurrentTime(audioRef.current.currentTime)
+					} catch {
+						// ignore
+					}
+					pendingSeekMsRef.current = null
+				}
+
+				// If Jam says we should be playing, ensure we retry play after seeking.
+				if (detail.isPlaying && audioRef.current.paused) {
+					audioRef.current.play().catch((err: any) => {
+						if (err?.name === "NotAllowedError") {
+							bindAutoplayRetryOnce()
+						}
+					})
+				}
+			}
+		}
+		window.addEventListener("jam:apply-playback", handler as EventListener)
+		return () =>
+			window.removeEventListener("jam:apply-playback", handler as EventListener)
+	}, [setIsPlaying, bindAutoplayRetryOnce])
 
 	// Initialize Web Audio API context
 	const initializeWebAudio = useCallback(async () => {
@@ -1217,6 +1503,7 @@ export default function AudioPlayer() {
 						currentTime={currentTime}
 						duration={duration}
 						handleSeek={handleSeek}
+						handleSeekCommit={handleSeekCommit}
 						isShuffle={isShuffle}
 						setIsShuffle={setIsShuffle}
 						repeatMode={repeatMode}
@@ -1224,8 +1511,8 @@ export default function AudioPlayer() {
 						volume={volume}
 						setVolume={setVolume}
 						currentTrack={currentTrack}
-						playNext={playNext}
-						playPrevious={playPrevious}
+						playNext={playNextJamAware}
+						playPrevious={playPreviousJamAware}
 						formatTime={formatTime}
 						showEffects={showEffects}
 						setShowEffects={() => {
@@ -1256,6 +1543,7 @@ export default function AudioPlayer() {
 					currentTime={currentTime}
 					duration={duration}
 					handleSeek={handleSeek}
+					handleSeekCommit={handleSeekCommit}
 					isShuffle={isShuffle}
 					setIsShuffle={setIsShuffle}
 					repeatMode={repeatMode}
@@ -1263,8 +1551,8 @@ export default function AudioPlayer() {
 					volume={volume}
 					setVolume={setVolume}
 					currentTrack={currentTrack}
-					playNext={playNext}
-					playPrevious={playPrevious}
+					playNext={playNextJamAware}
+					playPrevious={playPreviousJamAware}
 					formatTime={formatTime}
 					showEffects={showEffects}
 					setShowEffects={() => {

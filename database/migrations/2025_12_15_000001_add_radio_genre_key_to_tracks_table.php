@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('tracks', function (Blueprint $table) {
+            if (! Schema::hasColumn('tracks', 'radio_genre_key')) {
+                $table->string('radio_genre_key')->nullable()->after('deezer_genre_id');
+                $table->index('radio_genre_key');
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('tracks', function (Blueprint $table) {
+            if (Schema::hasColumn('tracks', 'radio_genre_key')) {
+                $table->dropIndex(['radio_genre_key']);
+                $table->dropColumn('radio_genre_key');
+            }
+        });
+    }
+};

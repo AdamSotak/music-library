@@ -2,6 +2,8 @@ import type { Album, Track, Playlist } from "@/types"
 import { router } from "@inertiajs/react"
 import { Modals } from "@/hooks/useModals"
 import PlayButton from "@/components/home/play-button"
+import { TrackContextMenu } from "@/components/track-context-menu"
+import { toPlayerTrack } from "@/utils/player"
 
 interface Artist {
 	type: string
@@ -174,50 +176,60 @@ export default function SearchPage({ query, results }: SearchPageProps) {
 							<h2 className="text-2xl font-bold mb-4">Songs</h2>
 							<div className="space-y-2">
 								{results.tracks.slice(0, 4).map((track, _index) => (
-									<div
+									<TrackContextMenu
 										key={track.id}
-										onClick={() => router.visit(`/tracks/${track.id}`)}
-										className="flex items-center gap-3 p-2 rounded-md hover:bg-zinc-800/60 cursor-pointer group"
+										trackId={track.id}
+										trackName={track.name}
+										artistId={track.artist_id}
+										albumId={track.album_id}
+										fullTrack={toPlayerTrack(track)}
 									>
-										<img
-											src={
-												track.album_cover ||
-												`https://placehold.co/40x40/333/white?text=${encodeURIComponent(track.album || "T")}`
-											}
-											alt={track.name}
-											className="w-10 h-10 rounded"
-										/>
-										<div className="flex-1 min-w-0">
-											<div className="font-medium text-base truncate text-white">
-												{track.name}
-											</div>
-											<div className="text-sm text-zinc-400 truncate">
-												{track.artist}
-											</div>
-										</div>
-										<div className="text-sm text-zinc-400">
-											{formatDuration(track.duration)}
-										</div>
-										<button
-											onClick={(e) => handleAddToPlaylist(Number(track.id), e)}
-											className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-white transition-all p-2"
-											title="Add to playlist"
+										<div
+											onClick={() => router.visit(`/tracks/${track.id}`)}
+											className="flex items-center gap-3 p-2 rounded-md hover:bg-zinc-800/60 cursor-pointer group"
 										>
-											<svg
-												className="w-4 h-4"
-												fill="none"
-												stroke="currentColor"
-												viewBox="0 0 24 24"
+											<img
+												src={
+													track.album_cover ||
+													`https://placehold.co/40x40/333/white?text=${encodeURIComponent(track.album || "T")}`
+												}
+												alt={track.name}
+												className="w-10 h-10 rounded"
+											/>
+											<div className="flex-1 min-w-0">
+												<div className="font-medium text-base truncate text-white">
+													{track.name}
+												</div>
+												<div className="text-sm text-zinc-400 truncate">
+													{track.artist}
+												</div>
+											</div>
+											<div className="text-sm text-zinc-400">
+												{formatDuration(track.duration)}
+											</div>
+											<button
+												onClick={(e) =>
+													handleAddToPlaylist(Number(track.id), e)
+												}
+												className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-white transition-all p-2"
+												title="Add to playlist"
 											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M12 4v16m8-8H4"
-												/>
-											</svg>
-										</button>
-									</div>
+												<svg
+													className="w-4 h-4"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														strokeWidth={2}
+														d="M12 4v16m8-8H4"
+													/>
+												</svg>
+											</button>
+										</div>
+									</TrackContextMenu>
 								))}
 							</div>
 						</div>

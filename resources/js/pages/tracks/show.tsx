@@ -7,7 +7,15 @@ import type { Track, InertiaPageProps } from "@/types"
 import { router, usePage } from "@inertiajs/react"
 import { useMemo, useState, useEffect, type MouseEvent } from "react"
 import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { RadioIcon } from "@/utils/icons"
 import MusicBarcode from "@/components/musicbars"
+import { RadioTower } from "lucide-react"
 
 interface TrackShowProps {
 	track: Track
@@ -58,13 +66,26 @@ export default function TrackShow({ track }: TrackShowProps) {
 		return `${mins}:${secs.toString().padStart(2, "0")}`
 	}
 
+	const goToRadio = (seedType: "track" | "album" | "artist") => {
+		const targetId =
+			seedType === "track"
+				? track.id
+				: seedType === "artist"
+					? track.artist_id
+					: track.album_id
+		if (!targetId) return
+		router.visit(`/radio?seed_type=${seedType}&seed_id=${targetId}`)
+	}
+
 	return (
 		<div className="min-h-screen text-white">
 			{/* Header */}
 			<div
 				className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 px-4 md:px-8 pt-16 md:pt-20 pb-6 bg-gradient-to-b from-orange-900/70 to-150% to-orange-900/40"
 				style={{
-					backgroundImage: `linear-gradient(to bottom, ${rgba(0.4)}, 150%, ${rgba(0.2)})`,
+					backgroundImage: `linear-gradient(to bottom, ${rgba(
+						0.4,
+					)}, 150%, ${rgba(0.2)})`,
 				}}
 			>
 				<div className="w-40 h-40 md:w-60 md:h-60 flex-shrink-0 shadow-2xl bg-zinc-800">
@@ -118,7 +139,9 @@ export default function TrackShow({ track }: TrackShowProps) {
 			<div
 				className="px-4 md:px-8 py-4 md:py-6 flex items-center gap-4 md:gap-6  bg-gradient-to-b from-orange-900/40 to-transparent"
 				style={{
-					backgroundImage: `linear-gradient(to bottom, ${rgba(0.3)}, transparent)`,
+					backgroundImage: `linear-gradient(to bottom, ${rgba(
+						0.3,
+					)}, transparent)`,
 				}}
 			>
 				<PlayButton
@@ -172,15 +195,29 @@ export default function TrackShow({ track }: TrackShowProps) {
 				<MusicBarcode trackId={track.id} trackName={track.name} />
 
 				<Button size="icon" variant="spotifyTransparent" className="group">
-					<svg
-						className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
-						fill="gray"
-						viewBox="0 0 24 24"
-					>
-						<circle cx="5" cy="12" r="2" />
-						<circle cx="12" cy="12" r="2" />
-						<circle cx="19" cy="12" r="2" />
-					</svg>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								size="icon"
+								variant="spotifyTransparent"
+								className="group"
+							>
+								<RadioTower className="min-w-7 min-h-7 text-zinc-400 transition-colors duration-300 group-hover:text-white" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="start" className="w-48">
+							<DropdownMenuItem
+								onSelect={(event) => {
+									event.preventDefault()
+									goToRadio("track")
+								}}
+								className="flex items-center gap-2"
+							>
+								<RadioIcon className="w-4 h-4 text-zinc-400" />
+								Go to track radio
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</Button>
 			</div>
 

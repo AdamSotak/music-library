@@ -1,0 +1,140 @@
+<?php
+
+namespace App\Services\Recommendation;
+
+use App\Models\Track;
+
+class MetadataScorer
+{
+    private array $genericCategories = ['pop', 'unknown', 'misc', 'other', 'music', 'various', 'various-artists'];
+
+    public function __construct(
+        private GenreGraph $genreGraph = new GenreGraph,
+        private float $artistWeight = 0.5,
+        private float $albumWeight = 0.2,
+        private float $genreWeight = 0.25,
+        private float $yearWeight = 0.1,
+        private float $durationWeight = 0.05,
+    ) {}
+
+    public function score(Track $candidate, SeedProfile $seed, string $seedType = 'track', ?string $seedGenreKey = null): float
+    {
+        $score = $this->randomJitter();
+
+        $artistWeight = $seedType === 'artist'
+            ? $this->artistWeight * 0.35
+            : $this->artistWeight;
+
+        if ($seed->artistId() && $candidate->artist_id === $seed->artistId()) {
+            $score += $artistWeight;
+        }
+
+        if ($seed->albumId() && $candidate->album_id === $seed->albumId()) {
+            $score += $this->albumWeight;
+        }
+
+        $candidateGenreKey = $this->candidateGenreKey($candidate);
+
+        $genreSim = $this->genreGraph->similarity($seedGenreKey ?? $this->genreKey($seed), $candidateGenreKey);
+
+        if ($genreSim > 0) {
+            $score += $this->genreWeight * $genreSim;
+        }
+
+        $yearScore = $this->yearSimilarity($candidate, $seed);
+        if ($yearScore > 0) {
+            $score += $this->yearWeight * $yearScore;
+        }
+
+        $durationScore = $this->durationSimilarity($candidate, $seed);
+        if ($durationScore > 0) {
+            $score += $this->durationWeight * $durationScore;
+        }
+
+        return $score;
+    }
+
+    private function yearSimilarity(Track $candidate, SeedProfile $seed): float
+    {
+        $seedYear = $seed->releaseYear();
+        $candidateYear = $this->yearFromAlbum($candidate);
+
+        if (! $seedYear || ! $candidateYear) {
+            return 0.0;
+        }
+
+        $diff = abs($seedYear - $candidateYear);
+
+        // Linearly decay over a 20 year window.
+        return max(0, 1 - ($diff / 20));
+    }
+
+    private function durationSimilarity(Track $candidate, SeedProfile $seed): float
+    {
+        $seedDuration = $seed->durationSeconds();
+        $candDuration = $candidate->duration;
+
+        if (! $seedDuration || ! $candDuration) {
+            return 0.0;
+        }
+
+        $diff = abs($seedDuration - $candDuration);
+
+        // Prefer within +/- 3 minutes.
+        $band = 180;
+        $score = max(0, 1 - ($diff / $band));
+
+        return $score;
+    }
+
+    private function yearFromAlbum(Track $track): ?int
+    {
+        $date = $track->album?->release_date;
+        if (! $date) {
+            return null;
+        }
+
+        try {
+            return (int) date('Y', strtotime((string) $date));
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function randomJitter(): float
+    {
+        return mt_rand(0, 1000) / 1000000; // 0 - 0.001
+    }
+
+    private function genreKey(SeedProfile $seed): ?string
+    {
+        if ($seed->radioGenreKey()) {
+            return $seed->radioGenreKey();
+        }
+
+        $slug = $seed->categorySlug();
+        if ($slug && ! in_array(strtolower($slug), $this->genericCategories, true)) {
+            return $slug;
+        }
+
+        return $seed->genreId();
+    }
+
+    private function candidateGenreKey(Track $candidate): ?string
+    {
+        // Prefer curated/backfilled key (this is the field we intend to trust for Radio).
+        if ($candidate->radio_genre_key) {
+            return $candidate->radio_genre_key;
+        }
+
+        // Deezer 132 ("pop") has historically been used as a default placeholder in this repo.
+        // Treat it as untrusted unless we've backfilled radio_genre_key.
+        $deezer = $candidate->deezer_genre_id;
+        if ($deezer && (string) $deezer !== '132') {
+            return (string) $deezer;
+        }
+
+        // category_slug is known to be poisoned from ingestion; avoid using it here.
+        return null;
+    }
+}

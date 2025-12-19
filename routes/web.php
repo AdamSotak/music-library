@@ -1,14 +1,18 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\Api\JamApiController;
+use App\Http\Controllers\Api\PlaybackApiController;
 use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\AudioProxyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JamController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\PlaylistController;
+use App\Http\Controllers\RadioController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TrackController;
 use Illuminate\Support\Facades\Route;
@@ -31,9 +35,18 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index');
 });
 
+// Jam landing (for shared links / QR)
+Route::get('/jam/{id}', [JamController::class, 'show'])->name('jam.show');
+
 Route::controller(CategoryController::class)->group(function () {
     Route::get('/categories', 'show');
     Route::get('/categories/{id}', 'showById');
+});
+
+Route::controller(RadioController::class)->group(function () {
+    Route::get('/radio', 'show')->name('radio.show');
+    Route::post('/api/radio/start', 'start')->name('api.radio.start');
+    Route::post('/api/radio/next', 'next')->name('api.radio.next');
 });
 
 // Canonical Spotify routing structure
@@ -89,6 +102,12 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::delete('/playlist/{id}', [PlaylistController::class, 'destroy'])->name('playlists.destroy');
     Route::post('/playlist/{id}/tracks', [PlaylistController::class, 'addTracks'])->name('playlists.addTracks');
     Route::delete('/playlist/{playlistId}/tracks/{trackId}', [PlaylistController::class, 'removeTrack'])->name('playlists.removeTrack');
+    // Collaboration
+    Route::post('/playlist/{id}/invite', [PlaylistController::class, 'invite'])->name('playlists.invite');
+    Route::get('/playlist/{id}/collaborators', [PlaylistController::class, 'collaborators'])->name('playlists.collaborators');
+    Route::patch('/playlist/{id}/collaborators/{userId}', [PlaylistController::class, 'updateCollaborator'])->name('playlists.collaborators.update');
+    Route::delete('/playlist/{id}/collaborators/{userId}', [PlaylistController::class, 'removeCollaborator'])->name('playlists.collaborators.remove');
+    Route::get('/playlist/join/{token}', [PlaylistController::class, 'joinByToken'])->name('playlists.join');
 
     // Shared playlist management
     Route::post('/playlist/{id}/share', [PlaylistController::class, 'share'])->name('playlists.share');
@@ -102,6 +121,21 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::post('/library/artists/{artistId}', [LibraryController::class, 'followArtist'])->name('library.followArtist');
     Route::get('/library/albums/{albumId}/check', [LibraryController::class, 'checkAlbumSaved'])->name('library.checkAlbumSaved');
     Route::get('/library/artists/{artistId}/check', [LibraryController::class, 'checkArtistFollowed'])->name('library.checkArtistFollowed');
+
+    // Jam API
+    Route::prefix('api/jams')->controller(JamApiController::class)->group(function () {
+        Route::post('/', 'store')->name('api.jams.store');
+        Route::post('/{id}/join', 'join')->name('api.jams.join');
+        Route::get('/{id}', 'show')->name('api.jams.show');
+        Route::patch('/{id}/controls', 'updateControls')->name('api.jams.controls.update');
+        Route::post('/{id}/queue', 'updateQueue')->name('api.jams.queue.update');
+        Route::post('/{id}/queue/add', 'addToQueue')->name('api.jams.queue.add');
+        Route::post('/{id}/queue/remove', 'removeFromQueue')->name('api.jams.queue.remove');
+        Route::post('/{id}/playback', 'updatePlayback')->name('api.jams.playback.update');
+    });
+
+    // Playback telemetry (for personalized recommendations)
+    Route::post('/api/me/plays', [PlaybackApiController::class, 'storePlay'])->name('api.me.plays.store');
 
     // Friend management
     Route::post('/friends/{userId}', [FriendController::class, 'sendFriendRequest'])->name('friends.sendRequest');

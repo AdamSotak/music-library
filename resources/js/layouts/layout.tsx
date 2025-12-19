@@ -6,13 +6,28 @@ import { useEffect, useRef, useState } from "react"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import AudioPlayer from "@/components/audio-player"
 import { usePage } from "@inertiajs/react"
+import type { InertiaPageProps } from "@/types"
+import { useLikedTracksStore } from "@/hooks/useLikedTracks"
+import { RightSidebar } from "@/components/right-sidebar"
+import { JamSessionProvider } from "@/hooks/useJamSession"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-	const pathname = usePage().url
+	const page = usePage()
+	const pathname = page.url
+	const { playlists } = page.props as unknown as InertiaPageProps
 	const mainContentRef = useRef<HTMLDivElement>(null)
 	type SidebarSize = "collapsed" | "default" | "expanded"
 	const [sidebarSize, setSidebarSize] = useState<SidebarSize>("default")
 	const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+	const initializeLikedTracks = useLikedTracksStore((state) => state.initialize)
+
+	useEffect(() => {
+		if (!playlists) return
+		const likedPlaylist = playlists.find((playlist) => playlist.is_default)
+		const likedTrackIds =
+			likedPlaylist?.tracks?.map((track) => track.id.toString()) ?? []
+		initializeLikedTracks(likedPlaylist?.id?.toString() ?? null, likedTrackIds)
+	}, [initializeLikedTracks, playlists])
 
 	useEffect(() => {
 		if (typeof window === "undefined") return
@@ -42,8 +57,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 				? "lg:w-full"
 				: "lg:w-[26vw] lg:min-w-[320px] lg:max-w-[320px]"
 
+	const castProps = page.props as InertiaPageProps
+	const currentUserId = castProps.user?.id?.toString?.() ?? null
+	const currentUserName = castProps.user?.name ?? null
+
 	return (
-		<>
+		<JamSessionProvider
+			currentUserId={currentUserId}
+			currentUserName={currentUserName}
+		>
 			<div className="min-w-screen h-screen bg-black flex flex-col">
 				<Navbar onMobileMenuToggle={() => setIsMobileSidebarOpen(true)} />
 				<main className="flex-1 overflow-hidden">
@@ -70,15 +92,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 							/>
 						</div>
 
-						{/* Main Content */}
-						<div
-							ref={mainContentRef}
-							className={cn(
-								"h-full bg-background-base rounded-lg overflow-y-auto transition-all duration-300 flex-1",
-								sidebarSize === "expanded" ? "lg:hidden" : "",
-							)}
-						>
-							{children}
+						{/* Main Content + Right Sidebar */}
+						<div className="flex-1 h-full flex gap-2 overflow-hidden">
+							<div
+								ref={mainContentRef}
+								className={cn(
+									"h-full bg-background-base rounded-lg overflow-y-auto transition-all duration-300 flex-1",
+									sidebarSize === "expanded" ? "lg:hidden" : "",
+								)}
+							>
+								{children}
+							</div>
+							<RightSidebar
+								currentUserId={currentUserId}
+								currentUserName={currentUserName}
+							/>
 						</div>
 					</div>
 				</main>
@@ -99,6 +127,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 			</Sheet>
 
 			<ModalsProvider />
-		</>
+		</JamSessionProvider>
 	)
 }

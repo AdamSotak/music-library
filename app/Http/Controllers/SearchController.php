@@ -38,7 +38,7 @@ class SearchController extends Controller
             return response()->json(['tracks' => []]);
         }
 
-        $searchTerm = "%{$query}%";
+        $searchTerm = "{$query}%";
 
         $tracks = Track::with(['artist', 'album'])
             ->where('name', 'LIKE', $searchTerm)
@@ -47,6 +47,8 @@ class SearchController extends Controller
             ->map(fn ($track) => [
                 'id' => $track->id,
                 'name' => $track->name,
+                'artist_id' => $track->artist_id,
+                'album_id' => $track->album_id,
                 'artist' => $track->artist->name,
                 'album' => $track->album->name,
                 'album_cover' => $track->album->image_url,
@@ -69,6 +71,8 @@ class SearchController extends Controller
                 'type' => 'track',
                 'id' => $track->id,
                 'name' => $track->name,
+                'artist_id' => $track->artist_id,
+                'album_id' => $track->album_id,
                 'artist' => $track->artist->name,
                 'album' => $track->album->name,
                 'album_cover' => $track->album->image_url,

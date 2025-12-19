@@ -6,41 +6,65 @@ use App\Models\Album;
 use App\Models\Artist;
 use App\Models\Playlist;
 use App\Models\Track;
+use App\Services\Recommendation\PersonalRecommendationService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class HomeController extends Controller
 {
+    public function __construct(private PersonalRecommendationService $personalRecs = new PersonalRecommendationService) {}
+
     public function index()
     {
-        $tracks = Track::with(['artist', 'album'])
+        $recommendedTracks = null;
+        $recommendedAlbums = null;
+        $recommendedArtists = null;
+
+        if (Auth::user()) {
+            $recs = $this->personalRecs->recommendForUser(Auth::user());
+            $recommendedTracks = $recs['tracks'] ?? null;
+            $recommendedAlbums = $recs['albums'] ?? null;
+            $recommendedArtists = $recs['artists'] ?? null;
+        }
+
+        $tracks = collect($recommendedTracks ?? [])->count()
+            ? collect($recommendedTracks)
+            : Track::with(['artist', 'album'])
+                ->inRandomOrder()
+                ->limit(20)
+                ->get()
+                ->map(fn ($track) => [
+                    'id' => $track->id,
+                    'name' => $track->name,
+                    'artist' => $track->artist->name,
+                    'artist_id' => $track->artist->id,
+                    'album' => $track->album->name,
+                    'album_id' => $track->album->id,
+                    'album_cover' => $track->album->image_url,
+                    'duration' => $track->duration,
+                    'audio' => $track->audio_url,
+                    'deezer_track_id' => $track->deezer_track_id,
+                ]);
+
+        $albums = Album::with('artist')
             ->inRandomOrder()
-            ->limit(20)
+            ->limit(30)
             ->get()
-            ->map(fn ($track) => [
-                'id' => $track->id,
-                'name' => $track->name,
-                'artist' => $track->artist->name,
-                'artist_id' => $track->artist->id,
-                'album' => $track->album->name,
-                'album_id' => $track->album->id,
-                'album_cover' => $track->album->image_url,
-                'duration' => $track->duration,
-                'audio' => $track->audio_url,
+            ->map(fn ($album) => [
+                'id' => $album->id,
+                'name' => $album->name,
+                'artist' => $album->artist->name,
+                'cover' => $album->image_url,
             ]);
 
-        $albums = Album::all()->shuffle()->map(fn ($album) => [
-            'id' => $album->id,
-            'name' => $album->name,
-            'artist' => $album->artist->name,
-            'cover' => $album->image_url,
-        ]);
-
-        $artists = Artist::all()->shuffle()->map(fn ($artist) => [
-            'id' => $artist->id,
-            'name' => $artist->name,
-            'image' => $artist->image_url,
-        ]);
+        $artists = Artist::inRandomOrder()
+            ->limit(30)
+            ->get()
+            ->map(fn ($artist) => [
+                'id' => $artist->id,
+                'name' => $artist->name,
+                'image' => $artist->image_url,
+            ]);
 
         // Get a random friend and their liked songs (optimized single query)
         $friendRecommendation = null;
@@ -93,6 +117,9 @@ class HomeController extends Controller
             'artists' => $artists,
             'tracks' => $tracks,
             'friendRecommendation' => $friendRecommendation,
+            'recommendedTracks' => $recommendedTracks,
+            'recommendedAlbums' => $recommendedAlbums,
+            'recommendedArtists' => $recommendedArtists,
         ]);
     }
 }

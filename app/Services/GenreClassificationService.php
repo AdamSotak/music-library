@@ -8,6 +8,7 @@ use App\Models\Track;
 
 class GenreClassificationService
 {
+    // DEPRECATED: legacy classifier. Not used by current Deezer-based ingestion.
     /**
      * Map artist names to genre slugs based on common knowledge
      */

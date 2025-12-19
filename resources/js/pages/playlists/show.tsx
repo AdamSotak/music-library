@@ -8,15 +8,38 @@ import axios from "axios"
 import { WaveformIndicator } from "@/components/waveform-indicator"
 import { Button } from "@/components/ui/button"
 import PlayButton from "@/components/home/play-button"
-import { Music, Users, LogOut } from "lucide-react"
+import {
+	ListPlus,
+	Music,
+	Radio,
+	Edit3,
+	Trash2,
+	Share2,
+	UserPlus,
+	Users,
+	Copy,
+	Crown,
+	LogOut,
+} from "lucide-react"
 import { toPlayerQueue, toPlayerTrack } from "@/utils/player"
 import { AddToPlaylistDropdown } from "@/components/add-to-playlist-dropdown"
+import { TrackContextMenu } from "@/components/track-context-menu"
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useLikedTracksStore } from "@/hooks/useLikedTracks"
 
 interface PlaylistShowProps {
 	playlist: Playlist
@@ -33,12 +56,13 @@ interface SearchTrack {
 }
 
 export default function PlaylistShow({ playlist }: PlaylistShowProps) {
-	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying } = usePlayer()
+	const { currentTrack, isPlaying, setCurrentTrack, setIsPlaying, addToQueue } =
+		usePlayer()
 	const { setOpen: setConfirmModalOpen } = Modals.useConfirmationModal()
+	const { setOpen: setEditPlaylistOpen } = Modals.useEditPlaylistDetailsModal()
 	const { setOpen: setShareModalOpen } = Modals.useSharePlaylistModal()
-	const { playlists } = usePage().props as unknown as InertiaPageProps
-	const likedSongsPlaylist = playlists.find((p) => p.is_default)
-	const [_likedTrackIds, setLikedTrackIds] = useState<Set<string>>(new Set())
+	const { playlists, user } = usePage().props as unknown as InertiaPageProps
+	const likedTrackIds = useLikedTracksStore((state) => state.likedIds)
 	const { rgba } = useImageColor(
 		playlist.is_default
 			? "/images/liked-songs.jpg"
@@ -48,22 +72,108 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [searchResults, setSearchResults] = useState<SearchTrack[]>([])
 	const [isSearching, setIsSearching] = useState(false)
+	const [collaborators, setCollaborators] = useState(
+		playlist.collaborators ?? [],
+	)
+	const [sharedModalOpen, setSharedModalOpen] = useState(false)
+	const [collaboratorsLoading, setCollaboratorsLoading] = useState(false)
+	const [inviteLink, setInviteLink] = useState<string | null>(() => {
+		if (typeof window === "undefined") return null
+		if (playlist.invite_token) {
+			return `${window.location.origin}/playlist/join/${playlist.invite_token}`
+		}
+		return null
+	})
+	const [inviteLoading, setInviteLoading] = useState(false)
+	const [collabMessage, setCollabMessage] = useState<string | null>(null)
+	const [collabError, setCollabError] = useState<string | null>(null)
 	const playerQueue = useMemo(
 		() => toPlayerQueue(playlist.tracks),
 		[playlist.tracks],
 	)
-
-	useEffect(() => {
-		if (likedSongsPlaylist) {
-			const liked = new Set(likedSongsPlaylist.tracks.map((t) => t.id))
-			setLikedTrackIds(liked)
-		}
-	}, [likedSongsPlaylist])
+	const currentUserId = user?.id?.toString() ?? null
+	const currentRole = playlist.current_role ?? null
+	const isOwner = currentRole === "owner"
+	const canManage = isOwner
+	const canEditTracksLocal =
+		isOwner || (playlist.is_collaborative && currentRole === "collaborator")
 
 	const formatDuration = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
 		const secs = seconds % 60
 		return `${mins}:${secs.toString().padStart(2, "0")}`
+	}
+
+	const fetchCollaborators = async () => {
+		if (!canManage) return
+		setCollaboratorsLoading(true)
+		setCollabError(null)
+		try {
+			const { data } = await axios.get(`/playlist/${playlist.id}/collaborators`)
+			setCollaborators(data || [])
+		} catch (error) {
+			console.error("Failed to load collaborators", error)
+			setCollabError("Could not load collaborators")
+		} finally {
+			setCollaboratorsLoading(false)
+		}
+	}
+
+	const handleGenerateInvite = async () => {
+		setInviteLoading(true)
+		setCollabError(null)
+		try {
+			const { data } = await axios.post(`/playlist/${playlist.id}/invite`)
+			const url = data?.invite_url as string | undefined
+			if (url) {
+				setInviteLink(url)
+				await navigator.clipboard?.writeText(url)
+				setCollabMessage("Invite link copied to clipboard")
+			}
+		} catch (error) {
+			console.error("Failed to generate invite", error)
+			setCollabError("Could not generate invite link")
+		} finally {
+			setInviteLoading(false)
+		}
+	}
+
+	const handleCopyInvite = async () => {
+		if (!inviteLink) {
+			await handleGenerateInvite()
+			return
+		}
+		try {
+			await navigator.clipboard?.writeText(inviteLink)
+			setCollabMessage("Invite link copied to clipboard")
+		} catch (error) {
+			console.error("Copy failed", error)
+			setCollabError("Could not copy invite link")
+		}
+	}
+
+	const handleUpdateRole = async (userId: string, role: string) => {
+		setCollabError(null)
+		try {
+			await axios.patch(`/playlist/${playlist.id}/collaborators/${userId}`, {
+				role,
+			})
+			await fetchCollaborators()
+		} catch (error) {
+			console.error("Role update failed", error)
+			setCollabError("Could not update role")
+		}
+	}
+
+	const handleRemoveCollaborator = async (userId: string) => {
+		setCollabError(null)
+		try {
+			await axios.delete(`/playlist/${playlist.id}/collaborators/${userId}`)
+			await fetchCollaborators()
+		} catch (error) {
+			console.error("Removal failed", error)
+			setCollabError("Could not remove collaborator")
+		}
 	}
 
 	const handlePlayTrack = (
@@ -96,6 +206,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		trackName: string,
 		e: React.MouseEvent,
 	) => {
+		if (!canEditTracksLocal) return
 		e.stopPropagation()
 		setConfirmModalOpen(
 			true,
@@ -110,22 +221,39 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 		)
 	}
 
-	const _handleAddTrackToPlaylist = (
-		trackId: string,
-		event: MouseEvent<HTMLButtonElement>,
-	) => {
-		event.stopPropagation()
+	const handleAddPlaylistToQueue = () => {
+		if (!playlist.tracks.length) return
+		addToQueue(toPlayerQueue(playlist.tracks))
+	}
 
-		// First click: Add to Liked Songs
-		if (likedSongsPlaylist) {
-			router.post(
-				`/playlist/${likedSongsPlaylist.id}/tracks`,
-				{ track_ids: [trackId] },
-				{
+	const handlePlaylistRadio = () => {
+		const seedTrack = playlist.tracks[0]
+		if (!seedTrack) return
+		router.visit(`/radio?seed_type=track&seed_id=${seedTrack.id}`)
+	}
+
+	const handleEditDetails = () => {
+		setEditPlaylistOpen(true, playlist)
+	}
+
+	const handleDeletePlaylist = () => {
+		if (playlist.is_default) return
+		setConfirmModalOpen(
+			true,
+			"Delete playlist",
+			`Delete "${playlist.name}" permanently?`,
+			"Delete",
+			() => {
+				router.delete(`/playlist/${playlist.id}`, {
 					preserveScroll: true,
-				},
-			)
-		}
+				})
+			},
+		)
+	}
+
+	const handleSharePlaylist = () => {
+		if (typeof window === "undefined") return
+		navigator.clipboard?.writeText(window.location.href)
 	}
 
 	// Search for tracks
@@ -230,7 +358,9 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 						{playlist.description}
 					</p>
 					<div className="flex items-center justify-center md:justify-start gap-1 text-xs md:text-sm mt-2 flex-wrap">
-						<span className="font-bold">{playlist.owner_name || "You"}</span>
+						<span className="font-bold">
+							{playlist.owner_name || user?.name || "You"}
+						</span>
 						{playlist.is_shared &&
 							playlist.shared_with &&
 							playlist.shared_with.length > 0 && (
@@ -250,6 +380,61 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 						<span className="text-zinc-400">
 							{hours > 0 && `${hours} hr`} {minutes} min
 						</span>
+						{playlist.is_collaborative && (
+							<span className="flex items-center gap-1 text-zinc-300">
+								<Users className="w-4 h-4" />
+								Collaborative
+							</span>
+						)}
+					</div>
+					<div className="flex flex-wrap items-center gap-3 mt-2 justify-center md:justify-start">
+						{collaborators && collaborators.length > 0 && (
+							<>
+								{collaborators.slice(0, 4).map((c) => (
+									<div
+										key={c.id}
+										className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded-full text-xs"
+									>
+										<div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px] uppercase">
+											{c.name
+												.split(" ")
+												.map((p) => p[0])
+												.join("")
+												.slice(0, 2)}
+										</div>
+										<span className="text-white">{c.name}</span>
+										{c.role === "owner" && (
+											<Crown className="w-3 h-3 text-amber-400" />
+										)}
+									</div>
+								))}
+								{collaborators.length > 4 && (
+									<span className="text-xs text-zinc-300">
+										+{collaborators.length - 4} more
+									</span>
+								)}
+								<button
+									type="button"
+									onClick={() => {
+										setSharedModalOpen(true)
+										void fetchCollaborators()
+									}}
+									className="text-xs text-white underline hover:text-green-400"
+								>
+									Shared with
+								</button>
+							</>
+						)}
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							onClick={() => handleSharePlaylist()}
+							className="text-white text-xs bg-white/10 hover:bg-white/20 px-3 py-1 h-auto"
+						>
+							<Share2 className="w-3 h-3 mr-1" />
+							Share
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -272,46 +457,143 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							: undefined
 					}
 				/>
-				{!playlist.is_default && (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button
-								size="icon"
-								variant="spotifyTransparent"
-								className="group"
+				{!playlist.is_default && isOwner && (
+					<Button
+						size="icon"
+						variant="spotifyTransparent"
+						className="group"
+						title="Invite collaborators"
+						onClick={() => {
+							setSharedModalOpen(true)
+							void fetchCollaborators()
+						}}
+					>
+						<UserPlus className="min-w-5 min-h-5 transition-colors duration-300 group-hover:text-white" />
+					</Button>
+				)}
+				<DropdownMenu modal={false}>
+					<DropdownMenuTrigger className="outline-none group">
+						<span className="inline-flex items-center justify-center rounded-full h-9 w-9 md:h-10 md:w-10 bg-transparent text-white cursor-pointer transition-transform duration-75 group-hover:scale-105 active:scale-95">
+							<svg
+								className="w-6 h-6 md:w-7 md:h-7 transition-colors duration-300 fill-gray-400 group-hover:fill-white"
+								fill="gray"
+								viewBox="0 0 24 24"
+								aria-hidden="true"
 							>
-								<svg
-									className="min-w-7 min-h-7 md:min-w-8 md:min-h-8 transition-colors duration-300 group-hover:fill-white"
-									fill="gray"
-									viewBox="0 0 24 24"
-									aria-hidden="true"
-								>
-									<circle cx="5" cy="12" r="2" />
-									<circle cx="12" cy="12" r="2" />
-									<circle cx="19" cy="12" r="2" />
-								</svg>
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="start" className="w-56">
-							{/* Share option - only for owner */}
-							{playlist.is_owner && (
+								<circle cx="5" cy="12" r="2" />
+								<circle cx="12" cy="12" r="2" />
+								<circle cx="19" cy="12" r="2" />
+							</svg>
+						</span>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent
+						align="end"
+						sideOffset={8}
+						className="w-64 bg-[#282828] text-white border-none"
+					>
+						{isOwner && (
+							<>
 								<DropdownMenuItem
-									onClick={() => setShareModalOpen(true, playlist)}
-									className="flex items-center gap-2"
+									onSelect={(event) => {
+										event.preventDefault()
+										void handleCopyInvite()
+									}}
+									className="gap-2 text-sm"
+								>
+									<UserPlus className="w-4 h-4" />
+									Copy invite link
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={(event) => {
+										event.preventDefault()
+										setSharedModalOpen(true)
+										void fetchCollaborators()
+									}}
+									className="gap-2 text-sm"
 								>
 									<Users className="w-4 h-4" />
-									<span>
-										{playlist.is_shared
-											? "Manage collaborators"
-											: "Make collaborative"}
-									</span>
+									Manage collaborators
 								</DropdownMenuItem>
-							)}
-
-							{/* Show shared status for non-owners */}
-							{!playlist.is_owner && playlist.is_shared && (
+								<DropdownMenuSeparator className="bg-white/10" />
+							</>
+						)}
+						<DropdownMenuItem
+							onSelect={(event) => {
+								event.preventDefault()
+								handleAddPlaylistToQueue()
+							}}
+							className="gap-2 text-sm"
+						>
+							<ListPlus className="w-4 h-4" />
+							Add to queue
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							onSelect={(event) => {
+								event.preventDefault()
+								handlePlaylistRadio()
+							}}
+							className="gap-2 text-sm"
+						>
+							<Radio className="w-4 h-4" />
+							Go to playlist radio
+						</DropdownMenuItem>
+						<DropdownMenuSeparator className="bg-white/10" />
+						<DropdownMenuItem
+							onSelect={(event) => {
+								event.preventDefault()
+								handleEditDetails()
+							}}
+							className="gap-2 text-sm"
+						>
+							<Edit3 className="w-4 h-4" />
+							Edit details
+						</DropdownMenuItem>
+						{!playlist.is_default && (
+							<DropdownMenuItem
+								onSelect={(event) => {
+									event.preventDefault()
+									handleDeletePlaylist()
+								}}
+								className="gap-2 text-sm text-red-400"
+							>
+								<Trash2 className="w-4 h-4" />
+								Delete
+							</DropdownMenuItem>
+						)}
+						<DropdownMenuSeparator className="bg-white/10" />
+						<DropdownMenuItem
+							onSelect={(event) => {
+								event.preventDefault()
+								handleSharePlaylist()
+							}}
+							className="gap-2 text-sm"
+						>
+							<Share2 className="w-4 h-4" />
+							Share
+						</DropdownMenuItem>
+						{playlist.is_owner && (
+							<>
+								<DropdownMenuSeparator className="bg-white/10" />
 								<DropdownMenuItem
-									onClick={() => {
+									onSelect={(event) => {
+										event.preventDefault()
+										setShareModalOpen(true, playlist)
+									}}
+									className="gap-2 text-sm"
+								>
+									<Users className="w-4 h-4" />
+									{playlist.is_shared
+										? "Manage collaborators"
+										: "Make collaborative"}
+								</DropdownMenuItem>
+							</>
+						)}
+						{!playlist.is_owner && playlist.is_shared && (
+							<>
+								<DropdownMenuSeparator className="bg-white/10" />
+								<DropdownMenuItem
+									onSelect={(event) => {
+										event.preventDefault()
 										setConfirmModalOpen(
 											true,
 											"Leave shared playlist?",
@@ -322,15 +604,15 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 											},
 										)
 									}}
-									className="flex items-center gap-2 text-red-400 focus:text-red-400"
+									className="gap-2 text-sm text-red-400 focus:text-red-400"
 								>
 									<LogOut className="w-4 h-4" />
-									<span>Leave playlist</span>
+									Leave playlist
 								</DropdownMenuItem>
-							)}
-						</DropdownMenuContent>
-					</DropdownMenu>
-				)}
+							</>
+						)}
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</div>
 
 			{/* Track List or Search */}
@@ -361,50 +643,27 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 							const isCurrentTrack =
 								currentTrack?.id.toString() === track.id.toString()
 							return (
-								<div
+								<TrackContextMenu
 									key={track.id}
-									className={`
-										flex flex-col md:grid md:grid-cols-[16px_6fr_4fr_3fr_minmax(120px,1fr)]
+									trackId={track.id.toString()}
+									trackName={track.name}
+									artistId={track.artist_id}
+									albumId={track.album_id}
+									isLiked={likedTrackIds.has(track.id.toString())}
+									fullTrack={playerQueue[index] ?? toPlayerTrack(track)}
+								>
+									<div
+										className={`
+										flex flex-col md:grid md:grid-cols-[16px_6fr_4fr_3fr_minmax(120px,1fr)] 
                                         md:items-center
 										gap-2 md:gap-4 md:px-4 py-2 md:py-0 md:h-14
 										rounded-md group cursor-pointer
 										${isCurrentTrack ? "bg-white/10" : "hover:bg-white/10"}
 									`}
-									onClick={(e) => handlePlayTrack(track, index, e)}
-								>
-									{/* Desktop track number / play button */}
-									<div className="hidden md:flex text-center text-sm group-hover:hidden justify-center">
-										{isCurrentTrack && isPlaying ? (
-											<WaveformIndicator />
-										) : (
-											<span
-												className={
-													isCurrentTrack ? "text-green-500" : "text-zinc-400"
-												}
-											>
-												{index + 1}
-											</span>
-										)}
-									</div>
-									<button
 										onClick={(e) => handlePlayTrack(track, index, e)}
-										className="hidden md:group-hover:flex justify-center"
-										type="button"
 									>
-										<svg
-											className="w-4 h-4 text-white"
-											fill="currentColor"
-											viewBox="0 0 24 24"
-											aria-hidden="true"
-										>
-											<path d="M8 5v14l11-7z" />
-										</svg>
-									</button>
-
-									{/* Track info - responsive layout */}
-									<div className="flex items-center gap-3 md:min-w-0">
-										{/* Mobile track number */}
-										<div className="md:hidden text-center text-xs w-6 flex-shrink-0">
+										{/* Desktop track number / play button */}
+										<div className="hidden md:flex text-center text-sm group-hover:hidden justify-center">
 											{isCurrentTrack && isPlaying ? (
 												<WaveformIndicator />
 											) : (
@@ -417,39 +676,134 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 												</span>
 											)}
 										</div>
-										<img
-											src={
-												track.album_cover ||
-												`https://via.placeholder.com/40?text=${encodeURIComponent(track.album || "Track")}`
-											}
-											alt={track.album || track.name}
-											className="w-10 h-10 md:w-10 md:h-10 flex-shrink-0 rounded"
-										/>
-										<div className="min-w-0 flex-1">
-											<div
-												className={`text-sm md:text-base truncate ${isCurrentTrack ? "text-green-500" : "text-white"}`}
+										<button
+											onClick={(e) => handlePlayTrack(track, index, e)}
+											className="hidden md:group-hover:flex justify-center"
+											type="button"
+										>
+											<svg
+												className="w-4 h-4 text-white"
+												fill="currentColor"
+												viewBox="0 0 24 24"
+												aria-hidden="true"
 											>
-												{track.name}
+												<path d="M8 5v14l11-7z" />
+											</svg>
+										</button>
+
+										{/* Track info - responsive layout */}
+										<div className="flex items-center gap-3 md:min-w-0">
+											{/* Mobile track number */}
+											<div className="md:hidden text-center text-xs w-6 flex-shrink-0">
+												{isCurrentTrack && isPlaying ? (
+													<WaveformIndicator />
+												) : (
+													<span
+														className={
+															isCurrentTrack
+																? "text-green-500"
+																: "text-zinc-400"
+														}
+													>
+														{index + 1}
+													</span>
+												)}
 											</div>
-											<div
-												className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate"
-												onClick={(e) => {
-													e.stopPropagation()
-													router.visit(`/artist/${track.artist_id}`)
-												}}
-											>
-												{track.artist}
+											<img
+												src={
+													track.album_cover ||
+													`https://via.placeholder.com/40?text=${encodeURIComponent(track.album || "Track")}`
+												}
+												alt={track.album || track.name}
+												className="w-10 h-10 md:w-10 md:h-10 flex-shrink-0 rounded"
+											/>
+											<div className="min-w-0 flex-1">
+												<div
+													className={`text-sm md:text-base truncate ${isCurrentTrack ? "text-green-500" : "text-white"}`}
+												>
+													{track.name}
+												</div>
+												<div
+													className="text-xs md:text-sm text-zinc-400 hover:text-white hover:underline cursor-pointer truncate"
+													onClick={(e) => {
+														e.stopPropagation()
+														router.visit(`/artist/${track.artist_id}`)
+													}}
+												>
+													{track.artist}
+												</div>
+											</div>
+											{/* Mobile duration and remove button */}
+											<div className="md:hidden flex items-center gap-2 flex-shrink-0">
+												<span className="text-zinc-400 text-xs">
+													{formatDuration(track.duration)}
+												</span>
+												<Button
+													size="icon"
+													variant="spotifyTransparent"
+													className="group h-8 w-8"
+													onClick={(e) =>
+														handleRemoveTrack(track.id, track.name, e)
+													}
+												>
+													<svg
+														className="min-w-4 min-h-4 transition-colors duration-300 group-hover:stroke-white"
+														fill="none"
+														stroke="gray"
+														viewBox="0 0 24 24"
+														aria-hidden="true"
+													>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M6 18L18 6M6 6l12 12"
+														/>
+													</svg>
+												</Button>
 											</div>
 										</div>
-										{/* Mobile duration and remove button */}
-										<div className="md:hidden flex items-center gap-2 flex-shrink-0">
-											<span className="text-zinc-400 text-xs">
+
+										{/* Desktop-only columns */}
+										<div
+											className="hidden md:block text-zinc-400 text-sm hover:text-white hover:underline cursor-pointer truncate"
+											onClick={(e) => {
+												e.stopPropagation()
+												if (track.album_id) {
+													router.visit(`/albums/${track.album_id}`)
+												}
+											}}
+										>
+											{track.album}
+										</div>
+										<div className="hidden md:block text-zinc-400 text-sm">
+											12 hours ago
+										</div>
+										<div className="hidden md:flex items-center justify-end gap-4">
+											<AddToPlaylistDropdown trackId={track.id}>
+												<Button
+													size="icon"
+													variant="spotifyTransparent"
+													className="group"
+												>
+													<svg
+														className="w-4 h-4 transition-colors duration-300"
+														fill="#1ed760"
+														aria-hidden="true"
+														viewBox="0 0 16 16"
+													>
+														<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
+													</svg>
+												</Button>
+											</AddToPlaylistDropdown>
+											<span className="text-zinc-400 text-sm">
 												{formatDuration(track.duration)}
 											</span>
 											<Button
 												size="icon"
 												variant="spotifyTransparent"
-												className="group h-8 w-8"
+												className="group"
+												disabled={!canEditTracksLocal}
 												onClick={(e) =>
 													handleRemoveTrack(track.id, track.name, e)
 												}
@@ -471,67 +825,7 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 											</Button>
 										</div>
 									</div>
-
-									{/* Desktop-only columns */}
-									<div
-										className="hidden md:block text-zinc-400 text-sm hover:text-white hover:underline cursor-pointer truncate"
-										onClick={(e) => {
-											e.stopPropagation()
-											if (track.album_id) {
-												router.visit(`/albums/${track.album_id}`)
-											}
-										}}
-									>
-										{track.album}
-									</div>
-									<div className="hidden md:block text-zinc-400 text-sm">
-										12 hours ago
-									</div>
-									<div className="hidden md:flex items-center justify-end gap-4">
-										<AddToPlaylistDropdown trackId={track.id}>
-											<Button
-												size="icon"
-												variant="spotifyTransparent"
-												className="group"
-											>
-												<svg
-													className="w-4 h-4 transition-colors duration-300"
-													fill="#1ed760"
-													aria-hidden="true"
-													viewBox="0 0 16 16"
-												>
-													<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
-												</svg>
-											</Button>
-										</AddToPlaylistDropdown>
-										<span className="text-zinc-400 text-sm">
-											{formatDuration(track.duration)}
-										</span>
-										<Button
-											size="icon"
-											variant="spotifyTransparent"
-											className="group"
-											onClick={(e) =>
-												handleRemoveTrack(track.id, track.name, e)
-											}
-										>
-											<svg
-												className="min-w-4 min-h-4 transition-colors duration-300 group-hover:stroke-white"
-												fill="none"
-												stroke="gray"
-												viewBox="0 0 24 24"
-												aria-hidden="true"
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M6 18L18 6M6 6l12 12"
-												/>
-											</svg>
-										</Button>
-									</div>
-								</div>
+								</TrackContextMenu>
 							)
 						})}
 
@@ -692,6 +986,105 @@ export default function PlaylistShow({ playlist }: PlaylistShowProps) {
 					</div>
 				)}
 			</div>
+
+			{/* Collaborators modal */}
+			<Dialog open={sharedModalOpen} onOpenChange={setSharedModalOpen}>
+				<DialogContent className="bg-[#181818] text-white border-none max-w-lg">
+					<DialogHeader>
+						<DialogTitle>Shared with</DialogTitle>
+						<DialogDescription className="text-zinc-400">
+							{isOwner
+								? "Owners can manage collaborators and invite others."
+								: "You are a collaborator on this playlist."}
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-3 max-h-[60vh] overflow-y-auto">
+						{collaboratorsLoading ? (
+							<div className="text-sm text-zinc-400">Loading...</div>
+						) : collaborators.length === 0 ? (
+							<div className="text-sm text-zinc-400">No collaborators yet.</div>
+						) : (
+							collaborators.map((c) => (
+								<div
+									key={c.id}
+									className="flex items-center justify-between gap-3 rounded-md border border-white/10 px-3 py-2"
+								>
+									<div className="flex items-center gap-3">
+										<div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold uppercase">
+											{c.name
+												.split(" ")
+												.map((p) => p[0])
+												.join("")
+												.slice(0, 2)}
+										</div>
+										<div className="flex flex-col">
+											<span className="font-medium">{c.name}</span>
+											<span className="text-xs text-zinc-400">
+												{c.role === "owner"
+													? "Owner"
+													: c.role === "collaborator"
+														? "Collaborator"
+														: "Viewer"}
+											</span>
+										</div>
+									</div>
+									{isOwner && c.id.toString() !== currentUserId && (
+										<div className="flex items-center gap-2">
+											<select
+												value={c.role}
+												onChange={(e) =>
+													handleUpdateRole(c.id.toString(), e.target.value)
+												}
+												className="bg-[#242424] border border-white/10 rounded px-2 py-1 text-sm"
+											>
+												<option value="owner">Owner</option>
+												<option value="collaborator">Collaborator</option>
+												<option value="viewer">Viewer</option>
+											</select>
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={() =>
+													handleRemoveCollaborator(c.id.toString())
+												}
+												className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+											>
+												Remove
+											</Button>
+										</div>
+									)}
+								</div>
+							))
+						)}
+					</div>
+					{(collabMessage || collabError) && (
+						<div
+							className={`text-sm ${collabError ? "text-red-400" : "text-green-400"}`}
+						>
+							{collabError || collabMessage}
+						</div>
+					)}
+					{isOwner && (
+						<DialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-between">
+							<Button
+								onClick={() => void handleCopyInvite()}
+								disabled={inviteLoading}
+								className="bg-white text-black hover:bg-white/90 flex items-center gap-2 w-full sm:w-auto"
+							>
+								<Copy className="w-4 h-4" />
+								{inviteLoading ? "Generating..." : "Copy invite link"}
+							</Button>
+							<Button
+								variant="spotifyTransparent"
+								onClick={() => void fetchCollaborators()}
+								className="text-white border border-white/20 hover:border-white/40"
+							>
+								Refresh list
+							</Button>
+						</DialogFooter>
+					)}
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

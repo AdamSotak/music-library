@@ -7,6 +7,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "./ui/dialog"
+import { QrCode } from "lucide-react"
 
 interface MusicBarcodeProps {
 	trackId: string
@@ -56,24 +57,10 @@ export default function MusicBarcode({
 					}}
 					variant="spotifyTransparent"
 					size="icon"
+					className="group"
 					aria-label="Show QR"
 				>
-					<svg className="min-w-7 min-h-7" fill="gray" viewBox="0 0 24 24">
-						<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM16 13h4v4h-4v3h-3v-4h3z" />
-					</svg>
-				</Button>
-				<Button
-					onClick={() => {
-						setMode("barcode")
-						setIsOpen(true)
-					}}
-					variant="spotifyTransparent"
-					size="icon"
-					aria-label="Show Barcode"
-				>
-					<svg className="min-w-7 min-h-7" fill="gray" viewBox="0 0 24 24">
-						<path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
-					</svg>
+					<QrCode className="min-w-7 min-h-7 text-gray-400 transition-colors duration-300 group-hover:text-white" />
 				</Button>
 			</div>
 
